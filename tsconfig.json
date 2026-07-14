@@ -36,6 +36,10 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "explore-jogja-admin-next",
+    ".next",
+    "out",
+    "assets"
   ]
 }

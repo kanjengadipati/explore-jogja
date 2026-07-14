@@ -8,10 +8,9 @@ import ConversationalAI from './components/ConversationalAI';
 import TripPlanner from './components/TripPlanner';
 import InteractiveMap from './components/InteractiveMap';
 
-import { DESTINATIONS, FESTIVALS, JOGJA_QUOTES } from './data';
-import { Destination } from './types';
-import { destinations } from './lib/api'; // Import api client
-import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, CalendarDays, Map, Sun, Utensils, Leaf, Sunset } from 'lucide-react';
+import { Destination, Festival } from './types';
+import { destinations, events, config } from './lib/api';
+import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, CalendarDays, Map, Sun, Utensils, Leaf, Sunset, RefreshCw } from 'lucide-react';
 
 export default function App() {
   const router = useRouter();
@@ -24,15 +23,40 @@ export default function App() {
     matchedDestinationIds: string[];
   } | null>(null);
   
-  // Use state to hold fetched destinations
-  const [allDestinations, setAllDestinations] = useState<Destination[]>(DESTINATIONS);
+  const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
+  const [allEvents, setAllEvents] = useState<Festival[]>([]);
+  const [allQuotes, setAllQuotes] = useState<{ text: string; author: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch destinations from API
-    destinations.getAll().then(res => {
-      if (res.status === 'success' && res.data) {
-        setAllDestinations(res.data as Destination[]);
+    Promise.all([
+      destinations.getAll(),
+      events.getAll(),
+      config.getQuotes(),
+    ]).then(([destRes, eventRes, quoteRes]) => {
+      if (destRes.status === 'success' && destRes.data) {
+        setAllDestinations(destRes.data as Destination[]);
       }
+      if (eventRes.status === 'success' && eventRes.data) {
+        const mapped = (eventRes.data as any[]).map(raw => ({
+          id: raw.id || raw.ExternalID || '',
+          name: raw.title || raw.Name || '',
+          date: raw.start_date ? `${raw.start_date} - ${raw.end_date || ''}` : (raw.date || ''),
+          location: raw.location || '',
+          image: raw.image_url || raw.image || '',
+          description: raw.description || '',
+          highlights: Array.isArray(raw.highlights) ? raw.highlights : [],
+          category: raw.category || '',
+        }));
+        setAllEvents(mapped);
+      }
+      if (quoteRes.status === 'success' && quoteRes.data) {
+        setAllQuotes(quoteRes.data);
+      }
+    }).catch(err => {
+      console.error('Failed to load data:', err);
+    }).finally(() => {
+      setIsLoading(false);
     });
   }, []);
 
@@ -98,8 +122,10 @@ export default function App() {
   // Quick helper to choose random quote
   const [quoteIdx, setQuoteIdx] = useState(0);
   useEffect(() => {
-    setQuoteIdx(Math.floor(Math.random() * JOGJA_QUOTES.length));
-  }, [activeTab]);
+    if (allQuotes.length > 0) {
+      setQuoteIdx(Math.floor(Math.random() * allQuotes.length));
+    }
+  }, [activeTab, allQuotes]);
 
   const filteredDestinations = selectedCategory
     ? allDestinations.filter(d => d.category === selectedCategory)
@@ -112,6 +138,14 @@ export default function App() {
     : defaultSortedIds
         .map(id => allDestinations.find(d => d.id === id))
         .filter((d): d is Destination => d !== undefined);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center">
+        <RefreshCw className="h-10 w-10 text-gold-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div id="explore-jogja-app-root" className="min-h-screen bg-[#faf9f6] flex flex-col justify-between">
@@ -245,7 +279,7 @@ export default function App() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {FESTIVALS.slice(0, 3).map((fest, idx) => {
+                        {allEvents.slice(0, 3).map((fest, idx) => {
                           const badges = ["Limited", "Popular", "Live Tonight"];
                           const subBadge = ["Starts in 5 Days", "Starts in 18 Days", "Tonight • 7 PM"];
                           return (
@@ -543,10 +577,10 @@ export default function App() {
                   <div className="relative p-8 rounded-3xl bg-gold-50/30 border border-gold-100/40 shadow-inner flex flex-col items-center">
                     <Quote className="h-8 w-8 text-gold-400 opacity-60 mb-4" />
                     <p className="font-display text-lg italic text-royal-950/90 leading-relaxed max-w-xl">
-                      "{JOGJA_QUOTES[quoteIdx].text}"
+                      "{allQuotes[quoteIdx]?.text}"
                     </p>
                     <span className="block mt-3 text-xs uppercase tracking-wider font-mono font-bold text-gold-700">
-                      — {JOGJA_QUOTES[quoteIdx].author}
+                      — {allQuotes[quoteIdx]?.author}
                     </span>
                   </div>
                 </section>
