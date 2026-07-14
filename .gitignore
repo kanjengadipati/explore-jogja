@@ -16,7 +16,6 @@ out/
 # explore-jogja-admin-next/
 
 # Generated/temporary files
-assets/
 export-destinations.js
 export-destinations.ts
 
