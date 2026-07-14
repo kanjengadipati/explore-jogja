@@ -10,6 +10,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  socialLogin: (provider: 'google' | 'facebook', token: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -79,13 +80,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const socialLogin = async (provider: 'google' | 'facebook', token: string) => {
+    try {
+      const res = await auth.socialLogin(provider, token);
+      if (res.status === 'success') {
+        await refreshProfile();
+        const profileRes = await auth.getProfile();
+        const role = profileRes?.data?.role;
+        if (role === 'admin' || role === 'superadmin') {
+          const accessToken = auth.getAccessToken();
+          if (accessToken) {
+            window.open(`http://localhost:3005/login?token=${accessToken}`, '_blank');
+          }
+        }
+        return { success: true };
+      }
+      return { success: false, error: res.message || 'Social login failed' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error' };
+    }
+  };
+
   const logout = async () => {
     await auth.logout();
     setState({ isAuthenticated: false, isLoading: false, user: null });
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ ...state, login, register, socialLogin, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

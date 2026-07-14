@@ -1,4 +1,9 @@
 import { Destination, Festival, EcosystemPartner } from './types';
+import { BATCH_1_DESTINATIONS } from './batch1';
+import { BATCH_2_DESTINATIONS } from './batch2';
+import { BATCH_3_DESTINATIONS } from './batch3';
+import { BATCH_4_DESTINATIONS } from './batch4';
+import { BATCH_5_DESTINATIONS } from './batch5';
 
 export const PHOTO_CREDITS: Record<string, string> = {
   '1578469550956-0e16b69c6a3d': 'Eugenia Clara',
@@ -979,7 +984,12 @@ export const DESTINATIONS: Destination[] = [
       { q: 'Is there an entrance fee?', a: 'Yes, IDR 10,000 per person. Parking IDR 5,000.' },
       { q: 'Can I camp overnight?', a: 'Yes. Designated camping areas are available.' }
     ]
-  }
+  },
+  ...BATCH_1_DESTINATIONS,
+  ...BATCH_2_DESTINATIONS,
+  ...BATCH_3_DESTINATIONS,
+  ...BATCH_4_DESTINATIONS,
+  ...BATCH_5_DESTINATIONS,
 ];
 
 export const FESTIVALS: Festival[] = [
