@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Compass, Heart, Search, ChevronLeft, ChevronRight, Mic, MicOff, Camera, Loader2 } from 'lucide-react';
-import { getPhotoCredit } from '../lib/photo';
 import { Destination } from '../types';
 import { ai } from '../lib/api';
 
@@ -18,31 +17,36 @@ const HERO_SLIDES = [
     id: 'prambanan',
     name: 'Prambanan Temple',
     tagline: 'Witness the majestic 9th-century Hindu spires rising against the golden sky.',
-    image: 'https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?auto=format&fit=crop&w=1600&q=80'
+    image: 'https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?auto=format&fit=crop&w=1600&q=80',
+    credit: 'Eugenia Clara'
   },
   {
     id: 'parangtritis',
     name: 'Parangtritis Beach',
     tagline: 'Where the black volcanic sand acts as a mirror for the mystical Southern Ocean sunset.',
-    image: 'https://images.unsplash.com/photo-1602137704924-9a038cfb5253?auto=format&fit=crop&w=1600&q=80'
+    image: 'https://images.unsplash.com/photo-1602137704924-9a038cfb5253?auto=format&fit=crop&w=1600&q=80',
+    credit: 'Unsplash'
   },
   {
     id: 'merapi',
     name: 'Mount Merapi',
     tagline: 'Feel the thrill of riding vintage 4x4 Willys jeeps through fresh volcanic ash paths.',
-    image: 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=1600&q=80'
+    image: 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=1600&q=80',
+    credit: 'Unsplash'
   },
   {
     id: 'tamansari',
     name: 'Taman Sari Water Castle',
     tagline: 'Explore hidden underground tunnels and secret bath pools of the ancient Sultans.',
-    image: 'https://images.unsplash.com/photo-1625506276715-76ad63823181?auto=format&fit=crop&w=1600&q=80'
+    image: 'https://images.unsplash.com/photo-1625506276715-76ad63823181?auto=format&fit=crop&w=1600&q=80',
+    credit: 'Gading Ihsan'
   },
   {
     id: 'goajomblang',
     name: 'Goa Jomblang Cave',
     tagline: 'Descend into a vertical primeval forest to catch the blinding column of heavenly light.',
-    image: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=1600&q=80'
+    image: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=1600&q=80',
+    credit: 'Unsplash'
   }
 ];
 
@@ -378,7 +382,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
             {/* Photo Credit */}
             <div className="text-[10px] font-mono text-white/40 mt-1">
-              Photo: {getPhotoCredit(HERO_SLIDES[currentSlide].image)} / Unsplash
+              Photo: {HERO_SLIDES[currentSlide].credit} / Unsplash
             </div>
 
           </div>

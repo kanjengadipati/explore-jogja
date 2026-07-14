@@ -1,7 +1,6 @@
 import React from 'react';
 import { Star, Heart } from 'lucide-react';
 import { Destination } from '../types';
-import { getPhotoCredit } from '../lib/photo';
 
 interface DestinationCardProps {
   key?: string | number;

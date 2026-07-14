@@ -11,7 +11,6 @@ import {
   MapPinned, Sunrise, Sunset, Flame, ChevronDown, Sparkle
 } from 'lucide-react';
 import { Destination, EcosystemPartner, Review } from '@/types';
-import { getPhotoCredit } from '@/lib/photo';
 import { destinations } from '@/lib/api';
 import AIFloatingAssistant from '@/components/AIFloatingAssistant';
 
