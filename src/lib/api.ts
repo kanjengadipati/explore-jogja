@@ -1,4 +1,4 @@
-const API_BASE = process.env.BACKEND_URL || 'http://localhost:8081';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '/api/pleco';
 
 interface APIResponse<T = unknown> {
   status: 'success' | 'error';
