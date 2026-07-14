@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, User, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 
@@ -45,8 +46,10 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
             className="flex cursor-pointer items-center group"
             onClick={() => setActiveTab('discover')}
           >
+import Image from 'next/image';
+...
             <div className="text-gold-400 transition-transform duration-300 group-hover:scale-105 mr-3">
-              <img src="/logo-gold.png" alt="Jogjagem Logo" className="h-10 w-10 object-contain" />
+              <Image src="/logo-gold.png" alt="Jogjagem Logo" width={40} height={40} className="object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="font-manrope text-[17px] font-bold tracking-widest text-white">Jogjagem</span>
