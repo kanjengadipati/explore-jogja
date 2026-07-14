@@ -114,7 +114,7 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
               <div className="flex items-center space-x-2">
                 {(user?.role === 'admin' || user?.role === 'superadmin') && (
                   <a
-                    href="http://localhost:3005"
+                    href={process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3005'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-gold-600 to-gold-500 text-white hover:from-gold-500 hover:to-gold-400 transition-all text-xs font-bold shadow-lg shadow-gold-600/20"
@@ -237,7 +237,7 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
               {/* Mobile Admin Panel */}
               {isAuthenticated && (user?.role === 'admin' || user?.role === 'superadmin') && (
                 <a
-                  href="http://localhost:3005"
+                  href={process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3005'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium bg-gradient-to-r from-gold-600 to-gold-500 text-white mt-2"
