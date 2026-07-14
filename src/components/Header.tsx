@@ -46,8 +46,6 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
             className="flex cursor-pointer items-center group"
             onClick={() => setActiveTab('discover')}
           >
-import Image from 'next/image';
-...
             <div className="text-gold-400 transition-transform duration-300 group-hover:scale-105 mr-3">
               <Image src="/logo-gold-new.png" alt="Jogjagem Logo" width={40} height={40} className="object-contain" />
             </div>
