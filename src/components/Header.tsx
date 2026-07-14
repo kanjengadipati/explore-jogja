@@ -40,20 +40,17 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           
           {/* Brand Logo */}
-          <div 
+            <div 
             id="brand-logo-container" 
-            className="flex cursor-pointer items-center space-x-2.5 group"
+            className="flex cursor-pointer items-center group"
             onClick={() => setActiveTab('discover')}
           >
-            <div className="text-gold-400 transition-transform duration-300 group-hover:scale-105">
-              <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2a1 1 0 0 1 1 1v6.17a4.002 4.002 0 0 1 3.5 3.83 1 1 0 1 1-2 0 2 2 0 0 0-4 0 1 1 0 1 1-2 0 4.002 4.002 0 0 1 3.5-3.83V3a1 1 0 0 1 1-1zm0 13a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1z" />
-                <path d="M6 5a1 1 0 0 1 1 1v2a5 5 0 0 0 10 0V6a1 1 0 1 1 2 0v2a7 7 0 0 1-14 0V6a1 1 0 0 1 1-1z" />
-              </svg>
+            <div className="text-gold-400 transition-transform duration-300 group-hover:scale-105 mr-3">
+              <img src="/logo-gold.png" alt="Jogjagem Logo" className="h-10 w-10 object-contain" />
             </div>
-            <div className="flex flex-col -space-y-1">
-              <span className="font-sans text-[9px] uppercase tracking-[0.08em] text-gold-300/90 font-semibold">EXPLORE</span>
-              <span className="font-manrope text-base font-bold tracking-widest text-white">JOGJA</span>
+            <div className="flex flex-col">
+              <span className="font-manrope text-[17px] font-bold tracking-widest text-white">Jogjagem</span>
+              <span className="font-sans text-[9px] uppercase tracking-[0.08em] text-gold-300/90 font-semibold">Hidden Gems of Yogyakarta</span>
             </div>
           </div>
 

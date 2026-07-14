@@ -35,7 +35,7 @@ export const BATCH_1_DESTINATIONS: Destination[] = [
       { id: 'r-alun-alun-kidul-2', userName: 'Budi Santoso', userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150', rating: 4.5, date: '2026-07-02', comment: 'Walking between the banyan trees blindfolded was unforgettable! Great local atmosphere.' }
     ],
     partners: [
-      { id: 'p-aak-1', name: 'Royal Ambarrukmo Hotel', category: 'hotel', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Royal_Ambarrukmo_Hotel.jpg/640px-Royal_Ambarrukmo_Hotel.jpg', rating: 4.8, price: 'IDR 1,200,000 / night', distance: '3.5 km', description: 'Heritage luxury hotel with royal Javanese spa and grand pool.', address: 'Jl. Babarsari No.1, Yogyakarta', promotion: '10% off for Explore Jogja users', phone: '+62 274 488888', coordinates: { lat: -7.7780, lng: 110.3870 } }
+      { id: 'p-aak-1', name: 'Royal Ambarrukmo Hotel', category: 'hotel', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Royal_Ambarrukmo_Hotel.jpg/640px-Royal_Ambarrukmo_Hotel.jpg', rating: 4.8, price: 'IDR 1,200,000 / night', distance: '3.5 km', description: 'Heritage luxury hotel with royal Javanese spa and grand pool.', address: 'Jl. Babarsari No.1, Yogyakarta', promotion: '10% off for Jogjagem users', phone: '+62 274 488888', coordinates: { lat: -7.7780, lng: 110.3870 } }
     ],
     faqs: [
       { q: 'Is the Masangin tradition safe?', a: 'Yes, the grass is soft and the distance between the trees is short. Many visitors try it every night.' },

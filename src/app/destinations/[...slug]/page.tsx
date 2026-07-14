@@ -7,7 +7,6 @@ import Header from '@/components/Header';
 import DestinationDetail from '@/components/DestinationDetail';
 import { Destination } from '@/types';
 import { destinations } from '@/lib/api';
-import { DESTINATIONS } from '@/data';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 function mapApiToDestination(raw: any): Destination {
@@ -44,28 +43,14 @@ function toSlug(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-function extractIdFromSlug(slugParts: string[]): string {
-  const raw = slugParts.join('/');
-  const firstPart = slugParts[0];
-
-  if (/^\d+$/.test(firstPart) && slugParts.length > 1) {
-    return firstPart;
-  }
-
-  const found = DESTINATIONS.find(d => toSlug(d.name) === raw);
-  if (found) return found.id;
-
-  return raw;
-}
-
 function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = use(params);
   const router = useRouter();
-  const destinationId = extractIdFromSlug(slug);
+  const destinationId = slug.join('/');
   const [destination, setDestination] = useState<Destination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [savedDestinations, setSavedDestinations] = useState<Destination[]>([]);
+  const [savedDestinationIds, setSavedDestinationIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -82,20 +67,10 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
           }
           setDestination(dest);
         } else {
-          const fallback = DESTINATIONS.find(d => d.id === destinationId);
-          if (fallback) {
-            setDestination(fallback);
-          } else {
-            setError('Destination not found');
-          }
+          setError('Destination not found');
         }
       } catch {
-        const fallback = DESTINATIONS.find(d => d.id === destinationId);
-        if (fallback) {
-          setDestination(fallback);
-        } else {
-          setError('Failed to load destination');
-        }
+        setError('Failed to load destination');
       } finally {
         setLoading(false);
       }
@@ -107,8 +82,7 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
     try {
       const saved = localStorage.getItem('explore_jogja_saved_v1');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        setSavedDestinations(parsed.map((item: any) => DESTINATIONS.find(d => d.id === item.id)).filter(Boolean));
+        setSavedDestinationIds(JSON.parse(saved));
       }
     } catch {}
     setHydrated(true);
@@ -117,24 +91,24 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(savedDestinations));
+      localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(savedDestinationIds));
     } catch {}
-  }, [savedDestinations, hydrated]);
+  }, [savedDestinationIds, hydrated]);
 
   const handleToggleSave = (dest: Destination) => {
-    setSavedDestinations(prev => {
-      const exists = prev.some(d => d.id === dest.id);
-      if (exists) return prev.filter(d => d.id !== dest.id);
-      return [...prev, dest];
+    setSavedDestinationIds(prev => {
+      const exists = prev.includes(dest.id);
+      if (exists) return prev.filter(id => id !== dest.id);
+      return [...prev, dest.id];
     });
   };
 
-  const isSaved = (id: string) => savedDestinations.some(d => d.id === id);
+  const isSaved = (id: string) => savedDestinationIds.includes(id);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={0} isOverHero={false} />
+        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 text-gold-500 animate-spin" />
         </div>
@@ -145,7 +119,7 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
   if (error || !destination) {
     return (
       <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={0} isOverHero={false} />
+        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-3" />
@@ -161,7 +135,7 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
 
   return (
     <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-      <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinations.length} isOverHero={false} />
+      <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
       <DestinationDetail
         destination={destination}
         onBack={() => router.back()}

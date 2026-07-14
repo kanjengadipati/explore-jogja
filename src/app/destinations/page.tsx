@@ -6,23 +6,59 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import DestinationCard, { isLandscape } from '@/components/DestinationCard';
 import CategoryLinks from '@/components/CategoryLinks';
-import { DESTINATIONS } from '@/data';
 import { Destination } from '@/types';
+import { destinations as destinationApi } from '@/lib/api';
 import { Search, ArrowLeft } from 'lucide-react';
 
 function DestinationsPageInner() {
   const router = useRouter();
+  const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [savedDestinations, setSavedDestinations] = useState<Destination[]>([]);
+  const [displayCount, setDisplayCount] = useState(20);
   const [hydrated, setHydrated] = useState(false);
 
+  // Intersection Observer to detect scroll to bottom
   useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setDisplayCount(prev => prev + 20);
+      }
+    }, { threshold: 0.1 });
+
+    const footer = document.querySelector('footer');
+    if (footer) observer.observe(footer);
+
+    return () => {
+      if (footer) observer.unobserve(footer);
+    };
+  }, []);
+
+  useEffect(() => {
+    async function fetchDestinations() {
+      setIsLoading(true);
+      try {
+        const response = await destinationApi.getAll();
+        // Assuming response is { status: 'success', data: Destination[] } or similar structure based on API
+        // Adjust according to the actual API response structure if needed
+        const data = (response as any).data || (response as any);
+        setAllDestinations(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Failed to fetch destinations:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchDestinations();
+
     try {
       const saved = localStorage.getItem('explore_jogja_saved_v1');
       if (saved) {
         const parsed = JSON.parse(saved);
-        setSavedDestinations(parsed.map((item: any) => DESTINATIONS.find(d => d.id === item.id)).filter(Boolean));
+        // We'll need to re-fetch/filter saved destinations after allDestinations is loaded
+        setSavedDestinations(parsed);
       }
     } catch (e) {
       console.error("Local storage read failed:", e);
@@ -55,7 +91,7 @@ function DestinationsPageInner() {
     router.push(`/destinations/${toSlug(dest.name)}`);
   };
 
-  const filteredDestinations = DESTINATIONS.filter((dest) => {
+  const filteredDestinations = allDestinations.filter((dest) => {
     const matchesCategory = selectedCategory ? dest.category === selectedCategory : true;
     const matchesSearch = searchQuery
       ? dest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,7 +102,7 @@ function DestinationsPageInner() {
   });
 
   const resultCount = filteredDestinations.length;
-  const totalDestinations = DESTINATIONS.length;
+  const totalDestinations = allDestinations.length;
 
   return (
     <div className="min-h-screen bg-[#faf9f6] flex flex-col">
@@ -132,9 +168,11 @@ function DestinationsPageInner() {
             </p>
           </div>
 
-          {/* Destinations Grid */}
+           {/* Destinations Grid */}
           <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-            {filteredDestinations.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-20 text-stone-500">Loading destinations...</div>
+            ) : filteredDestinations.length === 0 ? (
               <div className="text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-white">
                 <Search className="h-10 w-10 text-gold-300 mx-auto mb-4" />
                 <span className="block text-base font-semibold text-royal-950 mb-1">No destinations found</span>
@@ -142,7 +180,7 @@ function DestinationsPageInner() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredDestinations.map((dest) => (
+                {filteredDestinations.slice(0, displayCount).map((dest) => (
                   <DestinationCard
                     key={dest.id}
                     destination={dest}
@@ -155,13 +193,14 @@ function DestinationsPageInner() {
               </div>
             )}
           </section>
+
         </main>
 
       {/* Footer */}
       <footer className="bg-royal-950 border-t border-royal-800 py-8 mt-auto">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-xs text-white/40">
-            &copy; 2026 Explore Jogja. Crafted with care for Yogyakarta.
+            &copy; 2026 Jogjagem. Crafted with care for Yogyakarta.
           </p>
         </div>
       </footer>

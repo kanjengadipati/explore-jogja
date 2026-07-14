@@ -90,7 +90,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             <p className="text-xs text-stone-500 mt-1">
               {mode === 'login'
                 ? 'Sign in to access your saved destinations and trip plans'
-                : 'Join Explore Jogja to bookmark and plan your trips'}
+                : 'Join Jogjagem to bookmark and plan your trips'}
             </p>
           </div>
 
