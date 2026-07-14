@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import DestinationCard, { isLandscape } from '@/components/DestinationCard';
-import DestinationDetail from '@/components/DestinationDetail';
 import CategoryLinks from '@/components/CategoryLinks';
 import { DESTINATIONS } from '@/data';
 import { Destination } from '@/types';
@@ -15,7 +14,6 @@ function DestinationsPageInner() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
   const [savedDestinations, setSavedDestinations] = useState<Destination[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
@@ -51,9 +49,10 @@ function DestinationsPageInner() {
 
   const isSaved = (id: string) => savedDestinations.some(d => d.id === id);
 
+  const toSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
   const handleExploreDestination = (dest: Destination) => {
-    setSelectedDestination(dest);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push(`/destinations/${toSlug(dest.name)}`);
   };
 
   const filteredDestinations = DESTINATIONS.filter((dest) => {
@@ -78,15 +77,7 @@ function DestinationsPageInner() {
         isOverHero={false}
       />
 
-      {selectedDestination ? (
-        <DestinationDetail
-          destination={selectedDestination}
-          onBack={() => setSelectedDestination(null)}
-          isSaved={isSaved(selectedDestination.id)}
-          onToggleSave={handleToggleSave}
-        />
-      ) : (
-        <main className="flex-1">
+      <main className="flex-1">
           {/* Page Header */}
           <section className="bg-royal-950 pt-28 pb-12 sm:pt-32 sm:pb-16">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -165,7 +156,6 @@ function DestinationsPageInner() {
             )}
           </section>
         </main>
-      )}
 
       {/* Footer */}
       <footer className="bg-royal-950 border-t border-royal-800 py-8 mt-auto">

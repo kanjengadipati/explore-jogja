@@ -4,7 +4,6 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import CategoryLinks from './components/CategoryLinks';
 import DestinationCard, { isLandscape } from './components/DestinationCard';
-import DestinationDetail from './components/DestinationDetail';
 import ConversationalAI from './components/ConversationalAI';
 import TripPlanner from './components/TripPlanner';
 import InteractiveMap from './components/InteractiveMap';
@@ -17,7 +16,6 @@ import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, Calendar
 export default function App() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('discover');
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [conversationalQuery, setConversationalQuery] = useState<string>('');
   const [initialImageResult, setInitialImageResult] = useState<{
@@ -84,19 +82,17 @@ export default function App() {
   const handleHeroSearch = (query: string) => {
     setConversationalQuery(query);
     setActiveTab('ai-assistant');
-    setSelectedDestination(null);
   };
 
   const handleHeroImageSearch = (imageUrl: string, reply: string, matchedDestinationIds: string[]) => {
     setInitialImageResult({ imageUrl, reply, matchedDestinationIds });
     setActiveTab('ai-assistant');
-    setSelectedDestination(null);
   };
 
+  const toSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
   const handleExploreDestination = (dest: Destination) => {
-    setSelectedDestination(dest);
-    // Scroll details panel smoothly to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push(`/destinations/${toSlug(dest.name)}`);
   };
 
   // Quick helper to choose random quote
@@ -126,7 +122,6 @@ export default function App() {
         setActiveTab={(tab) => {
           if (tab === 'events') {
             setActiveTab('discover');
-            setSelectedDestination(null);
             setTimeout(() => {
               const el = document.getElementById('upcoming-festivals-showcase');
               if (el) {
@@ -141,7 +136,6 @@ export default function App() {
             }, 150);
           } else if (tab === 'experiences') {
             setActiveTab('discover');
-            setSelectedDestination(null);
             setTimeout(() => {
               const el = document.getElementById('trending-destinations-showcase');
               if (el) {
@@ -156,26 +150,16 @@ export default function App() {
             }, 150);
           } else {
             setActiveTab(tab);
-            setSelectedDestination(null); // Clear active details overlay when navigating away
           }
         }} 
         savedCount={savedDestinations.length} 
-        isOverHero={activeTab === 'discover' && !selectedDestination}
+        isOverHero={activeTab === 'discover'}
       />
 
       {/* Main Core Content container */}
       <main id="main-content-layout" className="flex-1 pb-16">
         
-        {/* Dynamic Detailed Overlay takes precedence */}
-        {selectedDestination ? (
-          <DestinationDetail
-            destination={selectedDestination}
-            onBack={() => setSelectedDestination(null)}
-            onToggleSave={handleToggleSave}
-            isSaved={isSaved(selectedDestination.id)}
-          />
-        ) : (
-          <>
+        <>
             {/* Active Tab: Discover (Homepage) */}
             {activeTab === 'discover' && (
               <div className="space-y-4 animate-fade-in">
@@ -593,7 +577,7 @@ export default function App() {
             {activeTab === 'map' && (
               <InteractiveMap
                 onExploreDestination={handleExploreDestination}
-                selectedDestination={selectedDestination}
+                selectedDestination={null}
               />
             )}
 
@@ -634,7 +618,6 @@ export default function App() {
               </section>
             )}
           </>
-        )}
       </main>
 
       {/* Editorial polished footer */}
@@ -660,10 +643,7 @@ export default function App() {
       {/* Mobile Sticky Bottom Tab Bar - Matches the layout and feel of the reference mobile device screen */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-royal-950/95 backdrop-blur-md border-t border-royal-900 px-4 py-2.5 flex justify-around items-center text-white">
         <button
-          onClick={() => {
-            setActiveTab('discover');
-            setSelectedDestination(null);
-          }}
+          onClick={() => setActiveTab('discover')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
             activeTab === 'discover' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
@@ -673,10 +653,7 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => {
-            setActiveTab('ai-assistant');
-            setSelectedDestination(null);
-          }}
+          onClick={() => setActiveTab('ai-assistant')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
             activeTab === 'ai-assistant' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
@@ -686,10 +663,7 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => {
-            setActiveTab('planner');
-            setSelectedDestination(null);
-          }}
+          onClick={() => setActiveTab('planner')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
             activeTab === 'planner' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
@@ -699,10 +673,7 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => {
-            setActiveTab('map');
-            setSelectedDestination(null);
-          }}
+          onClick={() => setActiveTab('map')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
             activeTab === 'map' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
@@ -712,10 +683,7 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => {
-            setActiveTab('saved');
-            setSelectedDestination(null);
-          }}
+          onClick={() => setActiveTab('saved')}
           className={`flex flex-col items-center justify-center space-y-0.5 relative ${
             activeTab === 'saved' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}

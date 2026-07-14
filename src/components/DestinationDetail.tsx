@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, Heart, Share2, Star, Clock, Ticket, Sparkles, 
   MapPin, ShieldAlert, CheckCircle, HelpCircle, Thermometer,
@@ -55,6 +55,7 @@ export default function DestinationDetail({
   const [ticketQuantity, setTicketQuantity] = useState(1);
   const [ticketCategory, setTicketCategory] = useState<'domestic' | 'foreign'>('domestic');
   const [ticketBooked, setTicketBooked] = useState(false);
+  const [slideshowPaused, setSlideshowPaused] = useState(false);
 
   // Offer success states
   const [claimedOffers, setClaimedOffers] = useState<Set<string>>(new Set());
@@ -81,6 +82,15 @@ export default function DestinationDetail({
       setLiveCrowdLevel('Low');
     }
   }, []);
+
+  // Auto-advance image slideshow
+  useEffect(() => {
+    if (destination.images.length <= 1 || slideshowPaused) return;
+    const interval = setInterval(() => {
+      setActiveImageIdx(prev => (prev + 1) % destination.images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [destination.images.length, slideshowPaused]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -482,6 +492,8 @@ export default function DestinationDetail({
                   onClick={() => {
                     setActiveImageIdx(idx);
                     setActiveMediaTab('photos');
+                    setSlideshowPaused(true);
+                    setTimeout(() => setSlideshowPaused(false), 8000);
                   }}
                   className={`relative h-11 w-16 overflow-hidden rounded-lg border transition-all ${
                     idx === activeImageIdx && activeMediaTab === 'photos'
