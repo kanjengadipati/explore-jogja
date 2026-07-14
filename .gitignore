@@ -20,7 +20,4 @@ assets/
 export-destinations.js
 export-destinations.ts
 
-# Public build artifacts (logos committed separately if needed)
-public/favicon-gold.png
-public/logo-gold.png
-public/logo.png
+
