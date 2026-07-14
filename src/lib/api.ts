@@ -1,4 +1,4 @@
-const API_BASE = '/api/pleco';
+const API_BASE = 'http://localhost:8081';
 
 interface APIResponse<T = unknown> {
   status: 'success' | 'error';
@@ -184,6 +184,34 @@ export const destinations = {
 
   async getByCategory(category: string) {
     return request(`/destinations/category/${encodeURIComponent(category)}`);
+  },
+};
+
+export const events = {
+  async getAll() {
+    return request('/events');
+  },
+
+  async getById(id: string) {
+    return request(`/events/${id}`);
+  },
+
+  async search(query: string) {
+    return request(`/events/search?q=${encodeURIComponent(query)}`);
+  },
+};
+
+export const config = {
+  async getCategories() {
+    return request<{ id: string; name: string; icon: string; description: string }[]>('/config/categories');
+  },
+
+  async getSubRegions() {
+    return request<{ id: string; name: string; description: string }[]>('/config/sub-regions');
+  },
+
+  async getQuotes() {
+    return request<{ text: string; author: string }[]>('/config/quotes');
   },
 };
 

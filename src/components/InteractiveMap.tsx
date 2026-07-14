@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Map, MapPin, Eye, Info, Layers, RefreshCw, Car, Flame, Compass, Navigation, Bus, Star } from 'lucide-react';
-import { DESTINATIONS } from '../data';
 import { Destination, EcosystemPartner } from '../types';
+import { destinations as destinationApi } from '../lib/api';
 
 interface InteractiveMapProps {
   onExploreDestination: (dest: Destination) => void;
@@ -21,11 +21,25 @@ const PARKING_LOTS = [
 ];
 
 export default function InteractiveMap({ onExploreDestination, selectedDestination }: InteractiveMapProps) {
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activeLayer, setActiveLayer] = useState<'all' | 'destinations' | 'partners' | 'transport'>('all');
   const [showTraffic, setShowTraffic] = useState(false);
   const [showParking, setShowParking] = useState(false);
   const [showWalkingRoutes, setShowWalkingRoutes] = useState(true);
   const [selectedPin, setSelectedPin] = useState<{ id: string; name: string; type: string; desc: string; data?: any } | null>(null);
+
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const response = await destinationApi.getAll();
+        const data = (response as any).data || (response as any);
+        setDestinations(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Failed to fetch destinations:", e);
+      }
+    };
+    fetchDestinations();
+  }, []);
 
   // Geographic positioning conversion inside our SVG canvas:
   // Sleman (Merapi) is in the North (Top: Y=15-35)
@@ -148,7 +162,7 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
             </svg>
 
             {/* Destination Pin Nodes */}
-            {(activeLayer === 'all' || activeLayer === 'destinations') && DESTINATIONS.map(dest => {
+            {(activeLayer === 'all' || activeLayer === 'destinations') && destinations.map(dest => {
               const coords = getDestMapCoords(dest.id);
               const isSelected = selectedDestination?.id === dest.id;
 
@@ -182,7 +196,7 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
             })}
 
             {/* Ecosystem Partners Pin Nodes */}
-            {activeLayer === 'all' && DESTINATIONS.flatMap(d => d.partners).map((partner, idx) => {
+            {activeLayer === 'all' && destinations.flatMap(d => d.partners || []).map((partner, idx) => {
               // Distribute partner pins slightly surrounding their home destination coordinate
               const destCoords = getDestMapCoords(partner.id.startsWith('p-p') ? 'prambanan' : partner.id.startsWith('m-p') ? 'malioboro' : partner.id.startsWith('pt-p') ? 'parangtritis' : partner.id.startsWith('me-p') ? 'merapi' : partner.id.startsWith('ts-p') ? 'tamansari' : 'goajomblang');
               const offsetAngle = (idx * 45) * (Math.PI / 180);

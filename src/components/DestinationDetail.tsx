@@ -11,7 +11,8 @@ import {
   MapPinned, Sunrise, Sunset, Flame, ChevronDown, Sparkle
 } from 'lucide-react';
 import { Destination, EcosystemPartner, Review } from '@/types';
-import { DESTINATIONS, getPhotoCredit } from '@/data';
+import { getPhotoCredit } from '@/data';
+import { destinations } from '@/lib/api';
 import AIFloatingAssistant from '@/components/AIFloatingAssistant';
 
 interface DestinationDetailProps {
@@ -59,6 +60,22 @@ export default function DestinationDetail({
 
   // Offer success states
   const [claimedOffers, setClaimedOffers] = useState<Set<string>>(new Set());
+
+  // Similar destinations state & fetch
+  const [similarDestinations, setSimilarDestinations] = useState<Destination[]>([]);
+  useEffect(() => {
+    destinations.getAll().then(res => {
+      if (res.status === 'success' && res.data) {
+        const allDests = res.data as Destination[];
+        const filtered = allDests.filter(d => d.id !== destination.id);
+        const sameCategory = filtered.filter(d => d.category === destination.category);
+        const finalSimilar = sameCategory.length >= 3 ? sameCategory : filtered;
+        setSimilarDestinations(finalSimilar.slice(0, 3));
+      }
+    }).catch(err => {
+      console.error("Failed to load similar destinations:", err);
+    });
+  }, [destination]);
 
   // Interactive Live Journey simulated context
   const [currentAssistantTime, setCurrentAssistantTime] = useState('09:15 AM');
@@ -1327,7 +1344,7 @@ export default function DestinationDetail({
               <span className="text-[9px] font-mono font-bold tracking-widest text-gold-700 uppercase block leading-none">PEOPLE ALSO EXPLORED</span>
               
               <div className="space-y-3.5">
-                {DESTINATIONS.filter(d => d.id !== destination.id).slice(0, 3).map(similar => (
+                {similarDestinations.map(similar => (
                   <div 
                     key={similar.id} 
                     onClick={() => {

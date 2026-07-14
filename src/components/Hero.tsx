@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Compass, Heart, Search, ChevronLeft, ChevronRight, Mic, MicOff, Camera, Loader2 } from 'lucide-react';
-import { DESTINATIONS, getPhotoCredit } from '../data';
+import { getPhotoCredit } from '../data';
 import { Destination } from '../types';
 import { ai } from '../lib/api';
 
 interface HeroProps {
+  destinations: Destination[];
   onSearchSubmit: (query: string) => void;
   onImageSearchSubmit: (imageUrl: string, reply: string, matchedDestinationIds: string[]) => void;
   onExploreDestination: (dest: Destination) => void;
@@ -45,7 +46,7 @@ const HERO_SLIDES = [
   }
 ];
 
-export default function Hero({ onSearchSubmit, onImageSearchSubmit, onExploreDestination, onToggleSave, isSaved }: HeroProps) {
+export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit, onExploreDestination, onToggleSave, isSaved }: HeroProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -109,7 +110,7 @@ export default function Hero({ onSearchSubmit, onImageSearchSubmit, onExploreDes
   }, []);
 
   const slide = HERO_SLIDES[currentSlide];
-  const matchedDest = DESTINATIONS.find(d => d.id === slide.id);
+  const matchedDest = destinations.find(d => d.id === slide.id);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

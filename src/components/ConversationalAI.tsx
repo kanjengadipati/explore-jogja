@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Sparkles, Brain, Bot, User, RefreshCw, Compass, ArrowRight, CornerDownRight } from 'lucide-react';
 import { Destination } from '../types';
-import { DESTINATIONS } from '../data';
 import DestinationCard from './DestinationCard';
-import { ai } from '../lib/api';
+import { ai, destinations as destinationApi } from '../lib/api';
 
 interface Message {
   id: string;
@@ -78,30 +77,39 @@ export default function ConversationalAI({
   // Handle passed-down image scan result from Home search bar
   useEffect(() => {
     if (initialImageResult && messages.length <= 1) {
-      const userMsg: Message = {
-        id: 'user-image-' + Math.random().toString(),
-        role: 'user',
-        text: 'Scanned Image Context',
-        imageUrl: initialImageResult.imageUrl
+      const processImageResult = async () => {
+        const userMsg: Message = {
+          id: 'user-image-' + Math.random().toString(),
+          role: 'user',
+          text: 'Scanned Image Context',
+          imageUrl: initialImageResult.imageUrl
+        };
+
+        const matchedDests: Destination[] = [];
+        for (const id of initialImageResult.matchedDestinationIds) {
+          try {
+            const res = await destinationApi.getById(id);
+            if (res.status === 'success' && res.data) {
+              matchedDests.push(res.data as Destination);
+            }
+          } catch(e) {
+            console.error(`Failed to fetch destination ${id}`, e);
+          }
+        }
+
+        const aiMsg: Message = {
+          id: 'ai-image-' + Math.random().toString(),
+          role: 'model',
+          text: initialImageResult.reply,
+          matchedDestinations: matchedDests
+        };
+
+        setMessages(prev => [...prev, userMsg, aiMsg]);
+        if (onClearImageResult) {
+          onClearImageResult();
+        }
       };
-
-      const matchedDests: Destination[] = [];
-      for (const id of initialImageResult.matchedDestinationIds) {
-        const found = DESTINATIONS.find(d => d.id === id);
-        if (found) matchedDests.push(found);
-      }
-
-      const aiMsg: Message = {
-        id: 'ai-image-' + Math.random().toString(),
-        role: 'model',
-        text: initialImageResult.reply,
-        matchedDestinations: matchedDests
-      };
-
-      setMessages(prev => [...prev, userMsg, aiMsg]);
-      if (onClearImageResult) {
-        onClearImageResult();
-      }
+      processImageResult();
     }
   }, [initialImageResult]);
 
@@ -149,11 +157,17 @@ export default function ConversationalAI({
       if (responseData.status === 'success' && responseData.data) {
         const { reply, matchedDestinationIds = [] } = responseData.data;
 
-        // Map matched IDs back to our rich static destinations list
+        // Fetch matched destinations from API
         const matchedDests: Destination[] = [];
         for (const id of matchedDestinationIds) {
-          const found = DESTINATIONS.find(d => d.id === id);
-          if (found) matchedDests.push(found);
+          try {
+            const res = await destinationApi.getById(id);
+            if (res.status === 'success' && res.data) {
+              matchedDests.push(res.data as Destination);
+            }
+          } catch(e) {
+            console.error(`Failed to fetch destination ${id}`, e);
+          }
         }
 
         const aiMsg: Message = {
@@ -181,10 +195,6 @@ export default function ConversationalAI({
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSendQuery(input);
-  };
 
   return (
     <div 
@@ -310,7 +320,7 @@ export default function ConversationalAI({
 
       {/* Input container */}
       <div className="border-t border-gold-100 pt-4 bg-white">
-        <form onSubmit={handleFormSubmit} className="relative flex items-center">
+        <form onSubmit={(e) => { e.preventDefault(); handleSendQuery(input); }} className="relative flex items-center">
           <input
             type="text"
             placeholder="Ask your local advisor friend (e.g. 'romantic dinner with sunset' or 'hidden Javanese pools')"

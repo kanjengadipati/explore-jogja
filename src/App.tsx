@@ -165,6 +165,7 @@ export default function App() {
               <div className="space-y-4 animate-fade-in">
                 {/* Visual Fullscreen Hero Section */}
                 <Hero
+                  destinations={allDestinations}
                   onSearchSubmit={handleHeroSearch}
                   onImageSearchSubmit={handleHeroImageSearch}
                   onExploreDestination={handleExploreDestination}
@@ -617,7 +618,7 @@ export default function App() {
                 )}
               </section>
             )}
-          </>
+        </>
       </main>
 
       {/* Editorial polished footer */}

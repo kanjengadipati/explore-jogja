@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Lucide from 'lucide-react';
-import { CATEGORIES } from '../data';
+import { config } from '../lib/api';
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+}
+
+const FALLBACK_CATEGORIES: Category[] = [
+  { id: 'hidden-gem', name: 'Hidden Gems', icon: 'Sparkles', description: 'Unexplored, pristine secret wonders' },
+  { id: 'nature', name: 'Nature Escapes', icon: 'Leaf', description: 'Verdant forests, mountains, and parks' },
+  { id: 'culinary', name: 'Culinary Legends', icon: 'Utensils', description: 'Rich sweet-savory traditional tastes' },
+  { id: 'heritage', name: 'Heritage & Culture', icon: 'Castle', description: 'Ancient empires and royal palaces' },
+  { id: 'adventure', name: 'Adventure', icon: 'Compass', description: 'Thrilling volcanic offroads and caves' },
+  { id: 'beach', name: 'Beaches & Sunsets', icon: 'Sun', description: 'Vast golden sand cliffside coastlines' },
+  { id: 'family', name: 'Family Friendly', icon: 'Users', description: 'Amusements and cultural experiences' },
+  { id: 'weekend', name: 'Weekend Ideas', icon: 'CalendarDays', description: 'Short-trip custom curated escapes' }
+];
 
 interface CategoryLinksProps {
   selectedCategory: string | null;
@@ -8,6 +26,18 @@ interface CategoryLinksProps {
 }
 
 export default function CategoryLinks({ selectedCategory, onSelectCategory }: CategoryLinksProps) {
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+
+  useEffect(() => {
+    config.getCategories().then(res => {
+      if (res.status === 'success' && res.data) {
+        setCategories(res.data);
+      }
+    }).catch(err => {
+      console.error("Failed to load categories from API:", err);
+    });
+  }, []);
+
   return (
     <div 
       id="category-links-section" 
@@ -35,7 +65,7 @@ export default function CategoryLinks({ selectedCategory, onSelectCategory }: Ca
           <span className="text-[11px] font-bold tracking-tight">All Journeys</span>
         </button>
 
-        {CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const Icon = (Lucide as any)[cat.icon] || Lucide.Compass;
           const isSelected = selectedCategory === cat.id;
 
