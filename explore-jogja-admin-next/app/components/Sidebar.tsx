@@ -9,6 +9,7 @@ export const Sidebar: React.FC = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Users', path: '/users' },
+    { name: 'Roles', path: '/roles' },
   ];
 
   return (
