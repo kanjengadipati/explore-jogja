@@ -33,7 +33,7 @@ export default function DestinationDetail({
   isSaved,
   onSelectPartnerOnMap
 }: DestinationDetailProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const userInitials = user?.name ? user.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) : 'YG';
   // States
   const [activeMediaTab, setActiveMediaTab] = useState<'photos' | 'video' | '360' | 'drone' | 'reels'>('photos');
@@ -215,8 +215,9 @@ export default function DestinationDetail({
   const [reviewError, setReviewError] = useState('');
   const [newReviewTravelerType, setNewReviewTravelerType] = useState<'Solo' | 'Couple' | 'Family' | 'Friends'>('Solo');
   const [visibleReviews, setVisibleReviews] = useState(6);
+  const [reviewHelpfulCounts, setReviewHelpfulCounts] = useState<Record<string, number>>({});
 
-  const { isAuthenticated } = useAuth();
+
 
   // Traveler intent inference from saved destinations
   const [travelerIntent, setTravelerIntent] = useState<IntentProfile | null>(null);
@@ -314,12 +315,27 @@ export default function DestinationDetail({
 
   const toggleLikeReview = (id: string) => {
     const newLiked = new Set(likedReviewIds);
+    let diff = 0;
     if (newLiked.has(id)) {
       newLiked.delete(id);
+      diff = -1;
     } else {
       newLiked.add(id);
+      diff = 1;
     }
     setLikedReviewIds(newLiked);
+
+    setReviewHelpfulCounts(prev => {
+      const review = communityReviews.find(r => r.id === id);
+      const baseLikeHash = review 
+        ? ((Number(id.replace(/[^0-9]/g, '')) || 0) || (review.userName.charCodeAt(0) + (review.userName.charCodeAt(review.userName.length - 1) || 0)))
+        : 0;
+      const base = prev[id] ?? (10 + (baseLikeHash % 15));
+      return {
+        ...prev,
+        [id]: base + diff
+      };
+    });
   };
 
   const toggleBookmarkTip = (idx: number) => {
@@ -343,15 +359,10 @@ export default function DestinationDetail({
     setSubmittingReview(true);
     setReviewError('');
     try {
-      // Get user name from localStorage if available
       let userName = 'Anonymous';
-      try {
-        const profileRaw = localStorage.getItem('pleco_user_profile');
-        if (profileRaw) {
-          const profile = JSON.parse(profileRaw);
-          userName = profile.name || profile.email || 'Anonymous';
-        }
-      } catch {}
+      if (user) {
+        userName = user.name || user.email || 'Anonymous';
+      }
 
       const res = await reviewsApi.create(
         destination.id,
@@ -1325,7 +1336,8 @@ export default function DestinationDetail({
                     {filteredReviews.slice(0, visibleReviews).map((review, idx) => {
                       const isLiked = likedReviewIds.has(review.id);
                       const tType = (review as any).travelerType || (review as any).traveler_type || null;
-                      const likeCount = 10 + (idx * 7 % 20);
+                      const baseLikeHash = (Number(review.id.replace(/[^0-9]/g, '')) || 0) || (review.userName.charCodeAt(0) + (review.userName.charCodeAt(review.userName.length - 1) || 0));
+                      const likeCount = reviewHelpfulCounts[review.id] ?? (10 + (baseLikeHash % 15));
                       return (
                         <div
                           key={review.id}
@@ -1368,7 +1380,7 @@ export default function DestinationDetail({
                               }`}
                             >
                               <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-red-500' : ''}`} />
-                              <span>Helpful ({isLiked ? likeCount + 1 : likeCount})</span>
+                              <span>Helpful ({likeCount})</span>
                             </button>
                           </div>
                         </div>
