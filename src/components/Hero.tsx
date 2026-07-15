@@ -201,6 +201,21 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         </div>
       ))}
 
+      {/* AI Rec Badge — Mobile/Tablet only, top-right absolute overlay */}
+      <div className="absolute top-24 right-4 lg:hidden z-20 flex flex-col items-end">
+        <div className="bg-stone-950/55 backdrop-blur-md border border-white/10 rounded-2xl px-3.5 py-3 shadow-2xl max-w-[190px]">
+          <div className="flex items-center space-x-1 mb-1.5">
+            <span className="text-[10px] text-gold-400">✨</span>
+            <span className="text-[9px] font-sans tracking-widest uppercase font-bold text-gold-400">AI Recommendation</span>
+          </div>
+          <p className="text-[11px] font-bold text-white leading-snug mb-1.5">Perfect weather for outdoor adventures!</p>
+          <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-white/90 bg-white/5 py-1 px-2 rounded-lg w-max">
+            <span>☀️</span>
+            <span>28°C • Sunny</span>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Interactive Area */}
       <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-4 pb-8 sm:pb-16 md:pb-20 lg:pb-24 sm:px-6 lg:px-8 pt-20 sm:pt-40">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center w-full">
@@ -307,8 +322,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
             </div>
           </div>
 
-          {/* Right Column: AI Recommendation Widget matching mockup */}
-          <div className="lg:col-span-4 flex flex-col justify-end items-end w-full">
+          {/* Right Column: AI Recommendation Widget matching mockup — Desktop only */}
+          <div className="hidden lg:flex lg:col-span-4 flex-col justify-end items-end w-full">
             <div className="w-full max-w-[340px] bg-stone-950/45 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-left shadow-2xl animate-fade-in">
               <div className="flex items-center space-x-1.5 mb-2">
                 <span className="text-xs text-gold-400">✨</span>
