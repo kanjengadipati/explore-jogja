@@ -39,7 +39,7 @@ export default function DestinationDetail({
   const [activeMediaTab, setActiveMediaTab] = useState<'photos' | 'video' | '360' | 'drone' | 'reels'>('photos');
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [storyExpanded, setStoryExpanded] = useState(false);
-  const [selectedMapFilter, setSelectedMapFilter] = useState<'all' | 'partner' | 'parking' | 'hotel' | 'resto' | 'guide'>('all');
+  const [selectedMapFilter, setSelectedMapFilter] = useState<'all' | 'partner' | 'parking' | 'hotel' | 'resto' | 'guide' | 'toilet' | 'hospital'>('all');
   const [selectedMapPartner, setSelectedMapPartner] = useState<EcosystemPartner | null>(destination.partners[0] || null);
   const [likedReviewIds, setLikedReviewIds] = useState<Set<string>>(new Set());
   const [bookmarkedTipIds, setBookmarkedTipIds] = useState<Set<number>>(new Set());
@@ -47,6 +47,150 @@ export default function DestinationDetail({
   const ecosystemPausedUntilRef = React.useRef<number>(0);
   const ecosystemTabs = ['stay', 'eat', 'experience', 'shop', 'guide'] as const;
   const [selectedPartner, setSelectedPartner] = useState<EcosystemPartner | null>(null);
+
+  // Leaflet refs for detail map
+  const detailMapContainerRef = useRef<HTMLDivElement>(null);
+  const detailMapInstanceRef = useRef<any>(null);
+  const detailMarkerGroupRef = useRef<any>(null);
+
+  // Initialize and update Detail Page Leaflet Map
+  useEffect(() => {
+    if (typeof window === 'undefined' || !detailMapContainerRef.current) return;
+
+    import('leaflet').then((L) => {
+      // Clear previous map instance if any
+      if (detailMapInstanceRef.current) {
+        detailMapInstanceRef.current.remove();
+        detailMapInstanceRef.current = null;
+      }
+
+      const container = detailMapContainerRef.current;
+      if (!container) return;
+
+      const map = L.map(container, {
+        center: [destination.latitude, destination.longitude],
+        zoom: 14,
+        scrollWheelZoom: false, // disable scroll zoom for page scroll safety
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 20
+      }).addTo(map);
+
+      const markerGroup = L.layerGroup().addTo(map);
+      detailMarkerGroupRef.current = markerGroup;
+      detailMapInstanceRef.current = map;
+
+      // Draw markers
+      // 1. Center Destination
+      const centerIcon = L.divIcon({
+        className: 'custom-detail-center-marker',
+        html: `
+          <div class="relative flex h-11 w-11 items-center justify-center rounded-full bg-royal-950 text-gold-300 border-2 border-gold-400 shadow-2xl animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#d6a147" stroke="#d6a147" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+            <span class="absolute -top-1 -right-1 flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span>
+            </span>
+          </div>
+        `,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
+
+      L.marker([destination.latitude, destination.longitude], { icon: centerIcon })
+        .bindTooltip(destination.name, { permanent: true, direction: 'bottom', className: 'font-manrope font-bold text-[9px] px-2 py-0.5 rounded-full border border-gold-300 shadow' })
+        .addTo(markerGroup);
+
+      // 2. Partners
+      if (selectedMapFilter === 'all' || selectedMapFilter === 'partner') {
+        destination.partners.forEach(partner => {
+          if (!partner.coordinates?.lat || !partner.coordinates?.lng) return;
+
+          const isSelected = selectedMapPartner?.id === partner.id;
+          const partnerIcon = L.divIcon({
+            className: 'custom-detail-partner-marker',
+            html: `
+              <div class="flex h-8 w-8 items-center justify-center rounded-full border shadow-md transition-all ${
+                isSelected 
+                  ? 'bg-gold-500 text-white border-white scale-110 z-20 font-bold' 
+                  : 'bg-white text-royal-950 border-gold-200 hover:scale-105 z-10'
+              }">
+                ${partner.category === 'hotel' ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hotel"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/><path d="M12 5v2"/><path d="M10 7h4"/><path d="M12 2v1"/></svg>' :
+                  partner.category === 'restaurant' || partner.category === 'cafe' ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>' :
+                  partner.category === 'guide' ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' : 
+                  '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-bag"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0Z"/></svg>'
+                }
+              </div>
+            `,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+          });
+
+          const marker = L.marker([partner.coordinates.lat, partner.coordinates.lng], { icon: partnerIcon });
+          marker.on('click', () => {
+            setSelectedMapPartner(partner);
+          });
+          marker.addTo(markerGroup);
+        });
+      }
+
+      // 3. Render Parking Lot
+      if (selectedMapFilter === 'all' || selectedMapFilter === 'parking') {
+        const pkIcon = L.divIcon({
+          className: 'custom-detail-pk-marker',
+          html: `
+            <div class="p-1 bg-gray-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5 shadow-md">
+              <span>🅿 SECURE PARKING</span>
+            </div>
+          `,
+          iconSize: [90, 20],
+          iconAnchor: [45, 10]
+        });
+        L.marker([destination.latitude + 0.003, destination.longitude + 0.005], { icon: pkIcon }).addTo(markerGroup);
+      }
+
+      // 4. Render Toilet
+      if (selectedMapFilter === 'all' || selectedMapFilter === 'toilet') {
+        const toiletIcon = L.divIcon({
+          className: 'custom-detail-toilet-marker',
+          html: `
+            <div class="p-1 bg-teal-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5 shadow-md">
+              <span>🚽 ECO TOILETS</span>
+            </div>
+          `,
+          iconSize: [80, 20],
+          iconAnchor: [40, 10]
+        });
+        L.marker([destination.latitude - 0.004, destination.longitude - 0.003], { icon: toiletIcon }).addTo(markerGroup);
+      }
+
+      // 5. Render Emergency
+      if (selectedMapFilter === 'all' || selectedMapFilter === 'hospital') {
+        const emergencyIcon = L.divIcon({
+          className: 'custom-detail-emergency-marker',
+          html: `
+            <div class="p-1 bg-red-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5 shadow-md">
+              <span>🏥 EMERGENCY CARE</span>
+            </div>
+          `,
+          iconSize: [100, 20],
+          iconAnchor: [50, 10]
+        });
+        L.marker([destination.latitude + 0.002, destination.longitude - 0.003], { icon: emergencyIcon }).addTo(markerGroup);
+      }
+    });
+
+    return () => {
+      if (detailMapInstanceRef.current) {
+        detailMapInstanceRef.current.remove();
+        detailMapInstanceRef.current = null;
+      }
+    };
+  }, [destination, selectedMapFilter, selectedMapPartner]);
+
 
   // Auto-rotate ecosystem tabs like a slideshow
   useEffect(() => {
@@ -776,165 +920,77 @@ export default function DestinationDetail({
                 <span className="text-xs font-mono text-gold-700">LAT {destination.latitude.toFixed(4)} • LNG {destination.longitude.toFixed(4)}</span>
               </div>
 
-              {/* High Fidelity Custom Map Grid Canvas */}
-              <div className="relative rounded-3xl overflow-hidden border border-gold-200/50 shadow-lg bg-stone-900/5 aspect-16/10">
-                {/* SVG Mock Map Grid */}
-                <div className="absolute inset-0 bg-[#e7e1d5] opacity-90 p-4 flex flex-col justify-between overflow-hidden">
-                  
-                  {/* Stylized background lines mimicking roads */}
-                  <div className="absolute inset-0 z-0">
-                    <svg className="w-full h-full opacity-30 stroke-[#cb8527]" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <line x1="10" y1="0" x2="90" y2="100" strokeWidth="0.5" />
-                      <line x1="0" y1="40" x2="100" y2="60" strokeWidth="0.5" />
-                      <line x1="20" y1="100" x2="80" y2="0" strokeWidth="0.5" />
-                      <circle cx="50" cy="50" r="30" strokeWidth="0.2" fill="none" />
-                      <circle cx="50" cy="50" r="15" strokeWidth="0.2" fill="none" />
-                    </svg>
-                  </div>
+              {/* Leaflet Map Grid Container */}
+              <div className="relative rounded-3xl overflow-hidden border border-gold-200/50 shadow-lg aspect-16/10">
+                {/* Leaflet DOM container */}
+                <div ref={detailMapContainerRef} className="w-full h-full z-0 bg-stone-100" />
 
-                  {/* Dynamic Markers Overlay based on filter selection */}
-                  <div className="absolute inset-0 z-10">
-                    
-                    {/* Destination Center Marker (Star) */}
-                    <div className="absolute top-[48%] left-[48%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                      <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-royal-950 text-gold-300 border-2 border-gold-400 shadow-2xl animate-bounce">
-                        <Sparkle className="h-5 w-5 fill-gold-400" />
-                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span>
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-bold text-royal-950 bg-white/90 px-2 py-0.5 rounded-full border border-gold-300 shadow mt-1">
-                        {destination.name}
-                      </span>
-                    </div>
+                {/* Filter Overlay Buttons */}
+                <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md border border-gold-200/50 p-2.5 rounded-2xl flex flex-col gap-1.5 shadow-lg w-40">
+                  <span className="text-[8px] font-mono font-bold tracking-wider text-royal-700/60 uppercase border-b pb-1">Filter Map Pins</span>
+                  {[
+                    { id: 'all', label: 'All Markers', icon: Map },
+                    { id: 'partner', label: 'Verified Partners', icon: Award },
+                    { id: 'parking', label: 'Secure Parking', icon: Compass },
+                    { id: 'toilet', label: 'Eco Toilets', icon: Flame },
+                    { id: 'hospital', label: 'Emergency', icon: ShieldAlert }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => setSelectedMapFilter(f.id as any)}
+                      className={`text-[9px] font-mono font-bold text-left py-1 px-1.5 rounded-lg flex items-center space-x-1.5 transition-all ${
+                        selectedMapFilter === f.id ? 'bg-gold-800 text-white' : 'text-royal-700/80 hover:bg-gold-50'
+                      }`}
+                    >
+                      <f.icon className="h-3 w-3 shrink-0" />
+                      <span>{f.label}</span>
+                    </button>
+                  ))}
+                </div>
 
-                    {/* Partner markers on mock coordinates */}
-                    {destination.partners.map((partner, index) => {
-                      const isSelected = selectedMapPartner?.id === partner.id;
-                      // Unique position for each partner on grid
-                      const positions = [
-                        { top: '22%', left: '30%' },
-                        { top: '28%', left: '72%' },
-                        { top: '65%', left: '25%' },
-                        { top: '75%', left: '60%' },
-                        { top: '40%', left: '80%' }
-                      ];
-                      const pos = positions[index % positions.length];
-                      
-                      return (
-                        <div 
-                          key={partner.id} 
-                          style={{ top: pos.top, left: pos.left }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
-                        >
-                          <button 
-                            onClick={() => setSelectedMapPartner(partner)}
-                            className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-md transition-all ${
-                              isSelected 
-                                ? 'bg-gold-500 text-white border-white scale-125 z-20' 
-                                : 'bg-white text-royal-950 border-gold-200 hover:scale-110 z-10'
-                            }`}
-                          >
-                            {partner.category === 'hotel' ? <Hotel className="h-3.5 w-3.5" /> :
-                             partner.category === 'restaurant' || partner.category === 'cafe' ? <Utensils className="h-3.5 w-3.5" /> :
-                             partner.category === 'guide' ? <Users className="h-3.5 w-3.5" /> : <ShoppingBag className="h-3.5 w-3.5" />}
-                          </button>
+                {/* Selected Partner Details Floating Card */}
+                {selectedMapPartner && (
+                  <div className="absolute bottom-4 left-4 right-4 z-20 bg-royal-950/95 backdrop-blur-md border border-white/10 text-white p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl animate-fade-in">
+                    <div className="flex items-center space-x-3 text-left w-full sm:w-auto">
+                      <img src={selectedMapPartner.image} className="h-14 w-14 rounded-xl object-cover border border-white/10 shrink-0" />
+                      <div>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[8px] font-mono font-bold tracking-widest text-gold-300 uppercase">{selectedMapPartner.category}</span>
+                          <span className="text-[8px] font-mono text-emerald-400 font-semibold">• VERIFIED PARTNER</span>
                         </div>
-                      );
-                    })}
-
-                    {/* Common Tourist Spots Pin (Hospital, Toilet, Parking) */}
-                    <div className="absolute top-[18%] left-[78%] flex flex-col items-center">
-                      <div className="p-1 bg-gray-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5">
-                        <MapPin className="h-2 w-2" />
-                        <span>🅿 SECURE PARKING</span>
+                        <h4 className="font-manrope font-bold text-sm text-white">{selectedMapPartner.name}</h4>
+                        <p className="text-[10px] text-white/70 font-light leading-none mt-0.5">{selectedMapPartner.distance} • {selectedMapPartner.price}</p>
                       </div>
                     </div>
                     
-                    <div className="absolute top-[85%] left-[20%] flex flex-col items-center">
-                      <div className="p-1 bg-teal-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5">
-                        <Flame className="h-2 w-2" />
-                        <span>🚽 ECO TOILETS</span>
+                    <div className="flex items-center space-x-2.5 w-full sm:w-auto justify-end">
+                      <div className="text-right">
+                        <span className="block text-xs font-bold text-amber-400">★ {selectedMapPartner.rating.toFixed(1)}</span>
+                        <span className="block text-[8px] font-mono text-white/50">{selectedMapPartner.promotion || 'Special Voucher'}</span>
                       </div>
-                    </div>
-
-                    <div className="absolute top-[65%] left-[82%] flex flex-col items-center">
-                      <div className="p-1 bg-red-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5">
-                        <AlertTriangle className="h-2 w-2" />
-                        <span>🏥 EMERGENCY CARE</span>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* Filter Overlay Buttons */}
-                  <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md border border-gold-200/50 p-2.5 rounded-2xl flex flex-col gap-1.5 shadow-lg w-40">
-                    <span className="text-[8px] font-mono font-bold tracking-wider text-royal-700/60 uppercase border-b pb-1">Filter Map Pins</span>
-                    {[
-                      { id: 'all', label: 'All Markers', icon: Map },
-                      { id: 'partner', label: 'Verified Partners', icon: Award },
-                      { id: 'parking', label: 'Secure Parking', icon: Compass },
-                      { id: 'toilet', label: 'Eco Toilets', icon: Flame },
-                      { id: 'hospital', label: 'Emergency', icon: ShieldAlert }
-                    ].map(f => (
-                      <button
-                        key={f.id}
-                        onClick={() => setSelectedMapFilter(f.id as any)}
-                        className={`text-[9px] font-mono font-bold text-left py-1 px-1.5 rounded-lg flex items-center space-x-1.5 transition-all ${
-                          selectedMapFilter === f.id ? 'bg-gold-800 text-white' : 'text-royal-700/80 hover:bg-gold-50'
+                      <a 
+                        href={`tel:${selectedMapPartner.phone || '+62274'}`}
+                        className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-xs"
+                        title="Call Partner"
+                      >
+                        <Phone className="h-4 w-4" />
+                      </a>
+                      <button 
+                        onClick={() => {
+                          if (selectedMapPartner.promotion) handleClaimOffer(selectedMapPartner.id);
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-widest transition-all ${
+                          claimedOffers.has(selectedMapPartner.id) 
+                            ? 'bg-emerald-600 text-white' 
+                            : 'bg-gold-400 hover:bg-gold-500 text-royal-950'
                         }`}
                       >
-                        <f.icon className="h-3 w-3 shrink-0" />
-                        <span>{f.label}</span>
+                        {claimedOffers.has(selectedMapPartner.id) ? 'CLAIMED ✓' : 'CLAIM VOUCHER'}
                       </button>
-                    ))}
-                  </div>
-
-                  {/* Selected Partner Details Floating Card */}
-                  {selectedMapPartner && (
-                    <div className="absolute bottom-4 left-4 right-4 z-20 bg-royal-950/95 backdrop-blur-md border border-white/10 text-white p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl animate-fade-in">
-                      <div className="flex items-center space-x-3 text-left w-full sm:w-auto">
-                        <img src={selectedMapPartner.image} className="h-14 w-14 rounded-xl object-cover border border-white/10 shrink-0" />
-                        <div>
-                          <div className="flex items-center space-x-1.5">
-                            <span className="text-[8px] font-mono font-bold tracking-widest text-gold-300 uppercase">{selectedMapPartner.category}</span>
-                            <span className="text-[8px] font-mono text-emerald-400 font-semibold">• VERIFIED PARTNER</span>
-                          </div>
-                          <h4 className="font-manrope font-bold text-sm text-white">{selectedMapPartner.name}</h4>
-                          <p className="text-[10px] text-white/70 font-light leading-none mt-0.5">{selectedMapPartner.distance} • {selectedMapPartner.price}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2.5 w-full sm:w-auto justify-end">
-                        <div className="text-right">
-                          <span className="block text-xs font-bold text-amber-400">★ {selectedMapPartner.rating.toFixed(1)}</span>
-                          <span className="block text-[8px] font-mono text-white/50">{selectedMapPartner.promotion || 'Special Voucher'}</span>
-                        </div>
-                        <a 
-                          href={`tel:${selectedMapPartner.phone || '+62274'}`}
-                          className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-xs"
-                          title="Call Partner"
-                        >
-                          <Phone className="h-4 w-4" />
-                        </a>
-                        <button 
-                          onClick={() => {
-                            if (selectedMapPartner.promotion) handleClaimOffer(selectedMapPartner.id);
-                          }}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-widest transition-all ${
-                            claimedOffers.has(selectedMapPartner.id) 
-                              ? 'bg-emerald-600 text-white' 
-                              : 'bg-gold-400 hover:bg-gold-500 text-royal-950'
-                          }`}
-                        >
-                          {claimedOffers.has(selectedMapPartner.id) ? 'CLAIMED ✓' : 'CLAIM VOUCHER'}
-                        </button>
-                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                </div>
               </div>
             </div>
 
