@@ -47,9 +47,6 @@ export default function DestinationDetail({
   const [reviewFilter, setReviewFilter] = useState<'all' | 'Solo' | 'Couple' | 'Family' | 'Friends'>('all');
   const [newCommentText, setNewCommentText] = useState<{[reviewId: string]: string}>({});
   const [reviewComments, setReviewComments] = useState<{[reviewId: string]: {user: string, avatar: string, text: string}[]}>({
-    'r1': [
-      { user: 'Budi Santoso', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150', text: 'Sangat setuju! Sunrise di sini tiada duanya.' }
-    ]
   });
 
   // Ticket booking modal state
@@ -262,42 +259,20 @@ export default function DestinationDetail({
     }
   };
 
-  const getSimulatedUpcomingEvents = () => {
-    switch (destination.id) {
-      case 'prambanan':
-        return [
-          { id: 'ev1', title: 'Ramayana Ballet - Full Moon Edition', date: 'Jul 18, 2026', time: '19:30', price: 'IDR 200,000', badge: 'Must Watch', countdown: 'In 5 Days', img: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=400' },
-          { id: 'ev2', title: 'Jogja International Heritage Walk', date: 'Aug 12, 2026', time: '06:00', price: 'Free Entry', badge: 'Global Event', countdown: 'In 29 Days', img: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=400' }
-        ];
-      case 'malioboro':
-        return [
-          { id: 'ev3', title: 'Malioboro Night Creative Street Carnival', date: 'Tonight', time: '20:00', price: 'Free', badge: 'Live Tonight', countdown: 'Tonight • 8 PM', img: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400' },
-          { id: 'ev4', title: 'Royal Palace Grebeg Festival', date: 'Jul 25, 2026', time: '08:00', price: 'Free', badge: 'Royal Ritual', countdown: 'In 12 Days', img: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=400' }
-        ];
-      default:
-        return [
-          { id: 'ev5', title: 'Menoreh Hill Sunset acoustic session', date: 'Jul 19, 2026', time: '17:00', price: 'IDR 50,000', badge: 'Unplugged', countdown: 'In 6 Days', img: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=400' }
-        ];
-    }
-  };
-
   const getTravelerStories = () => {
-    return [
-      { id: 'st1', user: 'Sophia Laurent', location: 'France', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150', tag: 'Couple Traveler', text: 'Watching the dawn break over these ancient volcanic stone pillars was a sacred experience. I have traveled across 40 countries, but the hospitality of Yogyakarta is unmatched.', img: destination.images[0]?.url || '' },
-      { id: 'st2', user: 'Yuki Tanaka', location: 'Japan', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150', tag: 'Photography Enthusiast', text: 'My best advice: hire one of the elder guides waiting at the gate. Pak Joko translated ancient carved stone reliefs for us that described royal folklore from 1,200 years ago.', img: destination.images[1]?.url || destination.images[0]?.url || '' },
-      { id: 'st3', user: 'Budi Santoso', location: 'Indonesia', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150', tag: 'Solo Explorer', text: 'Don’t forget to explore the back zone where the lesser-known temples sit quietly away from tourist groups. It feels like real Indiana Jones archaeological ruins.', img: destination.images[2]?.url || destination.images[0]?.url || '' }
-    ];
+    return destination.reviews.slice(0, 3).map((rev, i) => ({
+      id: rev.id,
+      user: rev.userName,
+      location: 'Yogyakarta',
+      avatar: rev.userAvatar,
+      tag: `${rev.rating.toFixed(1)}★ Review`,
+      text: rev.comment,
+      img: destination.images[i % destination.images.length]?.url || destination.images[0]?.url || ''
+    }));
   };
 
-  // Filter reviews
-  const filteredReviews = communityReviews.filter(rev => {
-    if (reviewFilter === 'all') return true;
-    // Simple custom matching based on review id or date to simulate filter
-    if (reviewFilter === 'Solo' && rev.id === 'r3') return true;
-    if (reviewFilter === 'Couple' && rev.id === 'r1') return true;
-    if (reviewFilter === 'Family' && rev.id === 'r2') return true;
-    return rev.id === 'r1' || rev.id === 'r2'; // Default matching for friends
-  });
+  // Filter reviews (all shown — traveler type not available from API yet)
+  const filteredReviews = communityReviews;
 
   const activeEcosystemPartners = destination.partners.filter(p => {
     if (activeEcosystemTab === 'stay') return p.category === 'hotel';
@@ -1054,7 +1029,7 @@ export default function DestinationDetail({
                           <div>
                             <span className="block text-xs font-bold text-[#1c1a17]">{review.userName}</span>
                             <span className="block text-[9px] font-mono text-stone-500/80 uppercase">
-                              {review.id === 'r1' ? 'France • Couple' : review.id === 'r2' ? 'Japan • Family' : 'Indonesia • Solo'} • {review.date}
+                              {review.date}
                             </span>
                           </div>
                         </div>
@@ -1072,19 +1047,18 @@ export default function DestinationDetail({
                         </p>
                         
                         {/* Custom traveler tips segment inside story */}
-                        <div className="bg-stone-50 p-3 rounded-xl border border-stone-100 text-left">
-                          <span className="text-[9px] font-mono font-bold text-gold-700 uppercase tracking-widest block mb-1">PRO-TIP FROM TRAVELER</span>
-                          <p className="text-[10px] text-stone-600 leading-relaxed font-medium">
-                            {review.id === 'r1' ? 'Sunset silhouettes are beautiful but there are heavy lines for photos. Seek out the small northern temple for empty majestic backgrounds.' :
-                             review.id === 'r2' ? 'Hiring a local licensed guild was only IDR 250k. He literally pointed out details we would have completely missed in the Hindu relief structures.' :
-                             'Head back to Malioboro via Becak local carriage for only IDR 50k. Negotiate politely with a warm smile.'}
-                          </p>
-                        </div>
+                        {review.comment && (
+                          <div className="bg-stone-50 p-3 rounded-xl border border-stone-100 text-left">
+                            <span className="text-[9px] font-mono font-bold text-gold-700 uppercase tracking-widest block mb-1">TRAVELER INSIGHT</span>
+                            <p className="text-[10px] text-stone-600 leading-relaxed font-medium">
+                              {review.comment}
+                            </p>
+                          </div>
+                        )}
 
                         {/* Travel Parameters Badge Row */}
                         <div className="flex flex-wrap gap-2 pt-1 text-[9px] font-mono text-stone-500">
-                          <span className="bg-stone-100 px-2 py-0.5 rounded-full">Est Budget: {review.id === 'r1' ? 'IDR 500k' : 'IDR 300k'}</span>
-                          <span className="bg-stone-100 px-2 py-0.5 rounded-full">Visited with: {review.id === 'r1' ? 'Partner' : 'Family'}</span>
+                          <span className="bg-stone-100 px-2 py-0.5 rounded-full">Visited: {review.date}</span>
                         </div>
                       </div>
 
