@@ -13,6 +13,7 @@ import {
 import { Destination, EcosystemPartner, Review } from '@/types';
 import { events as eventsApi, reviews as reviewsApi, destinations as destinationsApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { inferTravelerIntent, orderCardsByIntent, IntentProfile } from '@/lib/travelerIntent';
 import AIFloatingAssistant from '@/components/AIFloatingAssistant';
 
 interface DestinationDetailProps {
@@ -70,6 +71,19 @@ export default function DestinationDetail({
   const [reviewError, setReviewError] = useState('');
 
   const { isAuthenticated } = useAuth();
+
+  // Traveler intent inference from saved destinations
+  const [travelerIntent, setTravelerIntent] = useState<IntentProfile | null>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('explore_jogja_saved_v1');
+      if (raw) {
+        const saved: Destination[] = JSON.parse(raw);
+        const intent = inferTravelerIntent(saved);
+        setTravelerIntent(intent);
+      }
+    } catch {}
+  }, []);
 
   // Ticket booking modal state
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -683,19 +697,35 @@ export default function DestinationDetail({
                     Continue Your Experience
                   </h2>
                 </div>
-                <span className="text-xs text-stone-500">Based on your customized traveler intent</span>
+                {travelerIntent && travelerIntent.intent !== 'general' ? (
+                  <span className="text-xs text-stone-500">
+                    Tailored for a <span className="font-semibold text-gold-700">{travelerIntent.label}</span> like you
+                  </span>
+                ) : (
+                  <span className="text-xs text-stone-500">Based on your traveler profile</span>
+                )}
               </div>
 
               {/* Bento Grid layout with gorgeous styled cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {[
-                  { title: "Stay Nearby", icon: Hotel, desc: "Boutique heritage suites", color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: "🏨 STAY" },
-                  { title: "Eat Traditional", icon: Utensils, desc: "Ancient recipes & cafes", color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: "🍜 CULINARY" },
-                  { title: "Experiences", icon: Sparkles, desc: "Volcano offroads & art", color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: "🎭 DISCOVER" },
-                  { title: "Local Shopping", icon: ShoppingBag, desc: "Pure silver & batik guilds", color: "text-[#7c1212] bg-red-50 border-red-100", label: "🛍 CRAFT" },
-                  { title: "Private Guide", icon: Users, desc: "Licensed expert historians", color: "text-[#125c7c] bg-blue-50 border-blue-100", label: "👨 SERVICE" },
-                  { title: "Transportation", icon: MapPinned, desc: "Royal chariots & rental", color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: "🚗 RIDE" }
-                ].map((item, idx) => {
+                {(travelerIntent && travelerIntent.intent !== 'general'
+                  ? orderCardsByIntent([
+                      { title: "Stay Nearby", icon: Hotel, desc: "Boutique heritage suites", color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: "🏨 STAY" },
+                      { title: "Eat Traditional", icon: Utensils, desc: "Ancient recipes & cafes", color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: "🍜 CULINARY" },
+                      { title: "Experiences", icon: Sparkles, desc: "Volcano offroads & art", color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: "🎭 DISCOVER" },
+                      { title: "Local Shopping", icon: ShoppingBag, desc: "Pure silver & batik guilds", color: "text-[#7c1212] bg-red-50 border-red-100", label: "🛍 CRAFT" },
+                      { title: "Private Guide", icon: Users, desc: "Licensed expert historians", color: "text-[#125c7c] bg-blue-50 border-blue-100", label: "👨 SERVICE" },
+                      { title: "Transportation", icon: MapPinned, desc: "Royal chariots & rental", color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: "🚗 RIDE" }
+                    ], travelerIntent)
+                  : [
+                      { title: "Stay Nearby", icon: Hotel, desc: "Boutique heritage suites", color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: "🏨 STAY" },
+                      { title: "Eat Traditional", icon: Utensils, desc: "Ancient recipes & cafes", color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: "🍜 CULINARY" },
+                      { title: "Experiences", icon: Sparkles, desc: "Volcano offroads & art", color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: "🎭 DISCOVER" },
+                      { title: "Local Shopping", icon: ShoppingBag, desc: "Pure silver & batik guilds", color: "text-[#7c1212] bg-red-50 border-red-100", label: "🛍 CRAFT" },
+                      { title: "Private Guide", icon: Users, desc: "Licensed expert historians", color: "text-[#125c7c] bg-blue-50 border-blue-100", label: "👨 SERVICE" },
+                      { title: "Transportation", icon: MapPinned, desc: "Royal chariots & rental", color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: "🚗 RIDE" }
+                    ]
+                ).map((item, idx) => {
                   const Icon = item.icon;
                   return (
                     <div 
