@@ -71,9 +71,13 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   useEffect(() => {
     if (destinations.length === 0) return;
 
-    // Set initial fallback recommendation from actual destinations catalog
+    // Determine time of day for contextual recommendations
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 11 ? 'morning' : hour < 15 ? 'afternoon' : hour < 18 ? 'afternoon' : 'evening';
+
+    // Set initial fast fallback from catalog before API responds
     const fallbackDest = destinations.find(d => d.id === 'merapi' || d.id === 'prambanan') || destinations[0];
-    if (fallbackDest && !recommendation) {
+    if (fallbackDest) {
       setRecommendation({
         headline: "Great outdoor adventure today ⛰️",
         reason: fallbackDest.tagline,
@@ -88,51 +92,31 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
     const fetchAIRecommendation = async () => {
       try {
-        const res = await ai.query(
-          "Identify the single most suitable destination in Yogyakarta for tourists right now. Select from the catalog. Keep the reply short and punchy (max 15 words) explaining why."
-        );
+        // Call the dedicated /ai/recommend endpoint
+        const res = await ai.recommend(timeOfDay);
+
         if (res.status === 'success' && res.data) {
-          const { reply, matchedDestinationIds } = res.data;
-          const matchedIds = Array.isArray(matchedDestinationIds) ? matchedDestinationIds : [];
-          
-          let recommendedDest = destinations.find(d => matchedIds.includes(d.id));
-          if (!recommendedDest && matchedIds.length > 0) {
-            recommendedDest = destinations.find(d => matchedIds.some(id => d.id.toLowerCase() === id.toLowerCase()));
-          }
+          const { destinationId, headline, reason, crowd } = res.data;
+
+          // Find the destination in local catalog by id (case-insensitive)
+          const recommendedDest = destinations.find(
+            d => d.id?.toLowerCase() === destinationId?.toLowerCase()
+          );
 
           if (recommendedDest) {
-            const temp = recommendedDest.weather?.temp || "26°C";
-            const condition = recommendedDest.weather?.condition || "Sunny";
-            
-            const distances = ["12 min", "18 min", "25 min", "32 min"];
-            const crowds = ["Low", "Medium", "High"];
-            const randomDistance = distances[Math.floor(Math.random() * distances.length)];
-            const randomCrowd = crowds[Math.floor(Math.random() * crowds.length)];
-
-            const image = recommendedDest.images && recommendedDest.images[0] 
-              ? recommendedDest.images[0].url 
+            const image = recommendedDest.images && recommendedDest.images[0]
+              ? recommendedDest.images[0].url
               : "https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80";
-
-            let headline = "Recommended for you ✨";
-            if (recommendedDest.category === 'beach') {
-              headline = "Perfect beach escape today 🌊";
-            } else if (recommendedDest.category === 'nature' || recommendedDest.category === 'adventure') {
-              headline = "Great outdoor adventure today ⛰️";
-            } else if (recommendedDest.category === 'heritage') {
-              headline = "Top cultural spot today 🏯";
-            } else if (recommendedDest.category === 'culinary') {
-              headline = "Amazing culinary spot today 🍜";
-            }
 
             setRecommendation({
               headline,
-              reason: reply || recommendedDest.tagline,
+              reason,
               dest: recommendedDest,
               image,
-              temp,
-              condition,
-              distance: randomDistance,
-              crowd: randomCrowd
+              temp: recommendedDest.weather?.temp || "26°C",
+              condition: recommendedDest.weather?.condition || "Sunny",
+              distance: "18 min",
+              crowd,
             });
           }
         }

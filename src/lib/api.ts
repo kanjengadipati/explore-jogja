@@ -229,6 +229,15 @@ export const ai = {
       body: JSON.stringify({ image, mimeType }),
     });
   },
+
+  async recommend(timeOfDay: string) {
+    return request<{
+      destinationId: string;
+      headline: string;
+      reason: string;
+      crowd: string;
+    }>(`/ai/recommend?time=${encodeURIComponent(timeOfDay)}`);
+  },
 };
 
 export type { User, ProfileResponse, AuthResponse, APIResponse };
