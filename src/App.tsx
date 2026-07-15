@@ -660,6 +660,98 @@ export default function App() {
               </div>
             )}
 
+            {/* Active Tab: Events */}
+            {activeTab === 'events' && (
+              <section id="events-tab-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 animate-fade-in">
+                <div className="flex flex-col space-y-1 mb-8 border-b border-stone-200 pb-5">
+                  <div className="flex items-center space-x-2.5">
+                    <Calendar className="h-5 w-5 text-gold-600" />
+                    <h2 className="font-manrope text-2xl font-bold text-royal-950">Upcoming Events</h2>
+                  </div>
+                  <p className="text-sm text-royal-700/70 font-light">Festivals, cultural shows, and seasonal highlights in Yogyakarta.</p>
+                </div>
+                {allEvents.length === 0 ? (
+                  <div className="text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-white p-6 max-w-md mx-auto">
+                    <Calendar className="h-10 w-10 text-gold-400 mx-auto mb-3" />
+                    <h3 className="font-manrope text-base font-bold text-royal-950">No Events Found</h3>
+                    <p className="text-xs text-royal-700/60 font-light mt-1 max-w-xs mx-auto">Check back soon for upcoming festivals and events.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {allEvents.map((evt) => (
+                      <div key={evt.id} className="group rounded-3xl overflow-hidden bg-white border border-stone-200/50 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
+                        <div className="relative h-44 overflow-hidden bg-stone-100">
+                          {evt.image ? (
+                            <img src={evt.image} alt={evt.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-50 to-amber-100">
+                              <Calendar className="h-10 w-10 text-gold-400" />
+                            </div>
+                          )}
+                          {evt.category && (
+                            <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-royal-950 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-stone-200/50">
+                              {evt.category}
+                            </span>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-manrope font-bold text-sm text-royal-950 leading-tight mb-1.5 line-clamp-2">{evt.name}</h3>
+                          {evt.date && (
+                            <div className="flex items-center space-x-1.5 text-[11px] text-gold-700 font-medium mb-2">
+                              <Calendar className="h-3 w-3" />
+                              <span>{evt.date}</span>
+                            </div>
+                          )}
+                          {evt.location && (
+                            <div className="flex items-center space-x-1.5 text-[11px] text-stone-500 mb-2">
+                              <MapPin className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{evt.location}</span>
+                            </div>
+                          )}
+                          {evt.description && (
+                            <p className="text-xs text-stone-600/80 line-clamp-2 leading-relaxed">{evt.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Active Tab: Experiences */}
+            {activeTab === 'experiences' && (
+              <section id="experiences-tab-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 animate-fade-in">
+                <div className="flex flex-col space-y-1 mb-8 border-b border-stone-200 pb-5">
+                  <div className="flex items-center space-x-2.5">
+                    <Sparkles className="h-5 w-5 text-gold-600" />
+                    <h2 className="font-manrope text-2xl font-bold text-royal-950">Experiences</h2>
+                  </div>
+                  <p className="text-sm text-royal-700/70 font-light">Adventure, nature, and hidden gems across Yogyakarta.</p>
+                </div>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {allDestinations
+                    .filter(d => ['adventure', 'nature', 'hidden-gem', 'beach'].includes(d.category?.toLowerCase()))
+                    .map((dest) => (
+                      <DestinationCard
+                        key={dest.id}
+                        destination={dest}
+                        onExplore={handleExploreDestination}
+                        onToggleSave={handleToggleSave}
+                        isSaved={isSaved(dest.id)}
+                      />
+                    ))
+                  }
+                  {allDestinations.filter(d => ['adventure', 'nature', 'hidden-gem', 'beach'].includes(d.category?.toLowerCase())).length === 0 && (
+                    <div className="col-span-full text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-white p-6">
+                      <Leaf className="h-10 w-10 text-gold-400 mx-auto mb-3" />
+                      <h3 className="font-manrope text-base font-bold text-royal-950">Loading Experiences...</h3>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* Active Tab: AI Assistant (Conversational Local Advisor) */}
             {activeTab === 'ai-assistant' && (
               <ConversationalAI
@@ -748,12 +840,12 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Mobile Sticky Bottom Tab Bar - Matches the layout and feel of the reference mobile device screen */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-royal-950/95 backdrop-blur-md border-t border-royal-900 px-4 py-2.5 flex justify-around items-center text-white">
+      {/* Mobile Sticky Bottom Tab Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-royal-950/95 backdrop-blur-md border-t border-royal-900 px-4 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))] flex justify-around items-center text-white">
         <button
           onClick={() => setActiveTab('discover')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
-            activeTab === 'discover' ? 'text-gold-400 font-semibold' : 'text-white/60'
+            ['discover','events','experiences'].includes(activeTab) ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
         >
           <Compass className="h-5 w-5" />
