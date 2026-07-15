@@ -48,6 +48,7 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
   const router = useRouter();
   const destinationId = slug.join('/');
   const [destination, setDestination] = useState<Destination | null>(null);
+  const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [savedDestinationIds, setSavedDestinationIds] = useState<string[]>([]);
@@ -57,27 +58,25 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
     const fetchDestination = async () => {
       setLoading(true);
       const slugStr = slug.join('/');
+
+      const allRes = await destinations.getAll();
+      if (allRes.status === 'success' && Array.isArray(allRes.data)) {
+        const mapped = allRes.data.map(mapApiToDestination);
+        setAllDestinations(mapped);
+        const found = mapped.find(d => toSlug(d.name) === slugStr || d.id === slugStr);
+        if (found) {
+          setDestination(found);
+          setLoading(false);
+          return;
+        }
+      }
+
       try {
         const res = await destinations.getById(slugStr);
         if (res.status === 'success' && res.data) {
           setDestination(mapApiToDestination(res.data));
           setLoading(false);
           return;
-        }
-      } catch {}
-
-      try {
-        const allRes = await destinations.getAll();
-        if (allRes.status === 'success' && Array.isArray(allRes.data)) {
-          const found = allRes.data.find((d: any) => {
-            const name = d.name || d.Name || '';
-            return toSlug(name) === slugStr || (d.id || d.ExternalID) === slugStr;
-          });
-          if (found) {
-            setDestination(mapApiToDestination(found));
-            setLoading(false);
-            return;
-          }
         }
       } catch {}
 
@@ -147,6 +146,7 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
       <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
       <DestinationDetail
         destination={destination}
+        allDestinations={allDestinations}
         onBack={() => router.back()}
         onToggleSave={handleToggleSave}
         isSaved={isSaved(destination.id)}

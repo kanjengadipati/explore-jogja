@@ -11,11 +11,12 @@ import {
   MapPinned, Sunrise, Sunset, Flame, ChevronDown, Sparkle
 } from 'lucide-react';
 import { Destination, EcosystemPartner, Review } from '@/types';
-import { destinations } from '@/lib/api';
+import { events as eventsApi } from '@/lib/api';
 import AIFloatingAssistant from '@/components/AIFloatingAssistant';
 
 interface DestinationDetailProps {
   destination: Destination;
+  allDestinations?: Destination[];
   onBack: () => void;
   onToggleSave: (dest: Destination) => void;
   isSaved: boolean;
@@ -24,6 +25,7 @@ interface DestinationDetailProps {
 
 export default function DestinationDetail({ 
   destination, 
+  allDestinations = [],
   onBack, 
   onToggleSave, 
   isSaved,
@@ -60,21 +62,38 @@ export default function DestinationDetail({
   // Offer success states
   const [claimedOffers, setClaimedOffers] = useState<Set<string>>(new Set());
 
-  // Similar destinations state & fetch
+  // Similar destinations from pre-fetched list
   const [similarDestinations, setSimilarDestinations] = useState<Destination[]>([]);
   useEffect(() => {
-    destinations.getAll().then(res => {
-      if (res.status === 'success' && res.data) {
-        const allDests = res.data as Destination[];
-        const filtered = allDests.filter(d => d.id !== destination.id);
-        const sameCategory = filtered.filter(d => d.category === destination.category);
-        const finalSimilar = sameCategory.length >= 3 ? sameCategory : filtered;
-        setSimilarDestinations(finalSimilar.slice(0, 3));
+    if (allDestinations.length === 0) return;
+    const filtered = allDestinations.filter(d => d.id !== destination.id);
+    const sameCategory = filtered.filter(d => d.category === destination.category);
+    const finalSimilar = sameCategory.length >= 3 ? sameCategory : filtered;
+    setSimilarDestinations(finalSimilar.slice(0, 3));
+  }, [destination, allDestinations]);
+
+  // Nearby events state & fetch
+  const [nearbyEvents, setNearbyEvents] = useState<any[]>([]);
+  useEffect(() => {
+    eventsApi.getAll().then(res => {
+      if (res.status === 'success' && Array.isArray(res.data)) {
+        const toRad = (deg: number) => (deg * Math.PI) / 180;
+        const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+          const R = 6371;
+          const dLat = toRad(lat2 - lat1);
+          const dLon = toRad(lon2 - lon1);
+          const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+          return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        };
+        const withDist = res.data
+          .filter((e: any) => e.latitude && e.longitude)
+          .map((e: any) => ({ ...e, _dist: haversine(destination.latitude, destination.longitude, e.latitude, e.longitude) }))
+          .filter((e: any) => e._dist <= 30)
+          .sort((a: any, b: any) => a._dist - b._dist);
+        setNearbyEvents(withDist.slice(0, 4));
       }
-    }).catch(err => {
-      console.error("Failed to load similar destinations:", err);
-    });
-  }, [destination]);
+    }).catch(() => {});
+  }, [destination.latitude, destination.longitude]);
 
   // Interactive Live Journey simulated context
   const [currentAssistantTime, setCurrentAssistantTime] = useState('09:15 AM');
@@ -948,38 +967,48 @@ export default function DestinationDetail({
                     Upcoming Events Around Here
                   </h2>
                 </div>
-                <span className="text-xs text-stone-500">Don't miss out tonight and this week</span>
+                <span className="text-xs text-stone-500">{nearbyEvents.length > 0 ? `${nearbyEvents.length} event${nearbyEvents.length > 1 ? 's' : ''} nearby` : 'No nearby events'}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {getSimulatedUpcomingEvents().map(event => (
-                  <div key={event.id} className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950">
-                    <img src={event.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
-                    
-                    {/* Top Countdown Badge */}
-                    <div className="absolute top-3 left-3 bg-red-600 text-white text-[9px] font-mono uppercase tracking-widest font-bold px-2 py-0.5 rounded-full">
-                      {event.countdown}
-                    </div>
-
-                    {/* Event Content details */}
-                    <div className="absolute bottom-0 inset-x-0 p-4 text-left">
-                      <span className="text-[8px] font-mono text-gold-300 tracking-widest uppercase font-bold">{event.badge}</span>
-                      <h4 className="font-manrope text-sm font-bold text-white leading-tight mt-0.5 group-hover:text-gold-200 transition-colors">{event.title}</h4>
-                      <p className="text-[10px] text-white/70 font-light mt-1">{event.date} • {event.time} • {event.price}</p>
+                {nearbyEvents.map(event => {
+                  const start = new Date(event.start_date);
+                  const now = new Date();
+                  const diffDays = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                  const countdown = diffDays <= 0 ? 'Happening Now' : diffDays === 1 ? 'Tomorrow' : `In ${diffDays} Days`;
+                  const badge = event.category?.charAt(0).toUpperCase() + event.category?.slice(1) || 'Event';
+                  return (
+                    <div key={event.id} className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950">
+                      <img src={event.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
                       
-                      <button 
-                        onClick={() => {
-                          setTicketCategory('domestic');
-                          setShowTicketModal(true);
-                        }}
-                        className="mt-3 w-full bg-white/10 hover:bg-gold-400 hover:text-royal-950 text-white font-mono text-[9px] uppercase tracking-widest py-1.5 rounded-lg border border-white/15 hover:border-transparent transition-all font-bold"
-                      >
-                        BOOK EVENT ENTRY TICKET
-                      </button>
+                      <div className="absolute top-3 left-3 bg-red-600 text-white text-[9px] font-mono uppercase tracking-widest font-bold px-2 py-0.5 rounded-full">
+                        {countdown}
+                      </div>
+
+                      <div className="absolute bottom-0 inset-x-0 p-4 text-left">
+                        <span className="text-[8px] font-mono text-gold-300 tracking-widest uppercase font-bold">{badge}</span>
+                        <h4 className="font-manrope text-sm font-bold text-white leading-tight mt-0.5 group-hover:text-gold-200 transition-colors">{event.title}</h4>
+                        <p className="text-[10px] text-white/70 font-light mt-1">{event.start_date} • {event.location} • {event.ticket_price}</p>
+                        
+                        <button 
+                          onClick={() => {
+                            setTicketCategory('domestic');
+                            setShowTicketModal(true);
+                          }}
+                          className="mt-3 w-full bg-white/10 hover:bg-gold-400 hover:text-royal-950 text-white font-mono text-[9px] uppercase tracking-widest py-1.5 rounded-lg border border-white/15 hover:border-transparent transition-all font-bold"
+                        >
+                          BOOK EVENT ENTRY TICKET
+                        </button>
+                      </div>
                     </div>
+                  );
+                })}
+                {nearbyEvents.length === 0 && (
+                  <div className="col-span-2 text-center py-8 text-stone-400 text-xs">
+                    No upcoming events near this destination yet.
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
