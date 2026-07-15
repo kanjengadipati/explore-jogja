@@ -56,51 +56,36 @@ function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string
   useEffect(() => {
     const fetchDestination = async () => {
       setLoading(true);
+      const slugStr = slug.join('/');
       try {
-        const res = await destinations.getById(destinationId);
+        const res = await destinations.getById(slugStr);
         if (res.status === 'success' && res.data) {
-          const dest = mapApiToDestination(res.data);
-          const expectedSlug = toSlug(dest.name);
-          const currentSlug = slug.join('/');
-          if (expectedSlug && currentSlug !== expectedSlug && currentSlug !== dest.id) {
-            router.replace(`/destinations/${expectedSlug}`, { scroll: false });
-          }
-          setDestination(dest);
-        } else {
-          throw new Error('not found by id');
+          setDestination(mapApiToDestination(res.data));
+          setLoading(false);
+          return;
         }
-      } catch {
-        // Fallback: fetch all destinations and find by slug
-        try {
-          const allRes = await destinations.getAll();
-          if (allRes.status === 'success' && Array.isArray(allRes.data)) {
-            const slugStr = slug.join('/');
-            const found = allRes.data.find((d: any) => {
-              const name = d.name || d.Name || '';
-              return toSlug(name) === slugStr || (d.id || d.ExternalID) === slugStr;
-            });
-            if (found) {
-              const dest = mapApiToDestination(found);
-              const expectedSlug = toSlug(dest.name);
-              const currentSlug = slug.join('/');
-              if (expectedSlug && currentSlug !== expectedSlug && currentSlug !== dest.id) {
-                router.replace(`/destinations/${expectedSlug}`, { scroll: false });
-              }
-              setDestination(dest);
-              setLoading(false);
-              return;
-            }
+      } catch {}
+
+      try {
+        const allRes = await destinations.getAll();
+        if (allRes.status === 'success' && Array.isArray(allRes.data)) {
+          const found = allRes.data.find((d: any) => {
+            const name = d.name || d.Name || '';
+            return toSlug(name) === slugStr || (d.id || d.ExternalID) === slugStr;
+          });
+          if (found) {
+            setDestination(mapApiToDestination(found));
+            setLoading(false);
+            return;
           }
-          setError('Destination not found');
-        } catch {
-          setError('Failed to load destination');
         }
-      } finally {
-        setLoading(false);
-      }
+      } catch {}
+
+      setError('Destination not found');
+      setLoading(false);
     };
     fetchDestination();
-  }, [destinationId, slug, router]);
+  }, [destinationId]);
 
   useEffect(() => {
     try {
