@@ -1470,7 +1470,7 @@ export default function DestinationDetail({
                     Exclusive Offers Around Here
                   </h3>
                 </div>
-                <span className="text-[8px] font-mono text-gold-600 bg-gold-50 border border-gold-200 px-2 py-0.5 rounded-full font-bold uppercase">
+                <span className="text-[8.5px] font-mono text-gold-700 bg-gold-50/80 border border-gold-200/60 px-2.5 py-1 rounded-full font-bold uppercase whitespace-nowrap shrink-0">
                   {destination.partners.filter(p => p.promotion).length} Offers
                 </span>
               </div>
