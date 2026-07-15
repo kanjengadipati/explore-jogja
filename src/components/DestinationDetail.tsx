@@ -754,13 +754,6 @@ export default function DestinationDetail({
               {/* Action Trigger Buttons exactly like mockup */}
               <div className="flex flex-wrap gap-2.5 w-full justify-start lg:justify-end">
                 <button 
-                  onClick={() => setShowTicketModal(true)}
-                  className="flex-1 sm:flex-initial bg-gold-400 hover:bg-gold-500 text-royal-950 font-bold px-5 py-3 rounded-full text-xs uppercase tracking-widest transition-all hover:shadow-xl active:scale-97 flex items-center justify-center space-x-2"
-                >
-                  <Ticket className="h-4 w-4" />
-                  <span>Buy Admission</span>
-                </button>
-                <button 
                   onClick={() => onToggleSave(destination)}
                   className={`px-5 py-3 rounded-full text-xs uppercase tracking-widest transition-all backdrop-blur-md border flex items-center justify-center space-x-1.5 ${
                     isSaved 
