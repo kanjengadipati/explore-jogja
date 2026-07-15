@@ -8,6 +8,19 @@ interface InteractiveMapProps {
   selectedDestination?: Destination | null;
 }
 
+const toRad = (deg: number) => (deg * Math.PI) / 180;
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371; // Earth radius in km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const TRANSPORTATION_HUBS = [
   { id: 't-tugu', name: 'Yogyakarta Tugu Railway Station', type: 'rail', lat: -7.7891, lng: 110.3634, coords: { x: 42, y: 55 } },
   { id: 't-lempuyangan', name: 'Lempuyangan Railway Station', type: 'rail', lat: -7.7900, lng: 110.3750, coords: { x: 50, y: 56 } },
@@ -139,15 +152,59 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
               <path d="M 0 85% Q 500 83% 1000 85%" fill="none" stroke="#cb8527" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.4" />
               <text x="35%" y="98%" fill="#7b4019" className="font-mono text-[9px] font-bold uppercase tracking-widest opacity-60">Indian Ocean Coastlines</text>
 
-              {/* Walking routes connection coordinates between City, Prambanan and Jomblang */}
+              {/* Walking routes / Distance connections */}
               {showWalkingRoutes && (
                 <>
-                  {/* Route 1: Prambanan to City */}
-                  <path d="M 41% 57% Q 58% 51% 75% 45%" fill="none" stroke="#d6a147" strokeWidth="2.5" strokeDasharray="5,5" className="animate-pulse" opacity="0.6" />
-                  {/* Route 2: City to Jomblang */}
-                  <path d="M 41% 57% Q 60% 67% 80% 78%" fill="none" stroke="#d6a147" strokeWidth="2.5" strokeDasharray="5,5" opacity="0.5" />
-                  {/* Route 3: Merapi to City */}
-                  <path d="M 58% 15% Q 49.5% 36% 41% 57%" fill="none" stroke="#d6a147" strokeWidth="2.5" strokeDasharray="5,5" opacity="0.5" />
+                  {selectedPin?.type === 'destination' && selectedPin.data ? (
+                    destinations
+                      .filter(d => d.id !== selectedPin.id)
+                      .map(d => {
+                        const from = getDestMapCoords(selectedPin.id);
+                        const to = getDestMapCoords(d.id);
+                        const dist = calculateDistance(
+                          selectedPin.data.latitude,
+                          selectedPin.data.longitude,
+                          d.latitude,
+                          d.longitude
+                        );
+                        // Intermediate points for drawing curve or mid-line label
+                        const midX = (from.x + to.x) / 2;
+                        const midY = (from.y + to.y) / 2;
+                        return (
+                          <g key={`route-${d.id}`} className="animate-fade-in">
+                            <line
+                              x1={`${from.x}%`}
+                              y1={`${from.y}%`}
+                              x2={`${to.x}%`}
+                              y2={`${to.y}%`}
+                              stroke="#cb8527"
+                              strokeWidth="2"
+                              strokeDasharray="4,4"
+                              opacity="0.6"
+                            />
+                            <circle cx={`${midX}%`} cy={`${midY}%`} r="10" fill="#0f100c" />
+                            <text
+                              x={`${midX}%`}
+                              y={`${midY + 1}%`}
+                              textAnchor="middle"
+                              fill="#ecd7a4"
+                              className="font-mono text-[7px] font-bold"
+                            >
+                              {dist.toFixed(0)}k
+                            </text>
+                          </g>
+                        );
+                      })
+                  ) : (
+                    <>
+                      {/* Route 1: Prambanan to City */}
+                      <path d="M 41% 57% Q 58% 51% 75% 45%" fill="none" stroke="#d6a147" strokeWidth="2.5" strokeDasharray="5,5" className="animate-pulse" opacity="0.6" />
+                      {/* Route 2: City to Jomblang */}
+                      <path d="M 41% 57% Q 60% 67% 80% 78%" fill="none" stroke="#d6a147" strokeWidth="2.5" strokeDasharray="5,5" opacity="0.5" />
+                      {/* Route 3: Merapi to City */}
+                      <path d="M 58% 15% Q 49.5% 36% 41% 57%" fill="none" stroke="#d6a147" strokeWidth="2.5" strokeDasharray="5,5" opacity="0.5" />
+                    </>
+                  )}
                 </>
               )}
 
@@ -311,6 +368,29 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
                         <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
                         <span>{selectedPin.data.rating.toFixed(1)}</span>
                       </span>
+                    </div>
+
+                    {/* Real-world distance connections matrix */}
+                    <div className="border-t border-stone-100 pt-3 space-y-2">
+                      <span className="block text-[10px] font-mono font-bold text-stone-500 uppercase tracking-wider">Jarak ke Destinasi Lain:</span>
+                      <div className="max-h-36 overflow-y-auto space-y-1.5 scrollbar-none pr-1">
+                        {destinations
+                          .filter(d => d.id !== selectedPin.id)
+                          .map(d => {
+                            const dist = calculateDistance(
+                              selectedPin.data.latitude,
+                              selectedPin.data.longitude,
+                              d.latitude,
+                              d.longitude
+                            );
+                            return (
+                              <div key={d.id} className="flex justify-between items-center text-[10.5px] bg-stone-50 p-2 rounded-lg border border-stone-200/40">
+                                <span className="text-stone-700 truncate max-w-[150px]">{d.name}</span>
+                                <span className="font-mono font-bold text-gold-700 shrink-0">{dist.toFixed(1)} km</span>
+                              </div>
+                            );
+                          })}
+                      </div>
                     </div>
 
                     <button
