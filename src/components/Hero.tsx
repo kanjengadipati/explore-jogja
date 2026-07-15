@@ -57,6 +57,93 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [recommendation, setRecommendation] = useState<{
+    headline: string;
+    reason: string;
+    dest: Destination;
+    image: string;
+    temp: string;
+    condition: string;
+    distance: string;
+    crowd: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (destinations.length === 0) return;
+
+    // Set initial fallback recommendation from actual destinations catalog
+    const fallbackDest = destinations.find(d => d.id === 'merapi' || d.id === 'prambanan') || destinations[0];
+    if (fallbackDest && !recommendation) {
+      setRecommendation({
+        headline: "Great outdoor adventure today ⛰️",
+        reason: fallbackDest.tagline,
+        dest: fallbackDest,
+        image: fallbackDest.images && fallbackDest.images[0] ? fallbackDest.images[0].url : "https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80",
+        temp: fallbackDest.weather?.temp || "26°C",
+        condition: fallbackDest.weather?.condition || "Sunny",
+        distance: "18 min",
+        crowd: "Low"
+      });
+    }
+
+    const fetchAIRecommendation = async () => {
+      try {
+        const res = await ai.query(
+          "Identify the single most suitable destination in Yogyakarta for tourists right now. Select from the catalog. Keep the reply short and punchy (max 15 words) explaining why."
+        );
+        if (res.status === 'success' && res.data) {
+          const { reply, matchedDestinationIds } = res.data;
+          const matchedIds = Array.isArray(matchedDestinationIds) ? matchedDestinationIds : [];
+          
+          let recommendedDest = destinations.find(d => matchedIds.includes(d.id));
+          if (!recommendedDest && matchedIds.length > 0) {
+            recommendedDest = destinations.find(d => matchedIds.some(id => d.id.toLowerCase() === id.toLowerCase()));
+          }
+
+          if (recommendedDest) {
+            const temp = recommendedDest.weather?.temp || "26°C";
+            const condition = recommendedDest.weather?.condition || "Sunny";
+            
+            const distances = ["12 min", "18 min", "25 min", "32 min"];
+            const crowds = ["Low", "Medium", "High"];
+            const randomDistance = distances[Math.floor(Math.random() * distances.length)];
+            const randomCrowd = crowds[Math.floor(Math.random() * crowds.length)];
+
+            const image = recommendedDest.images && recommendedDest.images[0] 
+              ? recommendedDest.images[0].url 
+              : "https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80";
+
+            let headline = "Recommended for you ✨";
+            if (recommendedDest.category === 'beach') {
+              headline = "Perfect beach escape today 🌊";
+            } else if (recommendedDest.category === 'nature' || recommendedDest.category === 'adventure') {
+              headline = "Great outdoor adventure today ⛰️";
+            } else if (recommendedDest.category === 'heritage') {
+              headline = "Top cultural spot today 🏯";
+            } else if (recommendedDest.category === 'culinary') {
+              headline = "Amazing culinary spot today 🍜";
+            }
+
+            setRecommendation({
+              headline,
+              reason: reply || recommendedDest.tagline,
+              dest: recommendedDest,
+              image,
+              temp,
+              condition,
+              distance: randomDistance,
+              crowd: randomCrowd
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch AI recommendation", err);
+      }
+    };
+
+    fetchAIRecommendation();
+  }, [destinations]);
+
   const handleImageButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -310,91 +397,123 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
           {/* Right Column: AI Recommendation Widget */}
           <div className="lg:col-span-4 flex flex-col justify-end items-end w-full">
-            <div className="w-full max-w-[420px] bg-stone-950/80 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 lg:p-5 text-left shadow-2xl animate-fade-in">
-              {/* Header */}
-              <div className="flex items-center space-x-2 mb-2 lg:mb-3">
-                <span className="text-gold-400 text-xs lg:text-sm">✦✦</span>
-                <span className="text-[9px] lg:text-[10px] font-sans tracking-[0.12em] uppercase font-bold text-gold-400">AI Recommendation</span>
-              </div>
+            {recommendation ? (
+              <div className="w-full max-w-[420px] bg-stone-950/80 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 lg:p-5 text-left shadow-2xl animate-fade-in">
+                {/* Header */}
+                <div className="flex items-center space-x-2 mb-2 lg:mb-3">
+                  <span className="text-gold-400 text-xs lg:text-sm">✦✦</span>
+                  <span className="text-[9px] lg:text-[10px] font-sans tracking-[0.12em] uppercase font-bold text-gold-400">AI Recommendation</span>
+                </div>
 
-              {/* Main Content: text + image */}
-              <div className="flex gap-3 lg:gap-4 mb-3 lg:mb-4">
-                {/* Left: text */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm lg:text-base font-bold text-white leading-snug mb-1">
-                    Perfect sunset spot today ☀️
-                  </h3>
-                  <p className="text-[10px] lg:text-[12px] text-white/60 leading-relaxed mb-2 lg:mb-3">
-                    Clear skies and great visibility make this the ideal time to enjoy Mount Merapi views.
-                  </p>
+                {/* Main Content: text + image */}
+                <div className="flex gap-3 lg:gap-4 mb-3 lg:mb-4">
+                  {/* Left: text */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm lg:text-base font-bold text-white leading-snug mb-1">
+                      {recommendation.headline}
+                    </h3>
+                    <p className="text-[10px] lg:text-[12px] text-white/60 leading-relaxed mb-2 lg:mb-3 line-clamp-3">
+                      {recommendation.reason}
+                    </p>
 
-                  {/* Location */}
-                  <div className="flex items-start space-x-1.5">
-                    <MapPin className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-gold-400 shrink-0 mt-0.5" />
+                    {/* Location */}
+                    <div className="flex items-start space-x-1.5">
+                      <MapPin className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-gold-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs lg:text-sm font-bold text-white truncate max-w-[150px] lg:max-w-[200px]">
+                          {recommendation.dest.name}
+                        </p>
+                        <p className="text-[9px] lg:text-[11px] text-white/50">
+                          {recommendation.dest.subRegion}, Yogyakarta
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: image */}
+                  <div className="shrink-0 w-[80px] lg:w-[110px]">
+                    <img
+                      src={recommendation.image}
+                      alt={recommendation.dest.name}
+                      className="w-full h-[100px] lg:h-[120px] object-cover rounded-xl shadow-md border border-white/5"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                </div>
+
+                {/* Stats Chips (Moved below image & text to span full width) */}
+                <div className="flex items-center gap-1.5 lg:gap-2 flex-wrap mb-3 lg:mb-4">
+                  <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
+                    <span className="text-[10px] lg:text-xs">☀️</span>
                     <div>
-                      <p className="text-xs lg:text-sm font-bold text-white">Bukit Klangon</p>
-                      <p className="text-[9px] lg:text-[11px] text-white/50">Sleman, Yogyakarta</p>
+                      <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">{recommendation.temp}</p>
+                      <p className="text-[8px] lg:text-[9px] text-white/50">{recommendation.condition}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
+                    <Car className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-green-400" />
+                    <div>
+                      <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">{recommendation.distance}</p>
+                      <p className="text-[8px] lg:text-[9px] text-white/50">from you</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
+                    <Users className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-purple-400" />
+                    <div>
+                      <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">{recommendation.crowd}</p>
+                      <p className="text-[8px] lg:text-[9px] text-white/50">Crowd</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: image */}
-                <div className="shrink-0 w-[80px] lg:w-[110px]">
-                  <img
-                    src="https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80"
-                    alt="Bukit Klangon"
-                    className="w-full h-[100px] lg:h-[120px] object-cover rounded-xl"
-                    referrerPolicy="no-referrer"
-                  />
+                {/* CTA Row */}
+                <div className="flex items-center gap-2 lg:gap-3 mt-1">
+                  <button
+                    onClick={() => onExploreDestination(recommendation.dest)} 
+                    className="flex-1 flex items-center justify-center space-x-1.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-stone-950 font-bold text-xs lg:text-sm py-2 lg:py-2.5 px-3 lg:px-4 rounded-xl transition-all shadow-lg shadow-gold-500/20 cursor-pointer"
+                  >
+                    <span>Explore {recommendation.dest.name.split(' ')[0]}</span>
+                    <span>→</span>
+                  </button>
+                  
+                  {(() => {
+                    const isRecommendationSaved = isSaved(recommendation.dest.id);
+                    return (
+                      <button 
+                        onClick={() => onToggleSave(recommendation.dest)}
+                        className={`flex items-center space-x-1 lg:space-x-1.5 transition-colors text-[10px] lg:text-xs font-medium cursor-pointer whitespace-nowrap ${
+                          isRecommendationSaved ? 'text-gold-400 font-semibold' : 'text-white/60 hover:text-white/90'
+                        }`}
+                      >
+                        <Bookmark className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${isRecommendationSaved ? 'fill-gold-400 text-gold-400' : ''}`} />
+                        <span>{isRecommendationSaved ? 'Saved' : 'Save for later'}</span>
+                      </button>
+                    );
+                  })()}
                 </div>
-              </div>
 
-              {/* Stats Chips (Moved below image & text to span full width) */}
-              <div className="flex items-center gap-1.5 lg:gap-2 flex-wrap mb-3 lg:mb-4">
-                <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
-                  <span className="text-[10px] lg:text-xs">☀️</span>
-                  <div>
-                    <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">26°C</p>
-                    <p className="text-[8px] lg:text-[9px] text-white/50">Sunny</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
-                  <Car className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-green-400" />
-                  <div>
-                    <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">18 min</p>
-                    <p className="text-[8px] lg:text-[9px] text-white/50">from you</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
-                  <Users className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-purple-400" />
-                  <div>
-                    <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">Low</p>
-                    <p className="text-[8px] lg:text-[9px] text-white/50">Crowd</p>
-                  </div>
+                {/* Footer */}
+                <div className="flex items-center space-x-1.5 mt-2.5 lg:mt-3 pt-2.5 lg:pt-3 border-t border-white/10">
+                  <span className="text-gold-400 text-[9px] lg:text-[10px]">✦✦</span>
+                  <p className="text-[9px] lg:text-[10px] text-white/40">Recommendations are personalized based on weather, time &amp; popular places.</p>
                 </div>
               </div>
-
-              {/* CTA Row */}
-              <div className="flex items-center gap-2 lg:gap-3 mt-1">
-                <button
-                  onClick={() => onSearchSubmit('Bukit Klangon sunset')} 
-                  className="flex-1 flex items-center justify-center space-x-1.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-stone-950 font-bold text-xs lg:text-sm py-2 lg:py-2.5 px-3 lg:px-4 rounded-xl transition-all shadow-lg shadow-gold-500/20 cursor-pointer"
-                >
-                  <span>Explore Bukit Klangon</span>
-                  <span>→</span>
-                </button>
-                <button className="flex items-center space-x-1 lg:space-x-1.5 text-white/60 hover:text-white/90 transition-colors text-[10px] lg:text-xs font-medium cursor-pointer whitespace-nowrap">
-                  <Bookmark className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
-                  <span>Save for later</span>
-                </button>
+            ) : (
+              /* Skeleton Loader */
+              <div className="w-full max-w-[420px] bg-stone-950/80 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-left shadow-2xl animate-pulse">
+                <div className="h-3 w-28 bg-white/10 rounded mb-4" />
+                <div className="flex gap-4 mb-4">
+                  <div className="flex-1">
+                    <div className="h-4 w-32 bg-white/15 rounded mb-2" />
+                    <div className="h-3 w-full bg-white/10 rounded mb-1" />
+                    <div className="h-3 w-2/3 bg-white/10 rounded mb-3" />
+                    <div className="h-4 w-24 bg-white/10 rounded" />
+                  </div>
+                  <div className="shrink-0 w-[110px] h-[120px] bg-white/10 rounded-xl" />
+                </div>
+                <div className="h-8 w-full bg-white/15 rounded-xl" />
               </div>
-
-              {/* Footer */}
-              <div className="flex items-center space-x-1.5 mt-2.5 lg:mt-3 pt-2.5 lg:pt-3 border-t border-white/10">
-                <span className="text-gold-400 text-[9px] lg:text-[10px]">✦✦</span>
-                <p className="text-[9px] lg:text-[10px] text-white/40">Recommendations are personalized based on weather, time &amp; popular places.</p>
-              </div>
-            </div>
+            )}
           </div>
 
         </div>
