@@ -310,89 +310,89 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
           {/* Right Column: AI Recommendation Widget */}
           <div className="lg:col-span-4 flex flex-col justify-end items-end w-full">
-            <div className="w-full max-w-[420px] bg-stone-950/80 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-left shadow-2xl animate-fade-in">
+            <div className="w-full max-w-[420px] bg-stone-950/80 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 lg:p-5 text-left shadow-2xl animate-fade-in">
               {/* Header */}
-              <div className="flex items-center space-x-2 mb-3">
-                <span className="text-gold-400 text-sm">✦✦</span>
-                <span className="text-[10px] font-sans tracking-[0.12em] uppercase font-bold text-gold-400">AI Recommendation</span>
+              <div className="flex items-center space-x-2 mb-2 lg:mb-3">
+                <span className="text-gold-400 text-xs lg:text-sm">✦✦</span>
+                <span className="text-[9px] lg:text-[10px] font-sans tracking-[0.12em] uppercase font-bold text-gold-400">AI Recommendation</span>
               </div>
 
               {/* Main Content: text + image */}
-              <div className="flex gap-4">
+              <div className="flex gap-3 lg:gap-4 mb-3 lg:mb-4">
                 {/* Left: text */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-white leading-snug mb-1.5">
+                  <h3 className="text-sm lg:text-base font-bold text-white leading-snug mb-1">
                     Perfect sunset spot today ☀️
                   </h3>
-                  <p className="text-[12px] text-white/60 leading-relaxed mb-3">
+                  <p className="text-[10px] lg:text-[12px] text-white/60 leading-relaxed mb-2 lg:mb-3">
                     Clear skies and great visibility make this the ideal time to enjoy Mount Merapi views.
                   </p>
 
                   {/* Location */}
-                  <div className="flex items-start space-x-2 mb-3">
-                    <MapPin className="h-4 w-4 text-gold-400 shrink-0 mt-0.5" />
+                  <div className="flex items-start space-x-1.5">
+                    <MapPin className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-gold-400 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-bold text-white">Bukit Klangon</p>
-                      <p className="text-[11px] text-white/50">Sleman, Yogyakarta</p>
-                    </div>
-                  </div>
-
-                  {/* Stats Chips */}
-                  <div className="flex items-center gap-2 flex-wrap mb-4">
-                    <div className="flex items-center space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5">
-                      <span className="text-xs">☀️</span>
-                      <div>
-                        <p className="text-[11px] font-bold text-white leading-none">26°C</p>
-                        <p className="text-[9px] text-white/50">Sunny</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5">
-                      <Car className="h-3.5 w-3.5 text-green-400" />
-                      <div>
-                        <p className="text-[11px] font-bold text-white leading-none">18 min</p>
-                        <p className="text-[9px] text-white/50">from you</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5">
-                      <Users className="h-3.5 w-3.5 text-purple-400" />
-                      <div>
-                        <p className="text-[11px] font-bold text-white leading-none">Low</p>
-                        <p className="text-[9px] text-white/50">Crowd</p>
-                      </div>
+                      <p className="text-xs lg:text-sm font-bold text-white">Bukit Klangon</p>
+                      <p className="text-[9px] lg:text-[11px] text-white/50">Sleman, Yogyakarta</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Right: image */}
-                <div className="shrink-0 w-[110px]">
+                <div className="shrink-0 w-[80px] lg:w-[110px]">
                   <img
                     src="https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80"
                     alt="Bukit Klangon"
-                    className="w-full h-[140px] object-cover rounded-xl"
+                    className="w-full h-[100px] lg:h-[120px] object-cover rounded-xl"
                     referrerPolicy="no-referrer"
                   />
                 </div>
               </div>
 
+              {/* Stats Chips (Moved below image & text to span full width) */}
+              <div className="flex items-center gap-1.5 lg:gap-2 flex-wrap mb-3 lg:mb-4">
+                <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
+                  <span className="text-[10px] lg:text-xs">☀️</span>
+                  <div>
+                    <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">26°C</p>
+                    <p className="text-[8px] lg:text-[9px] text-white/50">Sunny</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
+                  <Car className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-green-400" />
+                  <div>
+                    <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">18 min</p>
+                    <p className="text-[8px] lg:text-[9px] text-white/50">from you</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1 lg:space-x-1.5 bg-white/5 border border-white/10 rounded-lg px-2 py-1 lg:px-2.5 lg:py-1.5">
+                  <Users className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-purple-400" />
+                  <div>
+                    <p className="text-[10px] lg:text-[11px] font-bold text-white leading-none">Low</p>
+                    <p className="text-[8px] lg:text-[9px] text-white/50">Crowd</p>
+                  </div>
+                </div>
+              </div>
+
               {/* CTA Row */}
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-2 lg:gap-3 mt-1">
                 <button
                   onClick={() => onSearchSubmit('Bukit Klangon sunset')} 
-                  className="flex-1 flex items-center justify-center space-x-2 bg-gold-500 hover:bg-gold-400 active:scale-95 text-stone-950 font-bold text-sm py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-gold-500/20 cursor-pointer"
+                  className="flex-1 flex items-center justify-center space-x-1.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-stone-950 font-bold text-xs lg:text-sm py-2 lg:py-2.5 px-3 lg:px-4 rounded-xl transition-all shadow-lg shadow-gold-500/20 cursor-pointer"
                 >
                   <span>Explore Bukit Klangon</span>
                   <span>→</span>
                 </button>
-                <button className="flex items-center space-x-1.5 text-white/60 hover:text-white/90 transition-colors text-xs font-medium cursor-pointer whitespace-nowrap">
-                  <Bookmark className="h-3.5 w-3.5" />
+                <button className="flex items-center space-x-1 lg:space-x-1.5 text-white/60 hover:text-white/90 transition-colors text-[10px] lg:text-xs font-medium cursor-pointer whitespace-nowrap">
+                  <Bookmark className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                   <span>Save for later</span>
                 </button>
               </div>
 
               {/* Footer */}
-              <div className="flex items-center space-x-1.5 mt-3 pt-3 border-t border-white/10">
-                <span className="text-gold-400 text-[10px]">✦✦</span>
-                <p className="text-[10px] text-white/40">Recommendations are personalized based on weather, time &amp; popular places.</p>
+              <div className="flex items-center space-x-1.5 mt-2.5 lg:mt-3 pt-2.5 lg:pt-3 border-t border-white/10">
+                <span className="text-gold-400 text-[9px] lg:text-[10px]">✦✦</span>
+                <p className="text-[9px] lg:text-[10px] text-white/40">Recommendations are personalized based on weather, time &amp; popular places.</p>
               </div>
             </div>
           </div>
