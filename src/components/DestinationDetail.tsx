@@ -8,7 +8,7 @@ import {
   Footprints, MessageSquare, Map, Camera, Video, Eye, Award, 
   ChevronRight, Calendar, Users, AlertTriangle, Play,
   ShoppingBag, Landmark, ArrowRight, Check, HeartHandshake,
-  MapPinned, Sunrise, Sunset, Flame, ChevronDown, Sparkle, Pencil
+  MapPinned, Sunrise, Sunset, Flame, ChevronDown, Sparkle, Pencil, X
 } from 'lucide-react';
 import { Destination, EcosystemPartner, Review } from '@/types';
 import { events as eventsApi, reviews as reviewsApi, destinations as destinationsApi } from '@/lib/api';
@@ -45,6 +45,7 @@ export default function DestinationDetail({
   const [activeEcosystemTab, setActiveEcosystemTab] = useState<'stay' | 'eat' | 'experience' | 'shop' | 'move' | 'guide'>('stay');
   const ecosystemPausedUntilRef = React.useRef<number>(0);
   const ecosystemTabs = ['stay', 'eat', 'experience', 'shop', 'guide'] as const;
+  const [selectedPartner, setSelectedPartner] = useState<EcosystemPartner | null>(null);
 
   // Auto-rotate ecosystem tabs like a slideshow
   useEffect(() => {
@@ -1341,16 +1342,10 @@ export default function DestinationDetail({
                   <p className="text-xs text-stone-500 italic py-4 text-center">No verified partner found under this category.</p>
                 ) : (
                   activeEcosystemPartners.map(partner => (
-                    <a
+                    <div
                       key={partner.id}
-                      href={
-                        partner.coordinates?.lat && partner.coordinates?.lng
-                          ? `https://www.google.com/maps/search/?api=1&query=${partner.coordinates.lat},${partner.coordinates.lng}`
-                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(partner.name + ' ' + (partner.address || ''))}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group border border-stone-100 p-2.5 rounded-xl flex space-x-3 hover:border-gold-300 hover:bg-stone-50/50 transition-all duration-300 text-left cursor-pointer block"
+                      onClick={() => setSelectedPartner(partner)}
+                      className="group border border-stone-100 p-2.5 rounded-xl flex space-x-3 hover:border-gold-300 hover:bg-stone-50/50 transition-all duration-300 text-left cursor-pointer"
                     >
                       <img src={partner.image} className="h-14 w-14 rounded-lg object-cover border shrink-0 bg-stone-100" />
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -1362,26 +1357,15 @@ export default function DestinationDetail({
                           <h4 className="font-manrope text-xs font-bold text-stone-900 group-hover:text-gold-700 transition-all truncate mt-0.5">{partner.name}</h4>
                           <p className="text-[9px] text-stone-500 font-light truncate">{partner.description}</p>
                         </div>
-                        
                         <div className="flex items-center justify-between border-t border-stone-100/60 pt-1 mt-1 text-[9px] font-mono text-stone-500">
                           <span className="font-bold text-stone-800">{partner.price}</span>
                           <div className="flex items-center gap-2">
                             <span>{partner.distance}</span>
-                            {partner.phone && (
-                              <a
-                                href={`tel:${partner.phone}`}
-                                onClick={e => e.stopPropagation()}
-                                className="flex items-center gap-0.5 text-gold-700 hover:text-gold-600 font-bold"
-                                title={`Call ${partner.name}`}
-                              >
-                                <Phone className="h-2.5 w-2.5" />
-                              </a>
-                            )}
                             <MapPin className="h-2.5 w-2.5 text-stone-400 group-hover:text-gold-500 transition-colors" />
                           </div>
                         </div>
                       </div>
-                    </a>
+                    </div>
                   ))
                 )}
               </div>
@@ -1641,6 +1625,110 @@ export default function DestinationDetail({
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+      {/* ── PARTNER DETAIL POPUP MODAL ── */}
+      {selectedPartner && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setSelectedPartner(null)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+          {/* Modal card */}
+          <div
+            className="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Hero image */}
+            <div className="relative h-44 w-full bg-stone-100 overflow-hidden">
+              {selectedPartner.image ? (
+                <img
+                  src={selectedPartner.image}
+                  alt={selectedPartner.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-50 to-amber-100">
+                  <MapPin className="h-10 w-10 text-gold-400" />
+                </div>
+              )}
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedPartner(null)}
+                className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              {/* Category badge */}
+              <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-royal-950 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
+                {selectedPartner.category}
+              </span>
+              {/* Promotion ribbon */}
+              {selectedPartner.promotion && (
+                <span className="absolute bottom-3 left-3 bg-gold-500 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow">
+                  🎁 {selectedPartner.promotion}
+                </span>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-3">
+              {/* Name + rating row */}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-manrope text-base font-extrabold text-royal-950 leading-tight">{selectedPartner.name}</h3>
+                  <p className="text-[10px] font-mono text-stone-500 mt-0.5">{selectedPartner.address}</p>
+                </div>
+                <div className="flex items-center gap-0.5 shrink-0 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                  <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                  <span className="text-[11px] font-bold text-amber-700">{selectedPartner.rating}</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-xs text-stone-600 leading-relaxed">{selectedPartner.description}</p>
+
+              {/* Price + distance chips */}
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full">
+                  <Ticket className="h-3 w-3 text-stone-500" />
+                  {selectedPartner.price}
+                </span>
+                <span className="flex items-center gap-1 text-[10px] font-mono text-stone-600 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-full">
+                  <MapPin className="h-3 w-3 text-gold-500" />
+                  {selectedPartner.distance}
+                </span>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 pt-1">
+                {selectedPartner.phone && (
+                  <a
+                    href={`tel:${selectedPartner.phone}`}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors text-xs font-semibold"
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                    Call
+                  </a>
+                )}
+                <a
+                  href={
+                    selectedPartner.coordinates?.lat && selectedPartner.coordinates?.lng
+                      ? `https://www.google.com/maps/search/?api=1&query=${selectedPartner.coordinates.lat},${selectedPartner.coordinates.lng}`
+                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPartner.name + ' ' + (selectedPartner.address || ''))}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-royal-950 text-white hover:bg-royal-900 transition-colors text-xs font-semibold"
+                >
+                  <Map className="h-3.5 w-3.5" />
+                  Get Directions
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       )}
