@@ -213,6 +213,7 @@ export default function DestinationDetail({
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [reviewError, setReviewError] = useState('');
+  const [newReviewTravelerType, setNewReviewTravelerType] = useState<'Solo' | 'Couple' | 'Family' | 'Friends'>('Solo');
 
   const { isAuthenticated } = useAuth();
 
@@ -341,16 +342,38 @@ export default function DestinationDetail({
     setSubmittingReview(true);
     setReviewError('');
     try {
-      const res = await reviewsApi.create(destination.id, newReviewRating, newReviewText.trim());
-      if (res.status === 'success') {
-        const fresh = await destinationsApi.getById(destination.id);
-        if (fresh.status === 'success' && fresh.data) {
-          const raw = fresh.data as any;
-          const updatedReviews = raw.reviews || raw.Reviews || [];
-          setCommunityReviews(updatedReviews);
+      // Get user name from localStorage if available
+      let userName = 'Anonymous';
+      try {
+        const profileRaw = localStorage.getItem('pleco_user_profile');
+        if (profileRaw) {
+          const profile = JSON.parse(profileRaw);
+          userName = profile.name || profile.email || 'Anonymous';
         }
+      } catch {}
+
+      const res = await reviewsApi.create(
+        destination.id,
+        newReviewRating,
+        newReviewText.trim(),
+        userName,
+        newReviewTravelerType,
+      );
+      if (res.status === 'success') {
+        // Optimistically add the new review to the top
+        const newReview = {
+          id: `local-${Date.now()}`,
+          userName,
+          userAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userName)}`,
+          rating: newReviewRating,
+          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+          comment: newReviewText.trim(),
+          travelerType: newReviewTravelerType,
+        };
+        setCommunityReviews(prev => [newReview as any, ...prev]);
         setNewReviewText('');
         setNewReviewRating(5);
+        setNewReviewTravelerType('Solo');
         setReviewSubmitted(true);
         setTimeout(() => setReviewSubmitted(false), 3000);
       } else {
@@ -454,8 +477,10 @@ export default function DestinationDetail({
     }));
   };
 
-  // Filter reviews (all shown — traveler type not available from API yet)
-  const filteredReviews = communityReviews;
+  // Filter reviews by traveler type
+  const filteredReviews = reviewFilter === 'all'
+    ? communityReviews
+    : communityReviews.filter(r => (r as any).travelerType === reviewFilter || (r as any).traveler_type === reviewFilter);
 
   const activeEcosystemPartners = destination.partners.filter(p => {
     if (activeEcosystemTab === 'stay') return p.category === 'hotel';
@@ -1100,148 +1125,261 @@ export default function DestinationDetail({
 
             {/* 9. REVIEWS & COMMUNITY EXPERIENCE FEED */}
             <div id="community-stories" className="space-y-6 scroll-mt-20">
-              
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-stone-200/40 pb-4">
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5 text-gold-600 animate-pulse" />
-                  <h2 className="font-manrope text-xs uppercase tracking-[0.15em] text-royal-700 font-extrabold">
-                    Traveler Experience Feed
-                  </h2>
+
+              {/* Section Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <MessageSquare className="h-4 w-4 text-gold-600" />
+                    <h2 className="font-manrope text-[10px] uppercase tracking-[0.2em] text-gold-700 font-extrabold">Community Reviews</h2>
+                  </div>
+                  <p className="text-xl font-manrope font-bold text-[#1c1a17]">
+                    {communityReviews.length} Traveler{communityReviews.length !== 1 ? 's' : ''} Shared
+                  </p>
                 </div>
-                
+
                 {/* Profile Filter pills */}
-                <div className="flex overflow-x-auto scrollbar-none gap-1 bg-stone-100 p-1 rounded-xl shrink-0">
-                  {['all', 'Solo', 'Couple', 'Family', 'Friends'].map(type => (
+                <div className="flex overflow-x-auto scrollbar-none gap-1.5 shrink-0">
+                  {[
+                    { key: 'all', label: 'All', emoji: '🌍' },
+                    { key: 'Solo', label: 'Solo', emoji: '🧍' },
+                    { key: 'Couple', label: 'Couple', emoji: '💑' },
+                    { key: 'Family', label: 'Family', emoji: '👨‍👩‍👧' },
+                    { key: 'Friends', label: 'Friends', emoji: '👯' },
+                  ].map(({ key, label, emoji }) => (
                     <button
-                      key={type}
-                      onClick={() => setReviewFilter(type as any)}
-                      className={`text-[9px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-lg transition-all ${
-                        reviewFilter === type ? 'bg-royal-950 text-white font-semibold' : 'text-stone-600 hover:bg-stone-200'
+                      key={key}
+                      onClick={() => setReviewFilter(key as any)}
+                      className={`flex items-center gap-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-full border transition-all whitespace-nowrap ${
+                        reviewFilter === key
+                          ? 'bg-[#1c1a17] text-white border-[#1c1a17] shadow-md'
+                          : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:text-stone-900'
                       }`}
                     >
-                      {type === 'all' ? 'All Profiles' : type}
+                      <span>{emoji}</span>
+                      <span>{label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Feed List */}
-              <div className="space-y-6">
-                {filteredReviews.map(review => {
-                  const isLiked = likedReviewIds.has(review.id);
-                  return (
-                    <div key={review.id} className="bg-white border border-stone-200/50 p-5 rounded-2xl space-y-4 shadow-sm text-left">
-                      
-                      {/* Top Header Row */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <img src={review.userAvatar} className="h-10 w-10 rounded-full object-cover border border-gold-200" />
-                          <div>
-                            <span className="block text-xs font-bold text-[#1c1a17]">{review.userName}</span>
-                            <span className="block text-[9px] font-mono text-stone-500/80 uppercase">
-                              {review.date}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-1 font-mono text-[10px] font-bold text-royal-950">
-                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          <span>{review.rating.toFixed(1)}</span>
-                        </div>
-                      </div>
-
-                      {/* Travel Story */}
-                      <div className="space-y-2">
-                        <p className="text-xs text-stone-700 leading-relaxed font-light italic">
-                          "{review.comment}"
-                        </p>
-                        
-                        {/* Custom traveler tips segment inside story */}
-                        {review.comment && (
-                          <div className="bg-stone-50 p-3 rounded-xl border border-stone-100 text-left">
-                            <span className="text-[9px] font-mono font-bold text-gold-700 uppercase tracking-widest block mb-1">TRAVELER INSIGHT</span>
-                            <p className="text-[10px] text-stone-600 leading-relaxed font-medium">
-                              {review.comment}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Travel Parameters Badge Row */}
-                        <div className="flex flex-wrap gap-2 pt-1 text-[9px] font-mono text-stone-500">
-                          <span className="bg-stone-100 px-2 py-0.5 rounded-full">Visited: {review.date}</span>
-                        </div>
-                      </div>
-
-                      {/* Interaction Row */}
-                      <div className="border-t border-stone-100 pt-3.5 flex flex-wrap items-center justify-between gap-4 text-xs font-mono tracking-wider text-stone-500">
-                        <div className="flex items-center space-x-4">
-                          <button 
-                            onClick={() => toggleLikeReview(review.id)}
-                            className={`flex items-center space-x-1 hover:text-red-500 transition-colors ${isLiked ? 'text-red-500 font-bold' : ''}`}
-                          >
-                            <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                            <span>{isLiked ? 'Helpful (16)' : 'Helpful (15)'}</span>
-                          </button>
-                        </div>
-
-                        <button className="text-[9px] font-mono text-gold-700 bg-gold-50/70 border border-gold-200/50 px-2.5 py-1 rounded-lg hover:bg-gold-100 transition-colors">
-                          SAVE TRAVEL TIPS
-                        </button>
-                      </div>
-
+              {/* Write a Review Form — premium card */}
+              <div className="relative overflow-hidden rounded-3xl border border-stone-200 bg-gradient-to-br from-[#FAF8F5] to-white shadow-sm">
+                {/* Decorative accent */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold-400 via-amber-300 to-gold-500" />
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="w-8 h-8 bg-gradient-to-br from-gold-400 to-amber-500 rounded-xl flex items-center justify-center shadow-sm">
+                      <Pencil className="h-4 w-4 text-white" />
                     </div>
-                  );
-                })}
-
-                {/* Write a Review Form */}
-                <div className="bg-white border border-stone-200/50 p-5 rounded-2xl space-y-4 shadow-sm text-left">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Pencil className="h-4 w-4 text-gold-700" />
-                    <span className="text-xs font-mono font-bold text-gold-700 uppercase tracking-widest">Write a Review</span>
+                    <div>
+                      <p className="text-sm font-manrope font-bold text-[#1c1a17]">Write a Review</p>
+                      <p className="text-[10px] text-stone-400">Share your honest experience</p>
+                    </div>
                   </div>
 
                   {!isAuthenticated ? (
-                    <div className="bg-stone-50 p-4 rounded-xl border border-stone-200 text-center">
-                      <p className="text-xs text-stone-500 mb-2">Sign in to share your travel experience</p>
-                      <a href="/login" className="text-[10px] font-mono font-bold text-gold-700 underline">LOGIN TO REVIEW</a>
+                    <div className="flex flex-col items-center gap-3 py-6 text-center">
+                      <div className="w-14 h-14 rounded-full bg-stone-100 flex items-center justify-center text-2xl">✍️</div>
+                      <div>
+                        <p className="text-sm font-semibold text-[#1c1a17]">Sign in to leave a review</p>
+                        <p className="text-[11px] text-stone-400 mt-0.5">Help other travelers discover this place</p>
+                      </div>
+                      <a
+                        href="/login"
+                        className="mt-1 px-6 py-2 bg-[#1c1a17] text-white text-[10px] font-mono font-bold uppercase tracking-widest rounded-full hover:bg-gold-600 transition-colors"
+                      >
+                        Login to Review
+                      </a>
                     </div>
                   ) : (
-                    <>
+                    <div className="space-y-4">
                       {/* Star Rating */}
-                      <div className="flex items-center space-x-1">
-                        {[1,2,3,4,5].map(star => (
-                          <button key={star} onClick={() => setNewReviewRating(star)} className="focus:outline-none">
-                            <Star className={`h-5 w-5 ${star <= newReviewRating ? 'fill-amber-400 text-amber-400' : 'text-stone-300'}`} />
-                          </button>
-                        ))}
-                        <span className="text-[10px] font-mono text-stone-500 ml-2">{newReviewRating}/5</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          {[1,2,3,4,5].map(star => (
+                            <button
+                              key={star}
+                              onClick={() => setNewReviewRating(star)}
+                              className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                            >
+                              <Star
+                                className={`h-7 w-7 transition-colors ${
+                                  star <= newReviewRating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-stone-200 hover:text-amber-200'
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-manrope font-bold text-[#1c1a17]">{newReviewRating}</span>
+                          <span className="text-sm text-stone-400">/5</span>
+                        </div>
                       </div>
 
-                      <textarea
-                        placeholder="Share your experience at this destination..."
-                        value={newReviewText}
-                        onChange={(e) => setNewReviewText(e.target.value)}
-                        rows={3}
-                        className="w-full bg-stone-50 border border-stone-200 text-[10.5px] px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-gold-500 resize-none"
-                      />
+                      {/* Traveler Type Selector */}
+                      <div className="space-y-1.5">
+                        <p className="text-[10px] font-mono font-bold text-stone-500 uppercase tracking-widest">You are traveling as</p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { key: 'Solo', emoji: '🧍', label: 'Solo' },
+                            { key: 'Couple', emoji: '💑', label: 'Couple' },
+                            { key: 'Family', emoji: '👨‍👩‍👧', label: 'Family' },
+                            { key: 'Friends', emoji: '👯', label: 'Friends' },
+                          ].map(({ key, emoji, label }) => (
+                            <button
+                              key={key}
+                              onClick={() => setNewReviewTravelerType(key as any)}
+                              className={`flex items-center gap-1.5 text-[11px] font-semibold px-3.5 py-1.5 rounded-full border-2 transition-all ${
+                                newReviewTravelerType === key
+                                  ? 'bg-amber-50 border-amber-400 text-amber-800'
+                                  : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'
+                              }`}
+                            >
+                              <span className="text-sm">{emoji}</span>
+                              <span>{label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
+                      {/* Text area */}
+                      <div className="relative">
+                        <textarea
+                          placeholder="Describe what made this place special — crowds, best time to visit, hidden tips..."
+                          value={newReviewText}
+                          onChange={(e) => setNewReviewText(e.target.value)}
+                          rows={4}
+                          maxLength={500}
+                          className="w-full bg-stone-50 border border-stone-200 text-[12px] px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none text-stone-700 placeholder:text-stone-300 leading-relaxed"
+                        />
+                        <span className="absolute bottom-3 right-4 text-[9px] text-stone-300 font-mono">{newReviewText.length}/500</span>
+                      </div>
+
+                      {/* Feedback messages */}
                       {reviewError && (
-                        <p className="text-[10px] text-red-500 font-mono">{reviewError}</p>
+                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                          <span className="text-red-500 text-sm">⚠️</span>
+                          <p className="text-[11px] text-red-600 font-medium">{reviewError}</p>
+                        </div>
                       )}
                       {reviewSubmitted && (
-                        <p className="text-[10px] text-green-600 font-mono">Review submitted successfully!</p>
+                        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+                          <span className="text-green-500 text-sm">✅</span>
+                          <p className="text-[11px] text-green-700 font-medium">Review published! Thank you for sharing.</p>
+                        </div>
                       )}
 
+                      {/* Submit button */}
                       <button
                         onClick={handleSubmitReview}
                         disabled={!newReviewText.trim() || submittingReview}
-                        className="px-4 py-2 bg-royal-950 text-white text-[10px] font-mono font-bold rounded-xl hover:bg-gold-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 bg-gradient-to-r from-[#1c1a17] to-stone-700 text-white text-[11px] font-mono font-bold uppercase tracking-widest rounded-2xl hover:from-gold-600 hover:to-amber-500 hover:text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-gold-200/50 hover:shadow-lg"
                       >
-                        {submittingReview ? 'SUBMITTING...' : 'SUBMIT REVIEW'}
+                        {submittingReview ? '✦ Publishing...' : '✦ Publish Review'}
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
+              </div>
+
+              {/* Feed List */}
+              <div className="space-y-4">
+                {filteredReviews.length === 0 && (
+                  <div className="text-center py-12 text-stone-400">
+                    <p className="text-2xl mb-2">🔍</p>
+                    <p className="text-sm font-medium">No {reviewFilter !== 'all' ? reviewFilter : ''} reviews yet</p>
+                    <p className="text-[11px] mt-1">Be the first to share your experience!</p>
+                  </div>
+                )}
+                {filteredReviews.map((review, idx) => {
+                  const isLiked = likedReviewIds.has(review.id);
+                  const tType = (review as any).travelerType || (review as any).traveler_type || null;
+                  const tTypeEmojis: Record<string, string> = { Solo: '🧍', Couple: '💑', Family: '👨‍👩‍👧', Friends: '👯' };
+                  const ratingColor = review.rating >= 4.5 ? 'text-emerald-600' : review.rating >= 3.5 ? 'text-amber-600' : 'text-red-500';
+                  return (
+                    <div
+                      key={review.id}
+                      className="group relative bg-white border border-stone-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 text-left"
+                      style={{ animationDelay: `${idx * 60}ms` }}
+                    >
+                      {/* Colored left accent by rating */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-3xl ${
+                        review.rating >= 4.5 ? 'bg-emerald-400' : review.rating >= 3.5 ? 'bg-amber-400' : 'bg-red-400'
+                      }`} />
+
+                      <div className="pl-5 pr-5 pt-5 pb-4">
+                        {/* Header row */}
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <img
+                                src={review.userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(review.userName)}`}
+                                className="h-11 w-11 rounded-2xl object-cover bg-stone-100 border-2 border-white shadow-sm"
+                                onError={(e) => { (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${review.userName}`; }}
+                              />
+                              {tType && (
+                                <span className="absolute -bottom-1 -right-1 text-xs w-5 h-5 flex items-center justify-center bg-white rounded-full shadow-sm border border-stone-100">
+                                  {tTypeEmojis[tType] || '🌍'}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-bold text-[#1c1a17] leading-tight">{review.userName}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[9px] font-mono text-stone-400 uppercase tracking-widest">{review.date}</span>
+                                {tType && (
+                                  <span className="text-[9px] font-mono bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded-full uppercase tracking-widest">{tType}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Rating badge */}
+                          <div className={`flex items-center gap-1 font-bold ${ratingColor}`}>
+                            <Star className="h-4 w-4 fill-current" />
+                            <span className="text-base font-manrope">{review.rating.toFixed(1)}</span>
+                          </div>
+                        </div>
+
+                        {/* Stars visual */}
+                        <div className="flex items-center gap-0.5 mb-3">
+                          {[1,2,3,4,5].map(s => (
+                            <Star key={s} className={`h-3.5 w-3.5 ${
+                              s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-stone-200'
+                            }`} />
+                          ))}
+                        </div>
+
+                        {/* Comment */}
+                        <p className="text-[13px] text-stone-600 leading-relaxed">
+                          {review.comment}
+                        </p>
+
+                        {/* Footer */}
+                        <div className="mt-4 pt-3 border-t border-stone-50 flex items-center justify-between">
+                          <button
+                            onClick={() => toggleLikeReview(review.id)}
+                            className={`flex items-center gap-1.5 text-[11px] font-medium transition-all rounded-full px-3 py-1.5 ${
+                              isLiked
+                                ? 'text-red-500 bg-red-50'
+                                : 'text-stone-400 hover:text-red-400 hover:bg-red-50'
+                            }`}
+                          >
+                            <Heart className={`h-3.5 w-3.5 transition-all ${isLiked ? 'fill-red-500 scale-110' : ''}`} />
+                            <span>Helpful {isLiked ? '· Thanks!' : ''}</span>
+                          </button>
+
+                          <button className="text-[10px] font-mono text-gold-600 hover:text-gold-700 transition-colors">
+                            Save tip
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

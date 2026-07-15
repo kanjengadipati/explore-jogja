@@ -5,6 +5,7 @@ export interface Review {
   rating: number;
   date: string;
   comment: string;
+  travelerType?: 'Solo' | 'Couple' | 'Family' | 'Friends';
 }
 
 export interface EcosystemPartner {

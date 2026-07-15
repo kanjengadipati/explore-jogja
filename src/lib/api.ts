@@ -202,10 +202,16 @@ export const events = {
 };
 
 export const reviews = {
-  async create(destinationId: string, rating: number, comment: string) {
+  async create(destinationId: string, rating: number, comment: string, userName?: string, travelerType?: string) {
     return request('/reviews', {
       method: 'POST',
-      body: JSON.stringify({ destination_id: destinationId, rating, comment }),
+      body: JSON.stringify({
+        destination_id: destinationId,
+        rating,
+        comment,
+        user_name: userName || 'Anonymous',
+        traveler_type: travelerType || '',
+      }),
     });
   },
 };
@@ -246,6 +252,13 @@ export const ai = {
       reason: string;
       crowd: string;
     }>(`/ai/recommend?time=${encodeURIComponent(timeOfDay)}`);
+  },
+
+  async getJourney(destinationName: string) {
+    return request<{ steps: Array<{ time: string; title: string; desc: string }> }>('/ai/journey', {
+      method: 'POST',
+      body: JSON.stringify({ destinationName }),
+    });
   },
 };
 
