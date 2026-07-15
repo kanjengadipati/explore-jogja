@@ -118,11 +118,10 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                     href={process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3005'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-gold-600 to-gold-500 text-white hover:from-gold-500 hover:to-gold-400 transition-all text-xs font-bold shadow-lg shadow-gold-600/20"
-                    title="Buka Admin Panel"
+                    className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-gold-400 hover:text-gold-300"
+                    title="Admin Panel"
                   >
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>Admin Panel</span>
+                    <ShieldCheck className="h-4.5 w-4.5" />
                   </a>
                 )}
                 <button
@@ -160,12 +159,6 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
               </div>
             )}
 
-            <button 
-              onClick={() => setActiveTab('map')}
-              className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
           </div>
 
           {/* Mobile top action menu */}
