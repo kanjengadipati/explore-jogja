@@ -43,6 +43,20 @@ export default function DestinationDetail({
   const [likedReviewIds, setLikedReviewIds] = useState<Set<string>>(new Set());
   const [bookmarkedTipIds, setBookmarkedTipIds] = useState<Set<number>>(new Set());
   const [activeEcosystemTab, setActiveEcosystemTab] = useState<'stay' | 'eat' | 'experience' | 'shop' | 'move' | 'guide'>('stay');
+  const ecosystemPausedUntilRef = React.useRef<number>(0);
+  const ecosystemTabs = ['stay', 'eat', 'experience', 'shop', 'guide'] as const;
+
+  // Auto-rotate ecosystem tabs like a slideshow
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (Date.now() < ecosystemPausedUntilRef.current) return;
+      setActiveEcosystemTab(prev => {
+        const idx = ecosystemTabs.indexOf(prev as any);
+        return ecosystemTabs[(idx + 1) % ecosystemTabs.length] as any;
+      });
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
   const [copied, setCopied] = useState(false);
   
   // Reviews state
@@ -1283,15 +1297,41 @@ export default function DestinationDetail({
                 ].map(item => (
                   <button
                     key={item.id}
-                    onClick={() => setActiveEcosystemTab(item.id as any)}
-                    className={`text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full shrink-0 transition-all ${
+                    onClick={() => {
+                      setActiveEcosystemTab(item.id as any);
+                      ecosystemPausedUntilRef.current = Date.now() + 8000;
+                    }}
+                    className={`relative text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full shrink-0 transition-all overflow-hidden ${
                       activeEcosystemTab === item.id 
                         ? 'bg-royal-950 text-white font-bold' 
                         : 'bg-stone-50 text-stone-500 hover:bg-stone-100 border border-stone-200/10'
                     }`}
                   >
+                    {activeEcosystemTab === item.id && (
+                      <span
+                        key={item.id + '-bar'}
+                        className="absolute inset-x-0 bottom-0 h-[2px] bg-gold-400 origin-left"
+                        style={{ animation: 'ecosystem-progress 3s linear forwards' }}
+                      />
+                    )}
                     {item.label}
                   </button>
+                ))}
+              </div>
+
+              {/* Slideshow progress dots */}
+              <div className="flex justify-center gap-1.5 pt-2 pb-1">
+                {(['stay','eat','experience','shop','guide'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveEcosystemTab(tab);
+                      ecosystemPausedUntilRef.current = Date.now() + 8000;
+                    }}
+                    className={`h-1 rounded-full transition-all duration-300 ${
+                      activeEcosystemTab === tab ? 'w-4 bg-royal-950' : 'w-1.5 bg-stone-300 hover:bg-stone-400'
+                    }`}
+                  />
                 ))}
               </div>
 
