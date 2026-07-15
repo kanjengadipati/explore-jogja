@@ -1341,9 +1341,16 @@ export default function DestinationDetail({
                   <p className="text-xs text-stone-500 italic py-4 text-center">No verified partner found under this category.</p>
                 ) : (
                   activeEcosystemPartners.map(partner => (
-                    <div 
+                    <a
                       key={partner.id}
-                      className="group border border-stone-100 p-2.5 rounded-xl flex space-x-3 hover:border-gold-300 hover:bg-stone-50/50 transition-all duration-300 text-left"
+                      href={
+                        partner.coordinates?.lat && partner.coordinates?.lng
+                          ? `https://www.google.com/maps/search/?api=1&query=${partner.coordinates.lat},${partner.coordinates.lng}`
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(partner.name + ' ' + (partner.address || ''))}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group border border-stone-100 p-2.5 rounded-xl flex space-x-3 hover:border-gold-300 hover:bg-stone-50/50 transition-all duration-300 text-left cursor-pointer block"
                     >
                       <img src={partner.image} className="h-14 w-14 rounded-lg object-cover border shrink-0 bg-stone-100" />
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -1358,10 +1365,23 @@ export default function DestinationDetail({
                         
                         <div className="flex items-center justify-between border-t border-stone-100/60 pt-1 mt-1 text-[9px] font-mono text-stone-500">
                           <span className="font-bold text-stone-800">{partner.price}</span>
-                          <span>{partner.distance}</span>
+                          <div className="flex items-center gap-2">
+                            <span>{partner.distance}</span>
+                            {partner.phone && (
+                              <a
+                                href={`tel:${partner.phone}`}
+                                onClick={e => e.stopPropagation()}
+                                className="flex items-center gap-0.5 text-gold-700 hover:text-gold-600 font-bold"
+                                title={`Call ${partner.name}`}
+                              >
+                                <Phone className="h-2.5 w-2.5" />
+                              </a>
+                            )}
+                            <MapPin className="h-2.5 w-2.5 text-stone-400 group-hover:text-gold-500 transition-colors" />
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </a>
                   ))
                 )}
               </div>
