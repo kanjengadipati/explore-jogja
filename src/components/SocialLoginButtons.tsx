@@ -79,7 +79,7 @@ export default function SocialLoginButtons({ onError, onSuccess }: { onError?: (
     if (!FACEBOOK_APP_ID) return;
     // Use OAuth redirect flow — works on HTTP (unlike FB.login popup)
     const redirectUri = typeof window !== 'undefined' ? window.location.origin : '';
-    const fbAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email,public_profile&response_type=token`;
+    const fbAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=public_profile&response_type=token`;
     window.location.href = fbAuthUrl;
   };
 
