@@ -5,6 +5,17 @@ import {
 } from 'lucide-react';
 import { Destination, TripPlan, TripDay } from '../types';
 
+/** Safely extract the first image URL regardless of whether images are
+ *  plain strings or {url, credit} objects (both shapes come from the BE). */
+function getImgUrl(dest: Destination): string {
+  const imgs = dest.images as unknown[];
+  if (!Array.isArray(imgs) || imgs.length === 0) return '';
+  const first = imgs[0];
+  if (typeof first === 'string') return first;
+  if (first && typeof first === 'object' && 'url' in first) return (first as { url: string }).url ?? '';
+  return '';
+}
+
 interface TripPlannerProps {
   savedDestinations: Destination[];
   onExploreDestination: (dest: Destination) => void;
@@ -183,7 +194,7 @@ export default function TripPlanner({
                       onClick={() => onExploreDestination(dest)}
                       className="flex items-center space-x-3 cursor-pointer flex-1"
                     >
-                      <img src={dest.images[0]?.url || ''} alt={dest.name} className="h-12 w-12 rounded-xl object-cover border border-gold-100" />
+                      <img src={getImgUrl(dest)} alt={dest.name} className="h-12 w-12 rounded-xl object-cover border border-gold-100" />
                       <div>
                         <h4 className="font-manrope font-bold text-xs text-royal-950 hover:text-gold-700 transition-colors">
                           {dest.name}
@@ -307,7 +318,7 @@ export default function TripPlanner({
                         </div>
 
                         <div className="flex items-center space-x-3">
-                          <img src={dest.images[0]?.url || ''} alt={dest.name} className="h-12 w-12 rounded-xl object-cover" />
+                          <img src={getImgUrl(dest)} alt={dest.name} className="h-12 w-12 rounded-xl object-cover" />
                           <div>
                             <h4 className="font-manrope font-bold text-xs text-royal-950 hover:text-gold-700 transition-colors" onClick={() => onExploreDestination(dest)}>
                               {dest.name}
