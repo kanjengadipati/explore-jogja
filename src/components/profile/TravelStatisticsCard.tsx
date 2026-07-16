@@ -4,6 +4,8 @@ import { Compass, MessageSquare, Image as ImageIcon, Calendar, BarChart3 } from 
 interface Profile {
   destinationsCount: number;
   reviewsCount: number;
+  likesCount: number;
+  tripsCount: number;
 }
 
 interface TravelStatisticsCardProps {
