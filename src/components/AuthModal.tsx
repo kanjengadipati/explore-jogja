@@ -159,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
 
           {/* Social Login */}
           <div className="mt-5">
-            <SocialLoginButtons onError={setError} />
+            <SocialLoginButtons onError={setError} onSuccess={() => { onClose(); resetForm(); }} />
           </div>
 
           {/* Toggle */}
