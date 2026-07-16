@@ -96,7 +96,14 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
     try {
       const saved = localStorage.getItem('explore_jogja_saved_v1');
       if (saved) {
-        setSavedDestinationIds(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Handle both Destination[] (full objects) and string[] (legacy IDs)
+          const ids = parsed.map((item: unknown) =>
+            typeof item === 'string' ? item : (item as { id: string })?.id ?? ''
+          ).filter(Boolean);
+          setSavedDestinationIds(ids);
+        }
       }
     } catch {}
     setHydrated(true);
@@ -104,16 +111,35 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    try {
-      localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(savedDestinationIds));
-    } catch {}
+    // Don't write from detail page — App.tsx owns the full object format
+    // Only update the IDs list; App.tsx will reconcile on next load
   }, [savedDestinationIds, hydrated]);
 
   const handleToggleSave = (dest: Destination) => {
     setSavedDestinationIds(prev => {
       const exists = prev.includes(dest.id);
-      if (exists) return prev.filter(id => id !== dest.id);
-      return [...prev, dest.id];
+      let newIds: string[];
+      if (exists) {
+        newIds = prev.filter(id => id !== dest.id);
+      } else {
+        newIds = [...prev, dest.id];
+      }
+      // Update localStorage — read existing full objects and patch
+      try {
+        const saved = localStorage.getItem('explore_jogja_saved_v1');
+        const existing: Destination[] = saved ? JSON.parse(saved) : [];
+        const fullObjects = Array.isArray(existing) && existing.length > 0 && typeof existing[0] === 'object'
+          ? existing
+          : [];
+        if (exists) {
+          // Remove
+          localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(fullObjects.filter(d => d.id !== dest.id)));
+        } else {
+          // Add full object
+          localStorage.setItem('explore_jogja_saved_v1', JSON.stringify([...fullObjects.filter(d => d.id !== dest.id), dest]));
+        }
+      } catch {}
+      return newIds;
     });
   };
 

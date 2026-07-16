@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from './components/Header';
+import AuthModal from './components/AuthModal';
 import Hero from './components/Hero';
 import CategoryLinks from './components/CategoryLinks';
 import DestinationCard, { isLandscape } from './components/DestinationCard';
@@ -9,7 +10,7 @@ import TripPlanner from './components/TripPlanner';
 import InteractiveMap from './components/InteractiveMap';
 
 import { Destination, Festival } from './types';
-import { destinations, events, config } from './lib/api';
+import { destinations, events, config, auth } from './lib/api';
 import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, CalendarDays, Map, Sun, Utensils, Leaf, Sunset, RefreshCw, AlertCircle } from 'lucide-react';
 
 export default function App() {
@@ -77,17 +78,35 @@ export default function App() {
     });
   }, []);
 
-  // Persistent local favorites storage
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const openAuth = (mode: 'login' | 'register') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
   const [savedDestinations, setSavedDestinations] = useState<Destination[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-      // Hydrate from localStorage after mount (avoids SSR/client mismatch)
+  // Hydrate from localStorage after mount (avoids SSR/client mismatch)
   useEffect(() => {
     try {
       const saved = localStorage.getItem('explore_jogja_saved_v1');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        setSavedDestinations(parsed.map((item: any) => allDestinations.find(d => d.id === item.id)).filter(Boolean));
+        const parsed: Destination[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // If allDestinations is loaded, prefer fresh data; otherwise use cached
+          if (allDestinations.length > 0) {
+            const refreshed = parsed
+              .map(item => allDestinations.find(d => d.id === item.id) ?? item)
+              .filter(Boolean) as Destination[];
+            setSavedDestinations(refreshed);
+          } else {
+            // allDestinations not loaded yet — use cached objects directly
+            setSavedDestinations(parsed);
+          }
+        }
       }
     } catch (e) {
       console.error("Local storage read failed:", e);
@@ -105,15 +124,28 @@ export default function App() {
     }
   }, [savedDestinations, hydrated]);
 
-  const handleToggleSave = (dest: Destination) => {
+  const handleToggleSave = async (dest: Destination) => {
+    // Check if user is logged in
+    if (!auth.isLoggedIn()) {
+      openAuth('login');
+      return;
+    }
+
+    // Optimistic update
     setSavedDestinations((prev) => {
       const exists = prev.some(d => d.id === dest.id);
-      if (exists) {
-        return prev.filter(d => d.id !== dest.id);
-      } else {
-        return [...prev, dest];
-      }
+      const newSaved = exists ? prev.filter(d => d.id !== dest.id) : [...prev, dest];
+      localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(newSaved));
+      return newSaved;
     });
+
+    // Sync with API
+    try {
+        const isSavedNow = !savedDestinations.some(d => d.id === dest.id);
+        await auth.updateDestinationStatus(dest.id, isSavedNow ? 'saved' : 'removed');
+    } catch (err) {
+        console.error('Failed to sync save status', err);
+    }
   };
 
   const isSaved = (id: string) => {
@@ -202,9 +234,9 @@ export default function App() {
           } else {
             setActiveTab(tab);
           }
-        }} 
-        savedCount={savedDestinations.length} 
-        isOverHero={activeTab === 'discover'}
+        }}
+        savedCount={savedDestinations.length}
+        onOpenAuth={openAuth}
       />
 
       {/* Main Core Content container */}
@@ -763,6 +795,11 @@ export default function App() {
             )}
         </>
       </main>
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultMode={authModalMode}
+      />
 
       {/* Editorial polished footer */}
       <footer id="editorial-luxury-footer" className="bg-royal-950 text-white border-t border-royal-900 py-12 px-4 sm:px-6 lg:px-8 pb-28 md:pb-12">
