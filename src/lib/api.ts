@@ -278,4 +278,32 @@ export const ai = {
   },
 };
 
-export type { User, ProfileResponse, AuthResponse, APIResponse, BeReview };
+export const partners = {
+  async getAll() {
+    return request<BePartner[]>('/partners');
+  },
+
+  async search(query: string) {
+    return request<BePartner[]>(`/partners/search?q=${encodeURIComponent(query)}`);
+  },
+};
+
+// BE partner shape (snake_case from the API)
+interface BePartner {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  location?: string;
+  address?: string;
+  image?: string;
+  rating?: number;
+  price?: string;
+  distance?: string;
+  phone?: string;
+  website?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export type { User, ProfileResponse, AuthResponse, APIResponse, BeReview, BePartner };

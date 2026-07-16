@@ -11,7 +11,8 @@ import {
   MapPinned, Sunrise, Sunset, Flame, ChevronDown, Sparkle, Pencil, X
 } from 'lucide-react';
 import { Destination, EcosystemPartner, Review } from '@/types';
-import { events as eventsApi, reviews as reviewsApi, destinations as destinationsApi } from '@/lib/api';
+import { events as eventsApi, reviews as reviewsApi, partners as partnersApi } from '@/lib/api';
+import type { BePartner } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { inferTravelerIntent, orderCardsByIntent, IntentProfile } from '@/lib/travelerIntent';
 import { fetchLiveWeather, LiveWeather } from '@/lib/weather';
@@ -43,6 +44,37 @@ export default function DestinationDetail({
   const [storyExpanded, setStoryExpanded] = useState(false);
   const [selectedMapFilter, setSelectedMapFilter] = useState<'all' | 'partner' | 'parking' | 'hotel' | 'resto' | 'guide' | 'toilet' | 'hospital'>('all');
   const [selectedMapPartner, setSelectedMapPartner] = useState<EcosystemPartner | null>(destination.partners[0] || null);
+
+  // Enrich ecosystem partners from BE when embedded list is empty
+  const [enrichedPartners, setEnrichedPartners] = useState<EcosystemPartner[]>(destination.partners);
+  useEffect(() => {
+    if (destination.partners.length > 0) {
+      setEnrichedPartners(destination.partners);
+      return;
+    }
+    partnersApi.getAll().then(res => {
+      if (res.status === 'success' && Array.isArray(res.data)) {
+        const mapped: EcosystemPartner[] = (res.data as BePartner[]).map(p => ({
+          id: p.id,
+          name: p.name,
+          category: (['hotel','restaurant','cafe','guide','souvenir','rental','agent','transport'].includes((p.category || '').toLowerCase())
+            ? p.category!.toLowerCase()
+            : 'hotel') as EcosystemPartner['category'],
+          image: p.image || '',
+          rating: p.rating || 0,
+          price: p.price || '',
+          distance: p.distance || '',
+          description: p.description || '',
+          address: p.address || p.location || '',
+          phone: p.phone,
+          coordinates: { lat: p.latitude || 0, lng: p.longitude || 0 },
+        }));
+        setEnrichedPartners(mapped);
+        if (!selectedMapPartner && mapped.length > 0) setSelectedMapPartner(mapped[0]);
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destination.id]);
   const [likedReviewIds, setLikedReviewIds] = useState<Set<string>>(new Set());
   const [bookmarkedTipIds, setBookmarkedTipIds] = useState<Set<number>>(new Set());
   const [activeEcosystemTab, setActiveEcosystemTab] = useState<'stay' | 'eat' | 'experience' | 'shop' | 'move' | 'guide'>('stay');
@@ -149,7 +181,7 @@ export default function DestinationDetail({
 
       // 2. Partners
       if (selectedMapFilter === 'all' || selectedMapFilter === 'partner') {
-        destination.partners.forEach(partner => {
+        enrichedPartners.forEach(partner => {
           if (!partner.coordinates?.lat || !partner.coordinates?.lng) return;
 
           const isSelected = selectedMapPartner?.id === partner.id;
@@ -232,7 +264,7 @@ export default function DestinationDetail({
         detailMapInstanceRef.current = null;
       }
     };
-  }, [destination, selectedMapFilter, selectedMapPartner]);
+  }, [destination, enrichedPartners, selectedMapFilter, selectedMapPartner]);
 
 
   // Auto-rotate ecosystem tabs like a slideshow
@@ -579,7 +611,7 @@ export default function DestinationDetail({
     ? communityReviews
     : communityReviews.filter(r => (r as any).travelerType === reviewFilter || (r as any).traveler_type === reviewFilter);
 
-  const activeEcosystemPartners = destination.partners.filter(p => {
+  const activeEcosystemPartners = enrichedPartners.filter(p => {
     if (activeEcosystemTab === 'stay') return p.category === 'hotel';
     if (activeEcosystemTab === 'eat') return p.category === 'restaurant' || p.category === 'cafe';
     if (activeEcosystemTab === 'experience') return p.category === 'rental' || p.category === 'agent';
