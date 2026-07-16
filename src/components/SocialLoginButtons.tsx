@@ -1,16 +1,13 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 declare global {
   interface Window {
     google?: any;
-    FB?: any;
-    fbAsyncInit?: () => void;
   }
 }
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '';
 
 function loadScript(src: string, id: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -28,14 +25,12 @@ function loadScript(src: string, id: string): Promise<void> {
 
 export default function SocialLoginButtons({ onError, onSuccess }: { onError?: (msg: string) => void; onSuccess?: () => void }) {
   const { socialLogin } = useAuth();
-  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState<'google' | null>(null);
   const [googleReady, setGoogleReady] = useState(false);
-  const [loading, setLoading] = useState<'google' | 'facebook' | null>(null);
 
-  const handleGoogleCredential = useCallback(async (response: any) => {
-    if (!response?.credential) return;
+  const handleGoogleCredential = useCallback(async (credential: string) => {
     setLoading('google');
-    const result = await socialLogin('google', response.credential);
+    const result = await socialLogin('google', credential);
     setLoading(null);
     if (result.success) {
       onSuccess?.();
@@ -44,73 +39,42 @@ export default function SocialLoginButtons({ onError, onSuccess }: { onError?: (
     }
   }, [socialLogin, onError, onSuccess]);
 
+  // Handle Google OAuth redirect callback
+  useEffect(() => {
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+
+    // Check for Google OAuth redirect response
+    const idToken = params.get('id_token');
+    if (idToken) {
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+      handleGoogleCredential(idToken);
+      return;
+    }
+  }, [handleGoogleCredential]);
+
+  // Initialize Google Identity Services
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
     loadScript('https://accounts.google.com/gsi/client', 'google-identity-script')
       .then(() => {
-        window.google?.accounts?.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCredential,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
-        if (googleBtnRef.current) {
-          window.google.accounts.id.renderButton(googleBtnRef.current, {
-            theme: 'outline',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'rectangular',
-            width: 1,
-          });
-        }
         setGoogleReady(true);
       })
       .catch(() => {});
-  }, [handleGoogleCredential]);
+  }, []);
 
   const handleGoogleClick = () => {
-    const hiddenBtn = googleBtnRef.current?.querySelector('div[role="button"]') as HTMLElement | null;
-    if (hiddenBtn) {
-      hiddenBtn.click();
-    }
+    if (!GOOGLE_CLIENT_ID) return;
+
+    // Use OAuth redirect flow — works on HTTP and HTTPS, no popup blocking
+    const redirectUri = window.location.origin;
+    const nonce = Math.random().toString(36).substring(2);
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=id_token&scope=openid%20email%20profile&nonce=${nonce}&prompt=select_account`;
+    window.location.href = googleAuthUrl;
   };
 
-  const handleFacebookClick = () => {
-    if (!FACEBOOK_APP_ID) return;
-    // Use OAuth redirect flow — works on HTTP (unlike FB.login popup)
-    const redirectUri = typeof window !== 'undefined' ? window.location.origin : '';
-    const fbAuthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=public_profile&response_type=token`;
-    window.location.href = fbAuthUrl;
-  };
-
-  // After Facebook OAuth redirect, extract token from URL hash
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash || !hash.includes('access_token')) return;
-
-    const params = new URLSearchParams(hash.substring(1));
-    const accessToken = params.get('access_token');
-    if (!accessToken) return;
-
-    // Clean URL
-    window.history.replaceState({}, '', window.location.pathname);
-
-    // Complete login
-    setLoading('facebook');
-    socialLogin('facebook', accessToken).then((result) => {
-      setLoading(null);
-      if (result.success) {
-        onSuccess?.();
-      } else {
-        onError?.(result.error || 'Facebook login failed');
-      }
-    });
-  }, [socialLogin, onError, onSuccess]);
-
-  const hasGoogle = GOOGLE_CLIENT_ID && googleReady;
-  const hasFacebook = !!FACEBOOK_APP_ID;
-
-  if (!hasGoogle && !hasFacebook) return null;
+  if (!GOOGLE_CLIENT_ID) return null;
 
   return (
     <div className="space-y-3">
@@ -123,49 +87,24 @@ export default function SocialLoginButtons({ onError, onSuccess }: { onError?: (
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        {hasGoogle && (
-          <div className="relative">
-            <div ref={googleBtnRef} className="absolute inset-0 opacity-0 pointer-events-none [&>div]:!w-full [&>div]:!h-full" />
-            <button
-              type="button"
-              onClick={handleGoogleClick}
-              disabled={loading !== null}
-              className="relative flex items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 active:scale-[0.98] disabled:opacity-50 transition-all w-full"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              {loading === 'google' ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
-              ) : (
-                'Google'
-              )}
-            </button>
-          </div>
+      <button
+        type="button"
+        onClick={handleGoogleClick}
+        disabled={loading !== null}
+        className="w-full flex items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 active:scale-[0.98] disabled:opacity-50 transition-all"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        {loading === 'google' ? (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+        ) : (
+          'Google'
         )}
-
-        {hasFacebook && (
-          <button
-            type="button"
-            onClick={handleFacebookClick}
-            disabled={loading !== null}
-            className="flex items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 active:scale-[0.98] disabled:opacity-50 transition-all"
-          >
-            <svg className="h-4 w-4" fill="#1877F2" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            {loading === 'facebook' ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
-            ) : (
-              'Facebook'
-            )}
-          </button>
-        )}
-      </div>
+      </button>
     </div>
   );
 }
