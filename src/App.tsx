@@ -544,108 +544,46 @@ export default function App() {
 
                   {/* Timeline Cards Row */}
                   <div className="flex items-center space-x-2.5 sm:space-x-3.5 overflow-x-auto pb-4 scrollbar-none -mx-4 px-4 lg:mx-0 lg:px-0">
-                    
-                    {/* Step 1: Morning (Prambanan Temple) */}
                     {(() => {
-                      const dest = allDestinations.find(d => d.id === 'prambanan') || allDestinations[0];
-                      if (!dest) return null;
-                      return (
-                        <div 
-                          onClick={() => handleExploreDestination(dest)}
-                          className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#FAF6F0] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
-                        >
-                          <div className="flex flex-col items-center justify-center flex-shrink-0 w-24 sm:w-28 text-center px-1">
-                            <div className="mb-2 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#B18A5E]">
-                              <Sun className="h-4.5 w-4.5" />
+                      const journeySlots = [
+                        { label: 'Morning', time: '07.00 AM', icon: Sun, color: '#B18A5E', categories: ['heritage', 'adventure'] },
+                        { label: 'Lunch', time: '12.00 PM', icon: Utensils, color: '#5F713D', categories: ['culinary'] },
+                        { label: 'Afternoon', time: '02.30 PM', icon: Leaf, color: '#4F6F52', categories: ['nature', 'heritage', 'hidden-gem'] },
+                        { label: 'Sunset', time: '05.30 PM', icon: Sunset, color: '#BC6C25', categories: ['beach', 'nature'] },
+                      ];
+
+                      return journeySlots.map((slot, idx) => {
+                        const dest = allDestinations
+                          .filter(d => slot.categories.includes(d.category) && d.images.length > 0)
+                          .sort((a, b) => b.rating - a.rating)[0];
+                        if (!dest) return null;
+                        const Icon = slot.icon;
+                        return (
+                          <React.Fragment key={slot.label}>
+                            {idx > 0 && <div className="flex-shrink-0 text-[#A78B71]/40 font-bold text-base sm:text-lg">&rarr;</div>}
+                            <div 
+                              onClick={() => handleExploreDestination(dest)}
+                              className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#FAF6F0] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
+                            >
+                              <div className="flex flex-col items-center justify-center flex-shrink-0 w-24 sm:w-28 text-center px-1">
+                                <div className="mb-2 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center" style={{ color: slot.color }}>
+                                  <Icon className="h-4 w-4" />
+                                </div>
+                                <span className="text-xs font-bold text-[#1C1A17] tracking-tight leading-tight block">{slot.label}</span>
+                                <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#B18A5E] mt-1 tracking-wide leading-none block">{slot.time}</span>
+                                <span className="text-[9px] sm:text-[10px] text-stone-500 font-medium truncate mt-1 max-w-[85px] sm:max-w-[95px] leading-tight block">{dest.name}</span>
+                              </div>
+                              <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
+                                <img src={dest.images[0]?.url || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt={dest.name} />
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 text-left">
+                                  <span className="text-[9px] sm:text-[10px] font-bold text-white block truncate leading-none">{dest.name}</span>
+                                </div>
+                              </div>
                             </div>
-                            <span className="text-xs font-bold text-[#1C1A17] tracking-tight leading-tight block">Morning</span>
-                            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#B18A5E] mt-1 tracking-wide leading-none block">07.00 AM</span>
-                          </div>
-                          <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
-                            <img src={dest.images[0]?.url || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 text-left">
-                              <span className="text-[9px] sm:text-[10px] font-bold text-white block truncate leading-none">Prambanan Temple</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
+                          </React.Fragment>
+                        );
+                      });
                     })()}
-
-                    {/* Arrow Divider */}
-                    <div className="flex-shrink-0 text-[#A78B71]/40 font-bold text-base sm:text-lg">&rarr;</div>
-
-                    {/* Step 2: Lunch (Gudeg Yu Djum) */}
-                    <div 
-                      onClick={() => handleHeroSearch('kuliner tradisional gudeg yu djum')}
-                      className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#FAF6F0] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
-                    >
-                      <div className="flex flex-col items-center justify-center flex-shrink-0 w-24 sm:w-28 text-center px-1">
-                        <div className="mb-2 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#5F713D]">
-                          <Utensils className="h-4 w-4" />
-                        </div>
-                        <span className="text-xs font-bold text-[#1C1A17] tracking-tight leading-tight block">Lunch</span>
-                        <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#B18A5E] mt-1 tracking-wide leading-none block">12.00 PM</span>
-                        <span className="text-[9px] sm:text-[10px] text-stone-500 font-medium truncate mt-1 max-w-[85px] sm:max-w-[95px] leading-tight block">Gudeg Yu Djum</span>
-                      </div>
-                      <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
-                        <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=600" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      </div>
-                    </div>
-
-                    {/* Arrow Divider */}
-                    <div className="flex-shrink-0 text-[#A78B71]/40 font-bold text-base sm:text-lg">&rarr;</div>
-
-                    {/* Step 3: Afternoon (Taman Sari) */}
-                    {(() => {
-                      const dest = allDestinations.find(d => d.id === 'tamansari') || allDestinations[3];
-                      if (!dest) return null;
-                      return (
-                        <div 
-                          onClick={() => handleExploreDestination(dest)}
-                          className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#FAF6F0] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
-                        >
-                          <div className="flex flex-col items-center justify-center flex-shrink-0 w-24 sm:w-28 text-center px-1">
-                            <div className="mb-2 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#4F6F52]">
-                              <Leaf className="h-4 w-4" />
-                            </div>
-                            <span className="text-xs font-bold text-[#1C1A17] tracking-tight leading-tight block">Afternoon</span>
-                            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#B18A5E] mt-1 tracking-wide leading-none block">02.30 PM</span>
-                            <span className="text-[9px] sm:text-[10px] text-stone-500 font-medium truncate mt-1 max-w-[85px] sm:max-w-[95px] leading-tight block">Taman Sari</span>
-                          </div>
-                          <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
-                            <img src={dest.images[0]?.url || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Arrow Divider */}
-                    <div className="flex-shrink-0 text-[#A78B71]/40 font-bold text-base sm:text-lg">&rarr;</div>
-
-                    {/* Step 4: Sunset (Parangtritis Beach) */}
-                    {(() => {
-                      const dest = allDestinations.find(d => d.id === 'parangtritis') || allDestinations[1];
-                      if (!dest) return null;
-                      return (
-                        <div 
-                          onClick={() => handleExploreDestination(dest)}
-                          className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#FAF6F0] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
-                        >
-                          <div className="flex flex-col items-center justify-center flex-shrink-0 w-24 sm:w-28 text-center px-1">
-                            <div className="mb-2 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#BC6C25]">
-                              <Sunset className="h-4.5 w-4.5" />
-                            </div>
-                            <span className="text-xs font-bold text-[#1C1A17] tracking-tight leading-tight block">Sunset</span>
-                            <span className="text-[9px] sm:text-[10px] font-mono font-bold text-[#B18A5E] mt-1 tracking-wide leading-none block">05.30 PM</span>
-                            <span className="text-[9px] sm:text-[10px] text-stone-500 font-medium truncate mt-1 max-w-[85px] sm:max-w-[95px] leading-tight block">Parangtritis Beach</span>
-                          </div>
-                          <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
-                            <img src={dest.images[0]?.url || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          </div>
-                        </div>
-                      );
-                    })()}
-
                   </div>
                 </section>
 
