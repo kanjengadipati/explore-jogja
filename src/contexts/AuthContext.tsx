@@ -43,15 +43,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Handle Google OAuth redirect callback on mount
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const idToken = params.get('id_token');
-    if (idToken) {
-      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
-      auth.socialLogin('google', idToken).then((res) => {
-        if (res.status === 'success') {
-          refreshProfile();
-        }
-      });
+    // Google returns id_token in URL hash fragment (#id_token=...)
+    const hash = window.location.hash;
+    if (hash && hash.includes('id_token')) {
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const idToken = hashParams.get('id_token');
+      if (idToken) {
+        window.history.replaceState({}, '', window.location.pathname);
+        auth.socialLogin('google', idToken).then((res) => {
+          if (res.status === 'success') {
+            refreshProfile();
+          }
+        });
+      }
     }
   }, [refreshProfile]);
 
