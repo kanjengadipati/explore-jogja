@@ -93,7 +93,7 @@ export default function DestinationCard({ destination, onExplore, onToggleSave, 
             <div className="flex items-center space-x-1 text-xs font-semibold text-white bg-black/35 py-1 px-2.5 rounded-full border border-white/5">
               <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
               <span>{destination.rating.toFixed(1)}</span>
-              <span className="text-[10px] text-white/55">({destination.reviewCount > 1000 ? (destination.reviewCount / 1000).toFixed(1) + 'k' : destination.reviewCount})</span>
+              <span className="text-[10px] text-white/55">({(() => { const rc = destination.googleReviewCount || destination.reviewCount; return rc > 1000 ? (rc / 1000).toFixed(1) + 'k' : rc; })()})</span>
             </div>
 
             {/* Best Time badge */}

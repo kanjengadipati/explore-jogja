@@ -1,12 +1,15 @@
 'use client';
 
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LocationProvider } from '@/contexts/LocationContext';
 import App from '@/App';
 
-export default function HomePage() {
+export default function Page() {
   return (
     <AuthProvider>
-      <App />
+      <LocationProvider>
+        <App />
+      </LocationProvider>
     </AuthProvider>
   );
 }

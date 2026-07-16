@@ -44,6 +44,12 @@ export default function App() {
           reviewCount: raw.review_count || raw.ReviewCount || raw.reviewCount || 0,
           travelTips: raw.travel_tips || raw.TravelTips || raw.travelTips || [],
           bestTime: raw.best_time || raw.BestTime || raw.bestTime || '',
+          googleMapsUrl: raw.google_maps_url || raw.GoogleMapsURL || raw.googleMapsUrl || '',
+          googleReviewCount: raw.google_review_count || raw.GoogleReviewCount || raw.googleReviewCount || 0,
+          seoTitle: raw.seo_title || raw.SeoTitle || raw.seoTitle || '',
+          seoKeywords: raw.seo_keywords || raw.SeoKeywords || raw.seoKeywords || '',
+          seoDescription: raw.seo_description || raw.SeoDescription || raw.seoDescription || '',
+          ogImageUrl: raw.og_image_url || raw.OgImageUrl || raw.ogImageUrl || '',
         }));
         setAllDestinations(mapped as Destination[]);
       }
@@ -825,17 +831,18 @@ export default function App() {
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
             <div className="flex items-center justify-center md:justify-start space-x-2">
-              <span className="font-manrope text-gold-300 font-bold text-lg">Ψ</span>
-              <span className="font-manrope font-bold text-sm tracking-[0.08em] uppercase text-white">Explore Yogyakarta</span>
+              <img src="/logo-gold-new.png" alt="Jogjagem" className="h-6 w-auto" />
+              <span className="font-manrope font-bold text-sm tracking-[0.08em] uppercase text-white">Jogjagem</span>
             </div>
             <p className="text-[10px] text-gold-100/40 font-mono tracking-widest uppercase mt-1">
-              AI Tourism Discovery & Ecosystem Gateway • Yogyakarta DIY
+              AI Tourism Discovery & Hidden Gems in Yogyakarta
             </p>
           </div>
 
           <div className="text-[10px] font-mono text-gold-200/40 uppercase tracking-widest space-y-1">
-            <p>© 2026 Explore Jogja Platform • DIY Tourism Department Ecosystem Partner</p>
+            <p>© 2026 Jogjagem Platform</p>
             <p>Made with deep hospitality & Javanese cultural heritage</p>
+            <p>Build by Giwangan Studio • 085111221044</p>
           </div>
         </div>
       </footer>

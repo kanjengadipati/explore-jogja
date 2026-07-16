@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Map as MapIcon, MapPin, Eye, Info, Layers, RefreshCw, Car, Flame, Compass, Navigation, Bus, Star, ExternalLink, ShieldAlert } from 'lucide-react';
 import { Destination, EcosystemPartner } from '../types';
 import { destinations as destinationApi } from '../lib/api';
+import { useLocation } from '../contexts/LocationContext';
 
 interface InteractiveMapProps {
   onExploreDestination: (dest: Destination) => void;
@@ -36,6 +37,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 export default function InteractiveMap({ onExploreDestination, selectedDestination }: InteractiveMapProps) {
+  const { coords } = useLocation();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activeLayer, setActiveLayer] = useState<'all' | 'destinations' | 'partners' | 'transport'>('all');
   const [showTraffic, setShowTraffic] = useState(false);
@@ -125,14 +127,14 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
     }
   }, [selectedDestination]);
 
-  // Clean or draw route when route target changes
+  // Clean or draw route when route target changes or location updates
   useEffect(() => {
-    if (!routeTargetId || !selectedPin || selectedPin.type !== 'destination') {
+    if (!routeTargetId) {
       clearRoute();
       return;
     }
     drawRoute();
-  }, [routeTargetId, selectedPin]);
+  }, [routeTargetId, coords]);
 
   const clearRoute = () => {
     if (routePolylineRef.current && mapInstanceRef.current) {
@@ -144,8 +146,10 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
 
   // Draw OSRM route on map
   const drawRoute = async () => {
-    if (!selectedPin || !routeTargetId || !mapInstanceRef.current || !leafletModuleRef.current) return;
-    const fromDest = selectedPin.data;
+    if (!routeTargetId || !mapInstanceRef.current || !leafletModuleRef.current) return;
+    
+    // Origin: Use GPS coords if available, otherwise selectedPin
+    const fromDest = coords ? { latitude: coords.lat, longitude: coords.lng } : (selectedPin?.data ? selectedPin.data : null);
     const toDest = destinations.find(d => d.id === routeTargetId);
 
     if (!fromDest || !toDest) return;

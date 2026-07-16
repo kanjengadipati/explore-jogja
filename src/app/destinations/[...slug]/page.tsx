@@ -1,40 +1,9 @@
-'use client';
+import type { Metadata } from 'next';
+import DestinationDetailClient from '@/components/DestinationDetailClient';
+import { TouristDestinationJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
 
-import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthProvider } from '@/contexts/AuthContext';
-import Header from '@/components/Header';
-import DestinationDetail from '@/components/DestinationDetail';
-import { Destination } from '@/types';
-import { destinations } from '@/lib/api';
-import { Loader2, AlertCircle } from 'lucide-react';
-
-function mapApiToDestination(raw: any): Destination {
-  return {
-    id: raw.id || raw.ExternalID || '',
-    name: raw.name || raw.Name || '',
-    tagline: raw.tagline || raw.Tagline || '',
-    category: raw.category || raw.Category || '',
-    location: raw.location || raw.Location || '',
-    subRegion: raw.sub_region || raw.SubRegion || raw.subRegion || '',
-    images: raw.images || raw.Images || [],
-    rating: raw.rating || raw.Rating || 0,
-    reviewCount: raw.review_count || raw.ReviewCount || raw.reviewCount || 0,
-    description: raw.description || raw.Description || '',
-    story: raw.story || raw.Story || '',
-    ticketPrice: raw.ticket_price || raw.TicketPrice || raw.ticketPrice || '',
-    openingHours: raw.opening_hours || raw.OpeningHours || raw.openingHours || '',
-    facilities: raw.facilities || raw.Facilities || [],
-    travelTips: raw.travel_tips || raw.TravelTips || raw.travelTips || [],
-    bestTime: raw.best_time || raw.BestTime || raw.bestTime || '',
-    weather: raw.weather || raw.Weather || { temp: '', condition: '', status: '' },
-    latitude: raw.latitude || raw.Latitude || raw.latitude || 0,
-    longitude: raw.longitude || raw.Longitude || raw.longitude || 0,
-    reviews: raw.reviews || raw.Reviews || [],
-    partners: raw.partners || raw.Partners || [],
-    faqs: raw.faqs || raw.Faqs || raw.FAQs || [],
-  };
-}
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jogjagem.com';
+const SITE_NAME = 'Jogjagem';
 
 function toSlug(name: string): string {
   return name
@@ -43,122 +12,162 @@ function toSlug(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-function DestinationDetailPageInner({ params }: { params: Promise<{ slug: string[] }> }) {
-  const { slug } = use(params);
-  const router = useRouter();
-  const destinationId = slug.join('/');
-  const [destination, setDestination] = useState<Destination | null>(null);
-  const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [savedDestinationIds, setSavedDestinationIds] = useState<string[]>([]);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const fetchDestination = async () => {
-      setLoading(true);
-      const slugStr = slug.join('/');
-
-      const allRes = await destinations.getAll();
-      if (allRes.status === 'success' && Array.isArray(allRes.data)) {
-        const mapped = allRes.data.map(mapApiToDestination);
-        setAllDestinations(mapped);
-        const found = mapped.find(d => toSlug(d.name) === slugStr || d.id === slugStr);
-        if (found) {
-          setDestination(found);
-          setLoading(false);
-          return;
-        }
-      }
-
-      try {
-        const res = await destinations.getById(slugStr);
-        if (res.status === 'success' && res.data) {
-          setDestination(mapApiToDestination(res.data));
-          setLoading(false);
-          return;
-        }
-      } catch {}
-
-      setError('Destination not found');
-      setLoading(false);
-    };
-    fetchDestination();
-  }, [destinationId]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('explore_jogja_saved_v1');
-      if (saved) {
-        setSavedDestinationIds(JSON.parse(saved));
-      }
-    } catch {}
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(savedDestinationIds));
-    } catch {}
-  }, [savedDestinationIds, hydrated]);
-
-  const handleToggleSave = (dest: Destination) => {
-    setSavedDestinationIds(prev => {
-      const exists = prev.includes(dest.id);
-      if (exists) return prev.filter(id => id !== dest.id);
-      return [...prev, dest.id];
-    });
-  };
-
-  const isSaved = (id: string) => savedDestinationIds.includes(id);
-
-  if (loading) {
+async function fetchDestinationBySlug(slugStr: string) {
+  try {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8081';
+    const res = await fetch(`${API_BASE}/destinations`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const body = await res.json();
+    const list = body?.data || body || [];
+    if (!Array.isArray(list)) return null;
     return (
-      <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 text-gold-500 animate-spin" />
-        </div>
-      </div>
+      list.find((d: any) => {
+        const name = d.name || d.Name || '';
+        return toSlug(name) === slugStr || (d.id || d.ExternalID) === slugStr;
+      }) || null
     );
+  } catch {
+    return null;
   }
-
-  if (error || !destination) {
-    return (
-      <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-3" />
-            <p className="text-royal-950 font-medium">{error || 'Destination not found'}</p>
-            <button onClick={() => router.push('/destinations')} className="mt-4 text-sm text-gold-600 hover:text-gold-700 underline">
-              Browse all destinations
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-      <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
-      <DestinationDetail
-        destination={destination}
-        allDestinations={allDestinations}
-        onBack={() => router.back()}
-        onToggleSave={handleToggleSave}
-        isSaved={isSaved(destination.id)}
-      />
-    </div>
-  );
 }
 
-export default function DestinationDetailPage({ params }: { params: Promise<{ slug: string[] }> }) {
+export async function generateStaticParams() {
+  try {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8081';
+    const res = await fetch(`${API_BASE}/destinations`, { next: { revalidate: 3600 } });
+    if (!res.ok) return [];
+    const body = await res.json();
+    const list = body?.data || body || [];
+    if (!Array.isArray(list)) return [];
+    return list
+      .map((d: any) => {
+        const name = d.name || d.Name || '';
+        const id = d.id || d.ExternalID || '';
+        const slug = toSlug(name) || id;
+        return slug ? { slug: [slug] } : null;
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+type PageProps = { params: Promise<{ slug: string[] }> };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const slugStr = slug.join('/');
+  const dest = await fetchDestinationBySlug(slugStr);
+
+  if (!dest) {
+    return {
+      title: 'Destinasi Tidak Ditemukan',
+      description: 'Destinasi wisata yang Anda cari tidak ditemukan di Jogjagem.',
+      robots: { index: false },
+    };
+  }
+
+  const name = dest.name || dest.Name || '';
+  const tagline = dest.tagline || dest.Tagline || '';
+  const description = dest.description || dest.Description || tagline || `Panduan wisata lengkap ${name} di Yogyakarta.`;
+  const category = dest.category || dest.Category || '';
+  const location = dest.location || dest.Location || '';
+  const images = dest.images || dest.Images || [];
+  const firstImage = images[0];
+  const defaultOgImage = typeof firstImage === 'string' ? firstImage : firstImage?.url || '/og-default.png';
+  const rating = dest.rating || dest.Rating || 0;
+  const reviewCount = dest.review_count || dest.ReviewCount || 0;
+  const latitude = dest.latitude || dest.Latitude || 0;
+  const longitude = dest.longitude || dest.Longitude || 0;
+  const pageUrl = `${SITE_URL}/destinations/${slugStr}`;
+
+  const seoTitle = dest.seo_title || dest.SeoTitle || '';
+  const seoKeywords = dest.seo_keywords || dest.SeoKeywords || '';
+  const seoDescription = dest.seo_description || dest.SeoDescription || '';
+  const ogImageUrl = dest.og_image_url || dest.OgImageUrl || '';
+
+  const title = seoTitle || `${name} — Wisata Yogyakarta`;
+  const metaDescription = seoDescription || (description.length > 160 ? description.slice(0, 157) + '...' : description);
+  const ogImage = ogImageUrl || defaultOgImage;
+
+  return {
+    title,
+    description: metaDescription,
+    keywords: seoKeywords
+      ? seoKeywords.split(',').map((k: string) => k.trim()).filter(Boolean)
+      : [name, `wisata ${name}`, `${name} Yogyakarta`, `${name} jogja`, category, 'wisata jogja', 'tempat wisata Yogyakarta'],
+    openGraph: {
+      type: 'article',
+      locale: 'id_ID',
+      url: pageUrl,
+      siteName: SITE_NAME,
+      title,
+      description: metaDescription,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${name} — ${tagline || location}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: metaDescription,
+      images: [ogImage],
+    },
+    alternates: {
+      canonical: pageUrl,
+    },
+  };
+}
+
+export default async function DestinationDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const slugStr = slug.join('/');
+  const dest = await fetchDestinationBySlug(slugStr);
+
+  const name = dest?.name || dest?.Name || '';
+  const tagline = dest?.tagline || dest?.Tagline || '';
+  const description = dest?.description || dest?.Description || tagline || '';
+  const category = dest?.category || dest?.Category || '';
+  const images = dest?.images || dest?.Images || [];
+  const firstImage = images[0];
+  const image = typeof firstImage === 'string' ? firstImage : firstImage?.url || undefined;
+  const latitude = dest?.latitude || dest?.Latitude || 0;
+  const longitude = dest?.longitude || dest?.Longitude || 0;
+  const rating = dest?.rating || dest?.Rating || 0;
+  const reviewCount = dest?.review_count || dest?.ReviewCount || 0;
+  const location = dest?.location || dest?.Location || '';
+
   return (
-    <AuthProvider>
-      <DestinationDetailPageInner params={params} />
-    </AuthProvider>
+    <>
+      {dest && (
+        <>
+          <TouristDestinationJsonLd
+            name={name}
+            description={description}
+            image={image}
+            url={`${SITE_URL}/destinations/${slugStr}`}
+            latitude={latitude}
+            longitude={longitude}
+            rating={rating}
+            reviewCount={reviewCount}
+            address={location}
+            category={category}
+          />
+          <BreadcrumbJsonLd
+            items={[
+              { name: 'Beranda', url: SITE_URL },
+              { name: 'Destinasi', url: `${SITE_URL}/destinations` },
+              { name, url: `${SITE_URL}/destinations/${slugStr}` },
+            ]}
+          />
+        </>
+      )}
+      <DestinationDetailClient slug={slug} />
+    </>
   );
 }

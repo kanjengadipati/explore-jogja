@@ -218,6 +218,10 @@ export const reviews = {
     return request<BeReview[]>(`/reviews?destination_id=${encodeURIComponent(destinationId)}`);
   },
 
+  async getByUser(userId: string) {
+    return request<BeReview[]>(`/reviews?user_id=${encodeURIComponent(userId)}`);
+  },
+
   async create(destinationId: string, rating: number, comment: string, userName?: string, travelerType?: string) {
     return request('/reviews', {
       method: 'POST',

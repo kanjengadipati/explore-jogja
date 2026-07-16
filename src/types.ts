@@ -57,6 +57,12 @@ export interface Destination {
   reviews: Review[];
   partners: EcosystemPartner[];
   faqs: FAQ[];
+  googleMapsUrl?: string;
+  googleReviewCount?: number;
+  seoTitle?: string;
+  seoKeywords?: string;
+  seoDescription?: string;
+  ogImageUrl?: string;
 }
 
 export interface Festival {

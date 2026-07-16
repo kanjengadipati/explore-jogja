@@ -1,0 +1,25 @@
+import type { MetadataRoute } from 'next';
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'Jogjagem — Jelajahi Yogyakarta dengan AI',
+    short_name: 'Jogjagem',
+    description: 'Panduan wisata AI untuk Yogyakarta. Temukan 100+ destinasi wisata terbaik.',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#faf9f6',
+    theme_color: '#1a1533',
+    icons: [
+      {
+        src: '/favicon-gold.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        src: '/logo-gold-new.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
+    ],
+  };
+}

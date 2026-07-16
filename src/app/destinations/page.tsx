@@ -226,11 +226,23 @@ function DestinationsPageInner() {
         </main>
 
       {/* Footer */}
-      <footer className="bg-royal-950 border-t border-royal-800 py-8 mt-auto">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs text-white/40">
-            &copy; 2026 Jogjagem. Crafted with care for Yogyakarta.
-          </p>
+      <footer className="bg-royal-950 text-white border-t border-royal-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div>
+            <div className="flex items-center justify-center md:justify-start space-x-2">
+              <img src="/logo-gold-new.png" alt="Jogjagem" className="h-6 w-auto" />
+              <span className="font-manrope font-bold text-sm tracking-[0.08em] uppercase text-white">Jogjagem</span>
+            </div>
+            <p className="text-[10px] text-gold-100/40 font-mono tracking-widest uppercase mt-1">
+              AI Tourism Discovery & Hidden Gems in Yogyakarta
+            </p>
+          </div>
+
+          <div className="text-[10px] font-mono text-gold-200/40 uppercase tracking-widest space-y-1">
+            <p>&copy; 2026 Jogjagem Platform</p>
+            <p>Made with deep hospitality & Javanese cultural heritage</p>
+            <p>Build by Giwangan Studio • 085111221044</p>
+          </div>
         </div>
       </footer>
     </div>

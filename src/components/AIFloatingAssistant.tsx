@@ -3,14 +3,27 @@
 import React, { useState, useEffect } from 'react';
 import { Bot, ChevronUp, ChevronDown, Sparkles, MapPin, Coffee, Sun } from 'lucide-react';
 import { Destination } from '@/types';
+import { ai } from '@/lib/api';
+import { LiveWeather } from '@/lib/weather';
+import { useLocation } from '@/contexts/LocationContext';
 
 interface AIFloatingAssistantProps {
   destination: Destination;
+  liveWeather: LiveWeather | null;
+  liveCrowdLevel: 'Low' | 'Moderate' | 'High';
 }
 
-export default function AIFloatingAssistant({ destination }: AIFloatingAssistantProps) {
+export default function AIFloatingAssistant({ destination, liveWeather, liveCrowdLevel }: AIFloatingAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
+  const [advice, setAdvice] = useState<string>('Loading...');
+  const [loading, setLoading] = useState(false);
+  const { coords, requestLocation } = useLocation();
+
+  useEffect(() => {
+    // Request location on mount
+    if (!coords) requestLocation();
+  }, [coords, requestLocation]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -22,11 +35,31 @@ export default function AIFloatingAssistant({ destination }: AIFloatingAssistant
     return () => clearInterval(timer);
   }, []);
 
-  const getLiveAdvice = () => {
-    const hour = new Date().getHours();
-    if (hour < 11) return "It's the perfect morning hour! The air is crisp and the site is less crowded. Focus on outdoor exploration.";
-    if (hour < 15) return "Mid-day sun is intense. Consider finding shaded spots or visiting indoor museum zones.";
-    return "The golden hour approaches. Prepare for the best photography lighting!";
+  useEffect(() => {
+    if (isOpen) {
+      setLoading(true);
+      const weatherText = liveWeather ? `${liveWeather.temp}°C, ${liveWeather.condition}` : 'Unknown';
+      const locationText = coords ? `(My GPS: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})` : '';
+      const prompt = `Destination: ${destination.name}. Time: ${currentTime}. Weather: ${weatherText}. Crowd Level: ${liveCrowdLevel}. ${locationText}. Give me short, 1-2 sentence real-time travel advice based on this context. Start with a warm local greeting.`;
+      
+      ai.query(prompt)
+        .then(res => {
+          if (res.status === 'success' && res.data) {
+            setAdvice((res.data as any).reply);
+          } else {
+            setAdvice("Enjoy your visit to this beautiful place!");
+          }
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [isOpen, destination.name, liveWeather, liveCrowdLevel, currentTime, coords?.lat, coords?.lng]);
+
+  const navigateToViewpoint = () => {
+    // Scroll to the detail map section
+    const element = document.getElementById('detail-map-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -41,15 +74,16 @@ export default function AIFloatingAssistant({ destination }: AIFloatingAssistant
             <span className="text-[10px] font-mono bg-white/20 px-2 py-0.5 rounded-full">{currentTime}</span>
           </div>
           <div className="p-4 space-y-4">
-            <p className="text-sm font-light leading-relaxed">{getLiveAdvice()}</p>
+            <p className="text-sm font-light leading-relaxed">{loading ? 'Thinking...' : advice}</p>
             <div className="space-y-2">
-              <button className="flex items-center space-x-2 w-full p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-xs">
+              <button onClick={navigateToViewpoint} className="flex items-center space-x-2 w-full p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-xs">
                 <MapPin className="h-4 w-4 text-gold-400" />
-                <span>Navigate to best viewpoint</span>
+                <span>View on Map</span>
               </button>
+
               <button className="flex items-center space-x-2 w-full p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-xs">
-                <Coffee className="h-4 w-4 text-gold-400" />
-                <span>Find local cafe nearby</span>
+                <Sparkles className="h-4 w-4 text-gold-400" />
+                <span>Get Local Tips</span>
               </button>
             </div>
           </div>

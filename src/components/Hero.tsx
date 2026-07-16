@@ -56,6 +56,12 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [heroConfig, setHeroConfig] = useState({
+    title: 'Jogja is',
+    titleAccent: 'Calling You',
+    subtitle: 'Discover unforgettable places, authentic experiences, and warm Javanese hospitality.',
+    ctaText: 'Mulai Jelajahi',
+  });
 
   const [recommendation, setRecommendation] = useState<{
     headline: string;
@@ -67,6 +73,27 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
     distance: string;
     crowd: string;
   } | null>(null);
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8081';
+    fetch(`${API_BASE}/config/seo?category=landing`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.data) {
+          const cfg = data.data;
+          if (cfg.landing_hero_title) {
+            const parts = cfg.landing_hero_title.split('\n');
+            setHeroConfig({
+              title: parts[0] || 'Jogja is',
+              titleAccent: parts[1] || 'Calling You',
+              subtitle: cfg.landing_hero_subtitle || heroConfig.subtitle,
+              ctaText: cfg.landing_cta_text || heroConfig.ctaText,
+            });
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (destinations.length === 0) return;
@@ -284,14 +311,14 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
             </span>
             
             <h1 className="font-display text-4xl xs:text-5xl sm:text-6xl lg:text-7xl font-medium tracking-tight text-white drop-shadow-lg leading-[1.1]">
-              Jogja is <br />
+              {heroConfig.title} <br />
               <span className="font-display italic text-gold-400 font-normal mt-1 sm:mt-2 block tracking-normal">
-                Calling You
+                {heroConfig.titleAccent}
               </span>
             </h1>
             
             <p className="text-sm sm:text-base max-w-xl font-light text-white/90 drop-shadow-md leading-relaxed">
-              Discover unforgettable places, authentic experiences, and warm Javanese hospitality.
+              {heroConfig.subtitle}
             </p>
 
             {/* Premium Transparent/Semi-transparent Search Bar Pill with High Legibility */}

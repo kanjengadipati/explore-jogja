@@ -737,10 +737,9 @@ export default function DestinationDetail({
             </button>
             <div className="h-4 w-[1px] bg-white/15 hidden sm:block" />
             <div className="flex items-center space-x-2">
-              <span className="text-gold-400 font-bold text-lg leading-none">Ψ</span>
+              <img src="/logo-gold-new.png" alt="Jogjagem" className="h-5 w-auto" />
               <div className="flex flex-col -space-y-1">
-                <span className="text-[8px] font-mono tracking-[0.1em] text-gold-300 font-semibold uppercase">EXPLORE</span>
-                <span className="font-manrope text-sm font-extrabold tracking-widest">JOGJA</span>
+                <span className="font-manrope text-sm font-extrabold tracking-widest">JOGJAGEM</span>
               </div>
             </div>
           </div>
