@@ -208,7 +208,7 @@ function DestinationsPageInner() {
                 <span className="block text-sm text-stone-500">Try a different search or category</span>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {filteredDestinations.slice(0, displayCount).map((dest) => (
                   <DestinationCard
                     key={dest.id}

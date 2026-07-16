@@ -345,7 +345,7 @@ export default function App() {
                       <span className="block text-sm font-medium text-royal-950">No matches found for this category</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
                       {displayDestinations.map((dest) => (
                         <DestinationCard
                           key={dest.id}
@@ -353,7 +353,7 @@ export default function App() {
                           onExplore={handleExploreDestination}
                           onToggleSave={handleToggleSave}
                           isSaved={isSaved(dest.id)}
-                          className={isLandscape(dest.id) ? 'sm:col-span-2 lg:col-span-2' : 'sm:col-span-1 lg:col-span-1'}
+                          className={isLandscape(dest.id) ? 'col-span-2 lg:col-span-2' : 'col-span-1 lg:col-span-1'}
                         />
                       ))}
                     </div>
