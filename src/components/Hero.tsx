@@ -255,7 +255,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
       <style>{`@keyframes marqueeScroll { 0% { transform: translateX(0); } 70% { transform: translateX(-50%); } 100% { transform: translateX(0); } }`}</style>
       <div
         id="hero-section-container"
-        className="relative min-h-[calc(100svh-64px)] lg:h-[90vh] lg:min-h-[780px] w-full bg-royal-950"
+        className="relative min-h-[calc(100svh-64px)] lg:h-[calc(100vh-80px)] lg:min-h-[680px] w-full bg-royal-950 overflow-hidden"
       >
         {/* ── Background slides ── */}
         <div className="absolute inset-0 overflow-hidden">
@@ -272,10 +272,10 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         </div>
 
         {/* ── Foreground ── */}
-        <div className="relative z-10 flex flex-col min-h-[calc(100svh-64px)] lg:min-h-[780px] lg:h-[90vh]">
+        <div className="relative z-10 flex flex-col min-h-[calc(100svh-64px)] lg:min-h-[680px] lg:h-[calc(100vh-80px)]">
 
           {recommendation && isRecommendationDismissed && (
-            <button onClick={() => setIsRecommendationDismissed(false)} className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 hover:scale-110 transition-transform" aria-label="Buka rekomendasi AI">
+            <button onClick={() => setIsRecommendationDismissed(false)} className="absolute top-[22px] right-4 sm:right-6 lg:right-8 z-20 hover:scale-110 transition-transform" aria-label="Buka rekomendasi AI">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" className="text-gold-400 drop-shadow-lg">
                 <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor" opacity="0.95"/>
                 <path d="M19 2L19.8 4.2L22 5L19.8 5.8L19 8L18.2 5.8L16 5L18.2 4.2L19 2Z" fill="currentColor" opacity="0.65"/>
@@ -285,8 +285,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           )}
 
           {recommendation && !isRecommendationDismissed && (
-            <div className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl animate-fade-in border border-white/10">
+            <div className="absolute top-[22px] right-4 sm:right-6 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl animate-fade-in border border-gold-500/30">
                 <img src={recommendation.image} alt={recommendation.dest.name} className="absolute inset-0 w-full h-full object-cover object-center" referrerPolicy="no-referrer" />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/30 to-black/80" />
                 <div className="relative z-10 flex flex-col h-full px-3 pt-3 pb-3">
@@ -332,8 +332,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           )}
 
           {!recommendation && (
-            <div className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
-              <div className="bg-stone-950/90 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl animate-pulse">
+            <div className="absolute top-[22px] right-4 sm:right-6 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
+              <div className="bg-stone-950/90 backdrop-blur-md border border-gold-500/30 rounded-2xl overflow-hidden shadow-2xl animate-pulse">
                 <div className="px-3 pt-3 pb-2.5">
                   <div className="h-2 w-28 bg-white/10 rounded mb-2" /><div className="h-3.5 w-full bg-white/15 rounded mb-1.5" />
                   <div className="h-2.5 w-full bg-white/10 rounded mb-1" /><div className="h-2.5 w-3/4 bg-white/10 rounded mb-2.5" />
@@ -347,7 +347,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
 
           {/* ── Main content area ── */}
-          <div className="mx-auto w-full max-w-7xl flex flex-col flex-1 px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-0 pb-0 lg:justify-center lg:pb-[272px]">
+          <div className="mx-auto w-full max-w-7xl flex flex-col flex-1 px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-0 pb-0 lg:justify-center lg:pb-[220px]">
 
             {/* Title + Search */}
             <div className="flex-1 flex items-center lg:block lg:flex-none lg:items-start">
@@ -429,8 +429,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
 
           {/* Trending Now — desktop only, absolute bottom */}
-          <div className="hidden lg:block absolute bottom-[62px] left-0 right-0 z-10 px-8">
-            <div className="mx-auto max-w-7xl">
+          <div className="hidden lg:block absolute bottom-[62px] left-0 right-0 z-10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-gold-400 text-xs">✦</span>
                 <span className="text-[11px] font-bold text-white tracking-wide">Trending Now</span>
@@ -450,29 +450,33 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           </div>
 
           {/* Slide controls — desktop only */}
-          <div className="hidden lg:flex absolute bottom-4 right-8 z-10 flex-col items-end gap-3">
-            <div className="flex items-center space-x-2.5 text-white/90">
-              <span className="text-gold-400 text-sm">📍</span>
-              <div className="text-left">
-                <span className="block text-sm font-bold tracking-tight text-white">{slide.name}</span>
-                <span className="block text-[10px] font-mono text-white/50 tracking-wider">Sleman, Yogyakarta</span>
+          <div className="hidden lg:flex absolute bottom-4 left-0 right-0 z-10 pointer-events-none">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex justify-end pointer-events-auto">
+              <div className="flex flex-col items-end gap-3">
+                <div className="flex items-center space-x-2.5 text-white/90">
+                  <span className="text-gold-400 text-sm">📍</span>
+                  <div className="text-left">
+                    <span className="block text-sm font-bold tracking-tight text-white">{slide.name}</span>
+                    <span className="block text-[10px] font-mono text-white/50 tracking-wider">Sleman, Yogyakarta</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center space-x-2">
+                    {HERO_SLIDES.map((_, idx) => (
+                      <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-0.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentSlide ? 'w-8 bg-gold-400' : 'w-4 bg-white/30 hover:bg-white/50'}`} aria-label={`Go to slide ${idx + 1}`} />
+                    ))}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button onClick={() => setCurrentSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)} className="h-8 w-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/5 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer" aria-label="Previous slide">
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length)} className="h-8 w-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/5 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer" aria-label="Next slide">
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="text-[10px] font-mono text-white/40">Photo: {HERO_SLIDES[currentSlide].credit} / Unsplash</div>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center space-x-2">
-                {HERO_SLIDES.map((_, idx) => (
-                  <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-0.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentSlide ? 'w-8 bg-gold-400' : 'w-4 bg-white/30 hover:bg-white/50'}`} aria-label={`Go to slide ${idx + 1}`} />
-                ))}
-              </div>
-              <div className="flex items-center space-x-2">
-                <button onClick={() => setCurrentSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)} className="h-8 w-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/5 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer" aria-label="Previous slide">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button onClick={() => setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length)} className="h-8 w-8 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/5 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer" aria-label="Next slide">
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="text-[10px] font-mono text-white/40">Photo: {HERO_SLIDES[currentSlide].credit} / Unsplash</div>
             </div>
           </div>
 
