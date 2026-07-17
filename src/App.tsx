@@ -7,7 +7,6 @@ import CategoryLinks from './components/CategoryLinks';
 import DestinationCard, { isLandscape } from './components/DestinationCard';
 import ConversationalAI from './components/ConversationalAI';
 import TripPlanner from './components/TripPlanner';
-import InteractiveMap from './components/InteractiveMap';
 
 import { Destination, Festival } from './types';
 import { destinations, events, config, auth } from './lib/api';
@@ -203,7 +202,9 @@ export default function App() {
       <Header 
         activeTab={activeTab} 
         setActiveTab={(tab) => {
-          if (tab === 'events') {
+          if (tab === 'map') {
+            router.push('/map');
+          } else if (tab === 'events') {
             setActiveTab('discover');
             setTimeout(() => {
               const el = document.getElementById('upcoming-festivals-showcase');
@@ -327,7 +328,7 @@ export default function App() {
                       <h2 className="font-manrope text-2xl sm:text-3xl font-bold tracking-tight text-royal-950">
                         {selectedCategory 
                           ? `Curated ${selectedCategory.replace('-', ' ')}` 
-                          : 'Trending Destinations'
+                          : 'Popular Destinations'
                         }
                       </h2>
                     </div>
@@ -454,7 +455,7 @@ export default function App() {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 h-full">
+                      <div className="grid grid-cols-2 gap-4">
                         {/* Card 1: Merapi Sunrise Jeep Tour */}
                         {(() => {
                           const dest = allDestinations.find(d => d.id === 'merapi') || allDestinations[0];
@@ -749,14 +750,6 @@ export default function App() {
               />
             )}
 
-            {/* Active Tab: Interactive Map */}
-            {activeTab === 'map' && (
-              <InteractiveMap
-                onExploreDestination={handleExploreDestination}
-                selectedDestination={null}
-              />
-            )}
-
             {/* Active Tab: Saved Favorites Drawer */}
             {activeTab === 'saved' && (
               <section id="saved-bookmarks-dashboard" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 animate-fade-in">
@@ -855,7 +848,7 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setActiveTab('map')}
+          onClick={() => router.push('/map')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
             activeTab === 'map' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
