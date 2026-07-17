@@ -247,7 +247,7 @@ export default function App() {
             {/* Active Tab: Discover (Homepage) */}
             {(activeTab === 'discover' || activeTab.startsWith('discover-')) && (
               <div className="space-y-4 animate-fade-in">
-                {apiError && (
+                {false && (
                   <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
                     <div className="rounded-3xl bg-amber-50 border border-amber-200/60 p-5 text-amber-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
                       <div className="flex items-start space-x-3.5">
