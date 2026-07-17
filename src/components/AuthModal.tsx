@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Loader2, Check, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import SocialLoginButtons from './SocialLoginButtons';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -189,11 +188,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 'l
               <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
             </button>
           </form>
-
-          {/* Social Login */}
-          <div className="mt-5">
-            <SocialLoginButtons onError={setError} onSuccess={() => { onClose(); resetForm(); }} />
-          </div>
 
           {/* Toggle */}
           <div className="mt-5 text-center">

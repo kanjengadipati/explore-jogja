@@ -232,17 +232,6 @@ export const auth = {
     return res;
   },
 
-  async socialLogin(provider: 'google' | 'facebook', token: string) {
-    const res = await request<AuthResponse>('/auth/social-login', {
-      method: 'POST',
-      body: JSON.stringify({ provider, token }),
-    });
-    if (res.status === 'success' && res.data) {
-      setAccessToken(res.data.access_token);
-    }
-    return res;
-  },
-
   async refreshToken() {
     return tryRefresh();
   },

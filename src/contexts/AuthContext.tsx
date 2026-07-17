@@ -10,7 +10,6 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  socialLogin: (provider: 'google' | 'facebook', token: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -41,24 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Handle Google OAuth redirect callback on mount
-  useEffect(() => {
-    // Google returns id_token in URL hash fragment (#id_token=...)
-    const hash = window.location.hash;
-    if (hash && hash.includes('id_token')) {
-      const hashParams = new URLSearchParams(hash.substring(1));
-      const idToken = hashParams.get('id_token');
-      if (idToken) {
-        window.history.replaceState({}, '', window.location.pathname);
-        auth.socialLogin('google', idToken).then((res) => {
-          if (res.status === 'success') {
-            refreshProfile();
-          }
-        });
-      }
-    }
-  }, [refreshProfile]);
-
+  // Restore session on mount
   useEffect(() => {
     refreshProfile();
   }, [refreshProfile]);
@@ -98,26 +80,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const socialLogin = async (provider: 'google' | 'facebook', token: string) => {
-    try {
-      const res = await auth.socialLogin(provider, token);
-      if (res.status === 'success') {
-        await refreshProfile();
-        return { success: true };
-      }
-      return { success: false, error: res.message || 'Social login failed' };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
-    }
-  };
-
   const logout = async () => {
     await auth.logout();
     setState({ isAuthenticated: false, isLoading: false, user: null });
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, socialLogin, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
