@@ -93,6 +93,7 @@ export default function ConversationalAI({
 }: ConversationalAIProps) {
   const { isAuthenticated } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -172,6 +173,16 @@ export default function ConversationalAI({
     return () => clearInterval(timer);
   }, [loading]);
 
+  // Fire pending query after successful login
+  useEffect(() => {
+    if (isAuthenticated && pendingQuery) {
+      const q = pendingQuery;
+      setPendingQuery(null);
+      setAuthModalOpen(false);
+      handleSendQuery(q);
+    }
+  }, [isAuthenticated]);
+
   // Scroll to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,6 +192,7 @@ export default function ConversationalAI({
     if (!textToSend.trim()) return;
 
     if (!isAuthenticated) {
+      setPendingQuery(textToSend);
       setAuthModalOpen(true);
       return;
     }
