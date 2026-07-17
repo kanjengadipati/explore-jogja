@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { 
   CalendarDays, Plus, Trash, ArrowRight, MapPin, Sparkles, 
-  Clock, Coffee, Utensils, MessageSquare, ListTodo, PlusCircle, CheckCircle, Info
+  Clock, Coffee, Utensils, MessageSquare, ListTodo, PlusCircle, CheckCircle, Info, Lock, Save
 } from 'lucide-react';
 import { Destination, TripPlan, TripDay } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import AuthModal from './AuthModal';
 
 /** Safely extract the first image URL regardless of whether images are
  *  plain strings or {url, credit} objects (both shapes come from the BE). */
@@ -27,6 +29,9 @@ export default function TripPlanner({
   onExploreDestination,
   onRemoveFromSaved
 }: TripPlannerProps) {
+  const { isAuthenticated } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState<'idle' | 'saved'>('idle');
   const [tripPlan, setTripPlan] = useState<TripPlan>({
     id: 'my-custom-trip',
     title: 'My Royal Yogyakarta Escape',
@@ -105,6 +110,23 @@ export default function TripPlanner({
 
   const activeDay = tripPlan.days[activeDayIdx];
 
+  const handleSavePlan = () => {
+    if (!isAuthenticated) {
+      setAuthModalOpen(true);
+      return;
+    }
+    // Persist to localStorage as a simple save (backend integration can be added later)
+    try {
+      const saved = JSON.parse(localStorage.getItem('jogjagem_trip_plans') || '[]');
+      const existing = saved.findIndex((p: TripPlan) => p.id === tripPlan.id);
+      if (existing >= 0) saved[existing] = tripPlan;
+      else saved.push(tripPlan);
+      localStorage.setItem('jogjagem_trip_plans', JSON.stringify(saved));
+    } catch { /* ignore storage errors */ }
+    setSaveFeedback('saved');
+    setTimeout(() => setSaveFeedback('idle'), 2500);
+  };
+
   // Dynamic advice generator based on selected destinations in active day
   const getDailyAIAdvice = (day: TripDay) => {
     if (day.destinations.length === 0) {
@@ -150,13 +172,44 @@ export default function TripPlanner({
           </div>
         </div>
 
-        <button
-          onClick={handleAddDay}
-          className="flex items-center space-x-1.5 rounded-full bg-gold-800 text-gold-50 px-5 py-2.5 text-xs font-semibold hover:bg-gold-700 active:scale-95 transition-all shadow-md"
-        >
-          <PlusCircle className="h-4 w-4" />
-          <span>Add Itinerary Day</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Save Plan button */}
+          <button
+            onClick={handleSavePlan}
+            className={`flex items-center space-x-1.5 rounded-full px-5 py-2.5 text-xs font-semibold active:scale-95 transition-all shadow-md ${
+              saveFeedback === 'saved'
+                ? 'bg-green-600 text-white'
+                : isAuthenticated
+                ? 'bg-white border border-gold-300 text-gold-800 hover:bg-gold-50'
+                : 'bg-white border border-gold-200 text-stone-400 hover:border-gold-400 hover:text-gold-700'
+            }`}
+          >
+            {saveFeedback === 'saved' ? (
+              <>
+                <CheckCircle className="h-4 w-4" />
+                <span>Plan Saved!</span>
+              </>
+            ) : isAuthenticated ? (
+              <>
+                <Save className="h-4 w-4" />
+                <span>Save Plan</span>
+              </>
+            ) : (
+              <>
+                <Lock className="h-4 w-4" />
+                <span>Save Plan</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleAddDay}
+            className="flex items-center space-x-1.5 rounded-full bg-gold-800 text-gold-50 px-5 py-2.5 text-xs font-semibold hover:bg-gold-700 active:scale-95 transition-all shadow-md"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>Add Day</span>
+          </button>
+        </div>
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -353,6 +406,12 @@ export default function TripPlanner({
           )}
         </div>
       </div>
+
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultMode="login"
+      />
     </div>
   );
 }
