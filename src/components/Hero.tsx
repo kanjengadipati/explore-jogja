@@ -222,7 +222,18 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
       <button
         key={`${keyPrefix}-${item.type}-${item.id}`}
         type="button"
-        onClick={() => dest ? onExploreDestination(dest) : onSearchSubmit(item.headline)}
+        onClick={() => {
+          if (dest) {
+            onExploreDestination(dest);
+          } else if (item.type === 'event') {
+            // Scroll to the events section on the home page
+            const el = document.getElementById('upcoming-festivals-showcase');
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+          // unmatched destination — do nothing rather than redirect to AI
+        }}
         className="shrink-0 w-[100px] lg:w-[140px] snap-start bg-stone-950/60 border border-white/10 rounded-xl overflow-hidden text-left active:scale-95 transition-transform cursor-pointer hover:border-gold-500/30"
       >
         <div className="relative h-[60px] lg:h-[80px]">
