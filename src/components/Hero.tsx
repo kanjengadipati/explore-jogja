@@ -254,7 +254,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
       <style>{`@keyframes marqueeScroll { 0% { transform: translateX(0); } 70% { transform: translateX(-50%); } 100% { transform: translateX(0); } }`}</style>
       <div
         id="hero-section-container"
-        className="relative min-h-[calc(100svh+0px)] lg:h-[90vh] lg:min-h-[780px] w-full bg-royal-950"
+        className="relative min-h-[calc(100svh-64px)] lg:h-[90vh] lg:min-h-[780px] w-full bg-royal-950"
       >
         {/* ── Background slides ── */}
         <div className="absolute inset-0 overflow-hidden">
@@ -271,7 +271,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         </div>
 
         {/* ── Foreground ── */}
-        <div className="relative z-10 flex flex-col min-h-[100svh] lg:min-h-[780px] lg:h-[90vh]">
+        <div className="relative z-10 flex flex-col min-h-[calc(100svh-64px)] lg:min-h-[780px] lg:h-[90vh]">
 
           {recommendation && isRecommendationDismissed && (
             <button onClick={() => setIsRecommendationDismissed(false)} className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 hover:scale-110 transition-transform" aria-label="Buka rekomendasi AI">
@@ -376,7 +376,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
             </div>
 
             {/* Trending Now — mobile/tablet, 30px below search */}
-            <div className="block lg:hidden mt-[30px] pb-[80px]">
+            <div className="block lg:hidden mt-[30px] pb-6">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-gold-400 text-xs">✦</span>
                 <span className="text-[11px] font-bold text-white tracking-wide">Trending Now</span>
