@@ -271,9 +271,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         {/* ── Foreground ── */}
         <div className="relative z-10 flex flex-col h-full min-h-[100svh] lg:min-h-[780px] lg:h-[90vh]">
 
-          {/* AI Pick card — hidden on small mobile, visible sm+ */}
           {recommendation && isRecommendationDismissed && (
-            <button onClick={() => setIsRecommendationDismissed(false)} className="hidden sm:block absolute top-[22px] right-5 lg:right-8 z-20 hover:scale-110 transition-transform" aria-label="Buka rekomendasi AI">
+            <button onClick={() => setIsRecommendationDismissed(false)} className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 hover:scale-110 transition-transform" aria-label="Buka rekomendasi AI">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" className="text-gold-400 drop-shadow-lg">
                 <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor" opacity="0.95"/>
                 <path d="M19 2L19.8 4.2L22 5L19.8 5.8L19 8L18.2 5.8L16 5L18.2 4.2L19 2Z" fill="currentColor" opacity="0.65"/>
@@ -283,7 +282,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           )}
 
           {recommendation && !isRecommendationDismissed && (
-            <div className="hidden sm:block absolute top-[22px] right-5 lg:right-8 z-20 w-[185px] lg:w-[210px] rounded-2xl overflow-hidden shadow-2xl animate-fade-in border border-white/10">
+            <div className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] rounded-2xl overflow-hidden shadow-2xl animate-fade-in border border-white/10">
               <img src={recommendation.image} alt={recommendation.dest.name} className="absolute inset-0 w-full h-full object-cover object-center" referrerPolicy="no-referrer" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/30 to-black/80" />
               <div className="relative z-10 flex flex-col h-full px-3 pt-3 pb-3">
@@ -327,7 +326,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           )}
 
           {!recommendation && (
-            <div className="hidden sm:block absolute top-[22px] right-5 lg:right-8 z-20 w-[185px] lg:w-[210px] bg-stone-950/90 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl animate-pulse">
+            <div className="absolute top-[22px] right-3 sm:right-5 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] bg-stone-950/90 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl animate-pulse">
               <div className="px-3 pt-3 pb-2.5">
                 <div className="h-2 w-28 bg-white/10 rounded mb-2" /><div className="h-3.5 w-full bg-white/15 rounded mb-1.5" />
                 <div className="h-2.5 w-full bg-white/10 rounded mb-1" /><div className="h-2.5 w-3/4 bg-white/10 rounded mb-2.5" />
@@ -343,7 +342,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
 
             {/* Title + Search */}
             <div className="flex-1 flex items-center lg:block lg:flex-none lg:items-start">
-              <div className="max-w-2xl space-y-0.5 sm:space-y-1 text-left animate-fade-in">
+              <div className="max-w-2xl space-y-0.5 sm:space-y-1 text-left animate-fade-in pr-36 sm:pr-0">
                 <span className="inline-flex items-center space-x-2 font-sans text-[10px] uppercase tracking-[0.08em] text-gold-400 font-semibold drop-shadow-md">
                   <span>☀ GOOD MORNING, EXPLORER</span>
                 </span>
@@ -371,34 +370,11 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                   </form>
                 </div>
 
-                {/* AI Pick — mobile only, compact horizontal card below search */}
-                {recommendation && !isRecommendationDismissed && (
-                  <div className="flex sm:hidden items-center gap-3 mt-3 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-2.5">
-                    <img src={recommendation.image} alt={recommendation.dest.name} className="h-12 w-12 rounded-xl object-cover shrink-0" referrerPolicy="no-referrer" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" className="text-gold-400 shrink-0"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/></svg>
-                        <span className="text-[8px] font-bold tracking-widest uppercase text-gold-400">AI Pick</span>
-                      </div>
-                      <p className="text-[11px] font-bold text-white leading-tight truncate">{recommendation.dest.name}</p>
-                      <p className="text-[9px] text-white/60 truncate">{recommendation.reason}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button onClick={() => onExploreDestination(recommendation.dest)} className="bg-gold-500 hover:bg-gold-400 text-white text-[9px] font-bold px-2.5 py-1.5 rounded-lg transition-all cursor-pointer">
-                        Jelajahi
-                      </button>
-                      <button onClick={() => setIsRecommendationDismissed(true)} className="text-white/40 hover:text-white/80 transition-colors" aria-label="Tutup">
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
               </div>
             </div>
 
             {/* Trending Now — mobile/tablet, pushed to bottom with mt-auto */}
-            <div className="block lg:hidden mt-auto pt-6 pb-4">
+            <div className="block lg:hidden mt-auto pt-4 pb-8">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-gold-400 text-xs">✦</span>
                 <span className="text-[11px] font-bold text-white tracking-wide">Trending Now</span>
