@@ -56,8 +56,8 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav id="desktop-navbar" className="hidden md:flex items-center space-x-6 lg:space-x-8">
+          {/* Desktop Navigation — lg and above only */}
+          <nav id="desktop-navbar" className="hidden lg:flex items-center space-x-5 xl:space-x-8">
             {navItems.filter(item => item.id !== 'map').map((item) => {
               const isActive = activeTab === item.id || 
                 (item.id === 'events' && activeTab === 'discover-events') || 
@@ -91,8 +91,8 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
             </button>
           </nav>
 
-          {/* Desktop Action Icons */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Action Icons — lg and above */}
+          <div className="hidden lg:flex items-center space-x-4">
             <button
               id="desktop-saved-icon-btn"
               onClick={() => setActiveTab('saved')}
@@ -166,8 +166,8 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
 
           </div>
 
-          {/* Mobile top action menu */}
-          <div className="flex md:hidden items-center space-x-3">
+          {/* Mobile/tablet top action menu — below lg */}
+          <div className="flex lg:hidden items-center space-x-3">
             <button 
               onClick={() => setActiveTab('saved')} 
               className="relative p-2 rounded-full text-white hover:bg-white/10"
@@ -208,7 +208,7 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
 
         {/* Mobile Navigation Panel */}
         {mobileMenuOpen && (
-          <div id="mobile-navigation-panel" className="md:hidden border-t border-royal-900 bg-royal-950/95 backdrop-blur-lg animate-fade-in">
+          <div id="mobile-navigation-panel" className="lg:hidden border-t border-royal-900 bg-royal-950/95 backdrop-blur-lg animate-fade-in">
             <div className="space-y-1 px-3 py-4">
               {navItems.map((item) => {
                 const isActive = activeTab === item.id;
