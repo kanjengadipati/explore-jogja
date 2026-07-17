@@ -245,7 +245,7 @@ export default function App() {
         
         <>
             {/* Active Tab: Discover (Homepage) */}
-            {activeTab === 'discover' && (
+            {(activeTab === 'discover' || activeTab.startsWith('discover-')) && (
               <div className="space-y-4 animate-fade-in">
                 {apiError && (
                   <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
@@ -557,8 +557,8 @@ export default function App() {
                   </div>
                 </section>
 
-                {/* AI Suggested Journey Section */}
-                <section id="ai-suggested-journey-timeline" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                  {/* AI Suggested Journey Section */}
+                  <section id="ai-suggested-journey-timeline" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                   <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-6 border-b border-[#E8E0D5] pb-4">
                     <div className="text-left">
                       <h2 className="font-manrope text-xl sm:text-2xl font-bold tracking-tight text-royal-950">
@@ -620,9 +620,9 @@ export default function App() {
                   </div>
                 </section>
 
-                {/* Editorial Literary Quote (Anti-AI-Slop humbleness and high craft) */}
-                {allQuotes.length > 0 && (
-                  <section id="literary-quote-section" className="mx-auto max-w-4xl px-4 py-8 text-center">
+                  {/* Editorial Literary Quote (Anti-AI-Slop humbleness and high craft) */}
+                  {allQuotes.length > 0 && (
+                    <section id="literary-quote-section" className="mx-auto max-w-4xl px-4 py-8 text-center">
                     <div className="relative p-8 rounded-3xl bg-gold-50/30 border border-gold-100/40 shadow-inner flex flex-col items-center">
                       <Quote className="h-8 w-8 text-gold-400 opacity-60 mb-4" />
                       <p className="font-display text-lg italic text-royal-950/90 leading-relaxed max-w-xl">

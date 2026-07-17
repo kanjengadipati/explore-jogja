@@ -146,12 +146,49 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
     fetchAIRecommendation();
   }, [destinations]);
 
+  const TRENDING_FALLBACK: TrendingItem[] = [
+    {
+      type: 'destination', id: 'goajomblang', badge: 'Hidden Gem',
+      headline: 'Celestial Beam of Heavenly Light', reason: 'Vertical cave with a breathtaking column of light',
+      imageUrl: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=400&q=80',
+      rating: 4.9, distance: '45 min', location: 'Gunungkidul',
+    },
+    {
+      type: 'event', id: 'sekaten', badge: 'Spesial Hari Ini',
+      headline: 'Perayaan Budaya Sekaten Yogyakarta', reason: 'Royal Javanese gamelan festival at Kraton',
+      imageUrl: 'https://images.unsplash.com/photo-1533050487297-09b450131914?auto=format&fit=crop&w=400&q=80',
+      rating: 0, distance: '10 min', location: 'Yogyakarta',
+    },
+    {
+      type: 'destination', id: 'merapi', badge: 'Trending',
+      headline: 'Mount Merapi Lava Tour', reason: 'Thrilling jeep ride through volcanic ash fields',
+      imageUrl: 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80',
+      rating: 4.8, distance: '35 min', location: 'Sleman',
+    },
+    {
+      type: 'destination', id: 'malioboro', badge: 'Populer',
+      headline: 'The Soul of Yogyakarta', reason: 'Iconic street lined with batik, street food & culture',
+      imageUrl: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=400&q=80',
+      rating: 4.6, distance: '5 min', location: 'Yogyakarta',
+    },
+    {
+      type: 'destination', id: 'kalibiru', badge: 'Trending',
+      headline: 'Enchanted Pine Forest Views', reason: 'Hilltop platform with panoramic reservoir vistas',
+      imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=400&q=80',
+      rating: 4.6, distance: '60 min', location: 'Bantul',
+    },
+  ];
+
   useEffect(() => {
     let cancelled = false;
     setTrendingLoading(true);
     ai.trending()
-      .then(res => { if (!cancelled && res.status === 'success' && res.data?.items) setTrendingItems(res.data.items); })
-      .catch(() => {})
+      .then(res => {
+        if (cancelled) return;
+        const items = res.status === 'success' && res.data?.items?.length ? res.data.items : TRENDING_FALLBACK;
+        setTrendingItems(items);
+      })
+      .catch(() => { if (!cancelled) setTrendingItems(TRENDING_FALLBACK); })
       .finally(() => { if (!cancelled) setTrendingLoading(false); });
     return () => { cancelled = true; };
   }, []);
@@ -274,10 +311,10 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         {/* ── Foreground ── */}
         <div className="relative z-10 flex flex-col min-h-[calc(100svh-64px)] lg:min-h-[680px] lg:h-[calc(100vh-80px)]">
 
-          {/* ── Main content area ── */}
-          <div className="mx-auto w-full max-w-7xl flex flex-col flex-1 px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-0 pb-0 lg:justify-center lg:pb-[220px] relative">
+          {/* ── Main content area (single, authoritative) ── */}
+          <div className="relative mx-auto w-full max-w-7xl flex flex-col flex-1 px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-0 pb-0 lg:justify-center lg:pb-[240px]">
 
-            {/* RECOMMENDATIONS (Moved inside constrained container) */}
+            {/* RECOMMENDATIONS */}
             {recommendation ? (
               <div className="absolute top-[22px] right-4 sm:right-6 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl animate-fade-in border border-gold-500/30">
@@ -323,7 +360,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                 </div>
                 <NearbyMapCard />
               </div>
-            ) : (
+            ) : !isRecommendationDismissed ? (
               <div className="absolute top-[22px] right-4 sm:right-6 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
                 <div className="bg-stone-950/90 backdrop-blur-md border border-gold-500/30 rounded-2xl overflow-hidden shadow-2xl animate-pulse">
                   <div className="px-3 pt-3 pb-2.5">
@@ -335,15 +372,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                 </div>
                 <NearbyMapCard />
               </div>
-            )}
-
-          </div>{/* end main content */}
-
-
-
-
-          {/* ── Main content area ── */}
-          <div className="mx-auto w-full max-w-7xl flex flex-col flex-1 px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-0 pb-0 lg:justify-center lg:pb-[220px]">
+            ) : null}
 
             {/* Title + Search */}
             <div className="flex-1 flex items-center lg:block lg:flex-none lg:items-start">
@@ -424,8 +453,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           </div>{/* end main content */}
 
 
-          {/* Trending Now — desktop only, absolute bottom */}
-          <div className="hidden lg:block absolute bottom-[62px] left-0 right-0 z-10">
+          {/* Trending Now — desktop only, pinned above slide controls */}
+          <div className="hidden lg:block absolute bottom-[56px] left-0 right-0 z-10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-gold-400 text-xs">✦</span>
