@@ -375,8 +375,32 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
               </div>
             </div>
 
-            {/* Trending Now — mobile/tablet, 30px below search */}
-            <div className="block lg:hidden mt-[30px] pb-[82px]">
+            {/* Slide caption — mobile only, above trending */}
+            <div className="flex lg:hidden items-center justify-between mt-[30px] mb-3">
+              <div className="flex items-center gap-1.5">
+                <span className="text-gold-400 text-xs">📍</span>
+                <div>
+                  <span className="block text-xs font-bold tracking-tight text-white drop-shadow">{slide.name}</span>
+                  <span className="block text-[9px] font-mono text-white/50">Sleman, Yogyakarta</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center space-x-1.5">
+                  {HERO_SLIDES.map((_, idx) => (
+                    <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-0.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentSlide ? 'w-6 bg-gold-400' : 'w-3 bg-white/30'}`} aria-label={`Go to slide ${idx + 1}`} />
+                  ))}
+                </div>
+                <button onClick={() => setCurrentSlide(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)} className="h-6 w-6 rounded-full border border-white/20 flex items-center justify-center text-white/70" aria-label="Previous slide">
+                  <ChevronLeft className="h-3 w-3" />
+                </button>
+                <button onClick={() => setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length)} className="h-6 w-6 rounded-full border border-white/20 flex items-center justify-center text-white/70" aria-label="Next slide">
+                  <ChevronRight className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* Trending Now — mobile/tablet */}
+            <div className="block lg:hidden pb-[82px]">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-gold-400 text-xs">✦</span>
                 <span className="text-[11px] font-bold text-white tracking-wide">Trending Now</span>
