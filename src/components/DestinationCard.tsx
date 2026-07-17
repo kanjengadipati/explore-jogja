@@ -51,6 +51,15 @@ export default function DestinationCard({ destination, onExplore, onToggleSave, 
     }
   };
 
+  const handleReportOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!auth.isLoggedIn()) {
+      alert('Silakan login terlebih dahulu untuk melaporkan gambar.');
+      return;
+    }
+    setReportOpen(true);
+  };
+
   const badgeText = BADGE_MAP[destination.id] || destination.category.replace('-', ' ').toUpperCase();
   const heightClass = 'h-[160px] sm:h-[360px] md:h-[400px]';
 
@@ -81,7 +90,7 @@ export default function DestinationCard({ destination, onExplore, onToggleSave, 
             </div>
             {/* Report Button */}
             <button
-                onClick={(e) => { e.stopPropagation(); setReportOpen(true); }}
+                onClick={handleReportOpen}
                 className="p-1.5 rounded-full bg-black/20 hover:bg-red-500 text-white backdrop-blur-sm transition-all"
                 title="Laporkan gambar"
             >
