@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, User, ShieldCheck } from 'lucide-react';
+import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, ShieldCheck, Settings, HelpCircle, Bookmark, ChevronRight, Home } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
@@ -15,26 +15,35 @@ interface HeaderProps {
 
 export default function Header({ activeTab, setActiveTab, savedCount, isOverHero = false, onOpenAuth: _onOpenAuth }: HeaderProps) {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const { isAuthenticated, user, logout } = useAuth();
 
   const navItems = [
     { id: 'discover', label: 'Explore', icon: Compass },
-    { id: 'events', label: 'Events', icon: Compass },
-    { id: 'experiences', label: 'Experiences', icon: Compass },
+    { id: 'events', label: 'Events', icon: CalendarDays },
+    { id: 'experiences', label: 'Experiences', icon: Home },
     { id: 'planner', label: 'Trip Planner', icon: CalendarDays },
     { id: 'ai-assistant', label: 'AI Assistant', icon: Brain },
-    { id: 'map', label: 'Interactive Map', icon: Map }
+    { id: 'map', label: 'Interactive Map', icon: Map },
+    { id: 'saved', label: 'Saved Places', icon: Bookmark },
   ];
+
+  useEffect(() => {
+    if (drawerOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [drawerOpen]);
+
+  const openLogin = () => { setAuthModalMode('login'); setAuthModalOpen(true); };
+  const openRegister = () => { setAuthModalMode('register'); setAuthModalOpen(true); };
+  const handleNav = (id: string) => { setActiveTab(id); setDrawerOpen(false); };
 
   const headerClass = isOverHero
     ? "absolute top-0 left-0 right-0 z-50 w-full transition-all duration-300 bg-gradient-to-b from-black/60 via-black/20 to-transparent border-transparent text-white"
     : "sticky top-0 z-50 w-full transition-all duration-300 bg-royal-950 border-b border-royal-900 text-white shadow-md";
-
-  const openLogin = () => { setAuthModalMode('login'); setAuthModalOpen(true); };
-  const openRegister = () => { setAuthModalMode('register'); setAuthModalOpen(true); };
 
   return (
     <>
@@ -106,10 +115,47 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
               )}
             </button>
 
-            <button className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold-400" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setBellOpen(!bellOpen)}
+                className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white relative"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold-400" />
+              </button>
+
+              {bellOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden z-50 animate-fade-in">
+                    <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
+                      <span className="text-sm font-bold text-royal-950">Notifikasi</span>
+                      <button onClick={() => setBellOpen(false)} className="text-xs text-stone-400 hover:text-stone-600">
+                        Tandai sudah dibaca
+                      </button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {[
+                        { title: 'Prambanan Temple Festival', desc: 'Festival budaya dimulai 5 hari lagi', time: '2 jam lalu', unread: true },
+                        { title: 'Rekomendasi AI Hari Ini', desc: '3 tempat wisata baru dekat Anda', time: '5 jam lalu', unread: true },
+                        { title: 'Trip Planner Update', desc: 'Rute perjalanan Anda sudah siap', time: 'Kemarin', unread: false },
+                      ].map((n, i) => (
+                        <div key={i} className={`px-4 py-3 border-b border-stone-50 hover:bg-stone-50 transition-colors cursor-pointer ${n.unread ? 'bg-gold-50/50' : ''}`}>
+                          <div className="flex items-start gap-2.5">
+                            {n.unread && <span className="mt-1.5 h-2 w-2 rounded-full bg-gold-500 shrink-0" />}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-royal-950 leading-tight">{n.title}</p>
+                              <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">{n.desc}</p>
+                              <p className="text-[10px] text-stone-400 mt-1">{n.time}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Auth Section */}
             {isAuthenticated ? (
@@ -198,78 +244,115 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
 
             <button
               id="mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setDrawerOpen(true)}
               className="rounded-full p-2 text-white hover:bg-white/10 focus:outline-none"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              <Menu className="h-6 w-6" />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Navigation Panel */}
-        {mobileMenuOpen && (
-          <div id="mobile-navigation-panel" className="lg:hidden border-t border-royal-900 bg-royal-950 backdrop-blur-lg animate-fade-in relative z-50">
-            <div className="space-y-1 px-3 py-4">
-              {navItems.map((item) => {
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    id={`mobile-nav-link-${item.id}`}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ${
-                      isActive 
-                        ? 'bg-gold-800 text-gold-50' 
-                        : 'text-white/80 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <span>{item.label}</span>
-                    </div>
-                  </button>
-                );
-              })}
+      {/* ── Side Drawer Backdrop ── */}
+      <div
+        onClick={() => setDrawerOpen(false)}
+        className={`lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      />
 
-              {/* Mobile Admin Panel */}
-              {isAuthenticated && (user?.role === 'admin' || user?.role === 'superadmin') && (
-                <a
-                  href={process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3005'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium bg-gradient-to-r from-gold-600 to-gold-500 text-white mt-2"
-                >
-                  <div className="flex items-center space-x-3">
-                    <ShieldCheck className="h-5 w-5" />
-                    <span>Admin Panel</span>
-                  </div>
-                </a>
-              )}
-
-              {/* Mobile Auth */}
-              {!isAuthenticated && (
-                <div className="pt-2 border-t border-royal-900 mt-2 space-y-2">
-                  <button
-                    onClick={() => { openLogin(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center justify-center space-x-2 rounded-xl border border-white/20 px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>Sign In</span>
-                  </button>
-                  <button
-                    onClick={() => { openRegister(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gold-600 px-4 py-3 text-sm font-semibold text-white hover:bg-gold-500"
-                  >
-                    <span>Sign Up</span>
-                  </button>
-                </div>
-              )}
+      {/* ── Side Drawer Panel ── */}
+      <div className={`lg:hidden fixed top-0 left-0 z-[70] h-full w-[300px] bg-royal-950 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-5 py-5 border-b border-white/10">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNav('discover')}>
+            <Image src="/logo-gold-new.png" alt="Jogjagem Logo" width={34} height={34} className="object-contain" />
+            <div>
+              <span className="block font-manrope text-[15px] font-bold tracking-widest text-white">Jogjagem</span>
+              <span className="block font-sans text-[8px] uppercase tracking-widest text-gold-300/80">Hidden Gems of Yogyakarta</span>
             </div>
           </div>
-        )}
-      </header>
+          <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id ||
+              (item.id === 'events' && activeTab === 'discover-events') ||
+              (item.id === 'experiences' && activeTab === 'discover-experiences');
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNav(item.id)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
+                  isActive ? 'bg-gold-700/30 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className={`p-1.5 rounded-lg ${isActive ? 'bg-gold-500/20 text-gold-400' : 'bg-white/5 text-white/50 group-hover:text-white/80'}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className={`text-sm font-medium ${isActive ? 'text-white font-semibold' : ''}`}>{item.label}</span>
+                </div>
+                <ChevronRight className={`h-4 w-4 ${isActive ? 'text-gold-400 opacity-80' : 'opacity-30'}`} />
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Profile section */}
+        <div className="px-3 pb-2 border-t border-white/10 pt-3">
+          {isAuthenticated ? (
+            <button onClick={() => { router.push('/profile'); setDrawerOpen(false); }} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-all">
+              <div className="flex items-center gap-3">
+                <img
+                  src={user?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}`}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-gold-500/30"
+                  alt={user?.name || 'User'}
+                />
+                <div className="text-left">
+                  <span className="block text-sm font-semibold text-white truncate max-w-[150px]">{user?.name || 'User'}</span>
+                  <span className="block text-[10px] text-gold-400 font-medium">Level 1 Explorer</span>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-white/30" />
+            </button>
+          ) : (
+            <div className="space-y-2 px-1 py-2">
+              <button onClick={() => { openLogin(); setDrawerOpen(false); }} className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-2.5 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors">
+                <LogIn className="h-4 w-4" /><span>Sign In</span>
+              </button>
+              <button onClick={() => { openRegister(); setDrawerOpen(false); }} className="w-full flex items-center justify-center gap-2 rounded-xl bg-gold-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gold-500 transition-colors">
+                Sign Up
+              </button>
+            </div>
+          )}
+          {isAuthenticated && (user?.role === 'admin' || user?.role === 'superadmin') && (
+            <a href={process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3005'} target="_blank" rel="noopener noreferrer"
+              onClick={() => setDrawerOpen(false)}
+              className="mt-1 w-full flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-gold-700/20 to-gold-600/10 hover:from-gold-700/30 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-lg bg-gold-500/20 text-gold-400"><ShieldCheck className="h-4 w-4" /></div>
+                <span className="text-sm font-semibold text-gold-400">Business Partner</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gold-400/50" />
+            </a>
+          )}
+        </div>
+
+        {/* Footer links */}
+        <div className="px-3 pb-8 pt-1 border-t border-white/10 flex items-center gap-1">
+          <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors text-xs font-medium">
+            <Settings className="h-4 w-4" /><span>Settings</span>
+          </button>
+          <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors text-xs font-medium">
+            <HelpCircle className="h-4 w-4" /><span>Help</span>
+          </button>
+        </div>
+      </div>
 
       <AuthModal
         isOpen={authModalOpen}
