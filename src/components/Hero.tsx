@@ -373,8 +373,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
               </div>
             </div>
 
-            {/* Trending Now — mobile/tablet, pushed to bottom with mt-auto */}
-            <div className="block lg:hidden mt-auto pt-4 pb-20">
+            {/* Trending Now — mobile/tablet, 50px below search */}
+            <div className="block lg:hidden mt-[50px] pb-20">
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-gold-400 text-xs">✦</span>
                 <span className="text-[11px] font-bold text-white tracking-wide">Trending Now</span>
