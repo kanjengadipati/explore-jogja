@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { WebsiteJsonLd } from '@/components/JsonLd';
+import I18nProvider from '@/contexts/I18nProvider';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jogjagem.com';
 const SITE_NAME = 'Jogjagem';
@@ -101,7 +102,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <WebsiteJsonLd />
       </head>
-      <body>{children}</body>
+      <body>
+        <I18nProvider>{children}</I18nProvider>
+      </body>
     </html>
   );
 }

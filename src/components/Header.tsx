@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, ShieldCheck, Settings, HelpCircle, Bookmark, ChevronRight, Home } from 'lucide-react';
+import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, ShieldCheck, Settings, HelpCircle, Bookmark, ChevronRight, Home, Languages } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '@/contexts/LocaleContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthModal from './AuthModal';
 
 interface HeaderProps {
@@ -15,6 +17,7 @@ interface HeaderProps {
 
 export default function Header({ activeTab, setActiveTab, savedCount, isOverHero = false, onOpenAuth: _onOpenAuth }: HeaderProps) {
   const router = useRouter();
+  const { t } = useLocale();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -22,12 +25,12 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
   const { isAuthenticated, user, logout } = useAuth();
 
   const navItems = [
-    { id: 'discover', label: 'Explore', icon: Compass },
-    { id: 'events', label: 'Events', icon: CalendarDays },
-    { id: 'planner', label: 'Trip Planner', icon: CalendarDays },
-    { id: 'ai-assistant', label: 'AI Assistant', icon: Brain },
-    { id: 'map', label: 'Interactive Map', icon: Map },
-    { id: 'saved', label: 'Saved Places', icon: Bookmark },
+    { id: 'discover', label: t('common.explore'), icon: Compass },
+    { id: 'events', label: t('home.upcoming_festivals'), icon: CalendarDays },
+    { id: 'planner', label: t('common.planner'), icon: CalendarDays },
+    { id: 'ai-assistant', label: t('common.ai_assistant'), icon: Brain },
+    { id: 'map', label: t('common.map'), icon: Map },
+    { id: 'saved', label: t('common.saved'), icon: Bookmark },
   ];
 
   useEffect(() => {
@@ -76,7 +79,9 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                   key={item.id}
                   id={`nav-link-${item.id}`}
                   onClick={() => {
-                    if (item.id === 'planner') router.push('/planner');
+                    if (item.id === 'planner') { router.push('/planner'); }
+                    else if (item.id === 'saved') { setDrawerOpen(false); router.push('/saved'); }
+                    else if (item.id === 'ai-assistant') router.push('/ai');
                     else setActiveTab(item.id);
                   }}
                   className={`text-sm font-medium tracking-wide transition-all duration-300 border-b-2 py-1 ${
@@ -98,12 +103,14 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                   : 'border-transparent text-white/80 hover:text-white hover:border-white/30'
               }`}
             >
-              Interactive Map
+              {t('common.map')}
             </button>
           </nav>
 
           {/* Desktop Action Icons — lg and above */}
           <div className="hidden lg:flex items-center space-x-2 shrink-0">
+            <LanguageSwitcher />
+
             {isAuthenticated && (
               <button
                 id="desktop-saved-icon-btn"
@@ -296,6 +303,7 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                 onClick={() => {
                     if (item.id === 'planner') { setDrawerOpen(false); router.push('/planner'); }
                     else if (item.id === 'saved') { setDrawerOpen(false); router.push('/saved'); }
+                    else if (item.id === 'ai-assistant') { setDrawerOpen(false); router.push('/ai'); }
                     else handleNav(item.id);
                   }}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${

@@ -3,6 +3,7 @@ import { Search, ChevronLeft, ChevronRight, Mic, MicOff, Camera, Loader2, Bookma
 import { Destination } from '../types';
 import { ai } from '../lib/api';
 import NearbyMapCard from './NearbyMapCard';
+import { useLocale } from '@/contexts/LocaleContext';
 
 function getCtaText(destName: string, category: string): string {
   const hour = new Date().getHours();
@@ -69,6 +70,7 @@ const HERO_SLIDES = [
 ];
 
 export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit, onExploreDestination, onToggleSave, isSaved }: HeroProps) {
+  const { t } = useLocale();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -226,13 +228,11 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           if (dest) {
             onExploreDestination(dest);
           } else if (item.type === 'event') {
-            // Scroll to the events section on the home page
             const el = document.getElementById('upcoming-festivals-showcase');
             if (el) {
               el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
           }
-          // unmatched destination — do nothing rather than redirect to AI
         }}
         className="shrink-0 w-[100px] lg:w-[140px] snap-start bg-stone-950/60 border border-white/10 rounded-xl overflow-hidden text-left active:scale-95 transition-transform cursor-pointer hover:border-gold-500/30"
       >
@@ -303,7 +303,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-1">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-gold-400 shrink-0"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/></svg>
-                        <span className="text-[8px] font-bold tracking-widest uppercase text-gold-400">AI Pick for You</span>
+                        <span className="text-[8px] font-bold tracking-widest uppercase text-gold-400">{t('hero.ai_pick')}</span>
                       </div>
                       <button onClick={() => setIsRecommendationDismissed(true)} className="flex items-center justify-center h-4 w-4 hover:bg-white/10 text-white/40 hover:text-white/80 transition-all rounded-full" aria-label="Tutup">
                         <X className="h-2.5 w-2.5" />
@@ -357,7 +357,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
             <div className="flex-1 flex items-center lg:block lg:flex-none lg:items-start">
               <div className="max-w-2xl space-y-0.5 sm:space-y-1 text-left animate-fade-in pr-36 sm:pr-0">
                 <span className="inline-flex items-center space-x-2 font-sans text-[10px] uppercase tracking-[0.08em] text-gold-400 font-semibold drop-shadow-md">
-                  <span>☀ GOOD MORNING, EXPLORER</span>
+                  <span>{t('hero.good_morning')}</span>
                 </span>
                 <h1 className="font-display text-4xl xs:text-5xl sm:text-6xl lg:text-7xl font-medium tracking-tight text-white drop-shadow-lg leading-[1.1]">
                   {heroConfig.title} <br />

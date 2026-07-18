@@ -9,6 +9,7 @@ import { destinations } from '@/lib/api';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
+import I18nProvider from '@/contexts/I18nProvider';
 
 function mapApiToDestination(raw: any): Destination {
   return {
@@ -147,6 +148,7 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
 
   if (loading) {
     return (
+      <I18nProvider>
       <AuthProvider>
       <LocationProvider>
         <div className="min-h-screen bg-[#faf9f6] flex flex-col">
@@ -157,11 +159,13 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
         </div>
       </LocationProvider>
       </AuthProvider>
+      </I18nProvider>
     );
   }
 
   if (error || !destination) {
     return (
+      <I18nProvider>
       <AuthProvider>
       <LocationProvider>
         <div className="min-h-screen bg-[#faf9f6] flex flex-col">
@@ -178,10 +182,12 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
         </div>
       </LocationProvider>
       </AuthProvider>
+      </I18nProvider>
     );
   }
 
   return (
+    <I18nProvider>
     <AuthProvider>
     <LocationProvider>
       <div className="min-h-screen bg-[#faf9f6] flex flex-col">
@@ -196,5 +202,6 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
       </div>
     </LocationProvider>
     </AuthProvider>
+    </I18nProvider>
   );
 }

@@ -341,6 +341,21 @@ export const ai = {
     }>(`/ai/recommend?time=${encodeURIComponent(timeOfDay)}`);
   },
 
+  async recommendMulti(timeOfDay: string) {
+    return request<{
+      items: Array<{
+        destinationId: string;
+        headline: string;
+        reason: string;
+        badge: string;
+        crowd: string;
+        imageUrl: string;
+        rating: number;
+        location: string;
+      }>;
+    }>(`/ai/recommend/multi?time=${encodeURIComponent(timeOfDay)}`);
+  },
+
   async trending() {
     return request<{
       items: Array<{

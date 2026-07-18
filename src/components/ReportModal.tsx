@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Flag, X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -10,16 +11,18 @@ interface ReportModalProps {
   onReport: (reason: string, details: string) => Promise<void>;
 }
 
-const REASONS = [
-  "Gambar tidak sesuai",
-  "Melanggar hak cipta",
-  "Konten tidak pantas",
-  "Kualitas gambar rendah",
-  "Lainnya"
-];
-
 export default function ReportModal({ isOpen, onClose, destinationId, onReport }: ReportModalProps) {
-  const [reason, setReason] = useState(REASONS[0]);
+  const { t } = useLocale();
+  
+  const reasonKeys = [
+    'inappropriate_image',
+    'copyright',
+    'inappropriate_content',
+    'low_quality',
+    'other'
+  ] as const;
+
+  const [reason, setReason] = useState(reasonKeys[0]);
   const [details, setDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,7 +31,7 @@ export default function ReportModal({ isOpen, onClose, destinationId, onReport }
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await onReport(reason, details);
+      await onReport(t(`report.reasons.${reason}`), details);
       onClose();
     } finally {
       setSubmitting(false);
@@ -47,20 +50,20 @@ export default function ReportModal({ isOpen, onClose, destinationId, onReport }
           <div className="p-2 bg-red-100 rounded-full text-red-600">
             <AlertTriangle className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-bold text-royal-950">Laporkan Konten</h2>
+          <h2 className="text-lg font-bold text-royal-950">{t('report.title')}</h2>
         </div>
 
         <div className="space-y-3 mb-6">
-          {REASONS.map((r) => (
-            <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-stone-100 cursor-pointer hover:bg-stone-50">
-              <input type="radio" name="reason" value={r} checked={reason === r} onChange={(e) => setReason(e.target.value)} className="text-gold-500 focus:ring-gold-500" />
-              <span className="text-sm text-stone-700">{r}</span>
+          {reasonKeys.map((key) => (
+            <label key={key} className="flex items-center gap-3 p-3 rounded-xl border border-stone-100 cursor-pointer hover:bg-stone-50">
+              <input type="radio" name="reason" value={key} checked={reason === key} onChange={(e) => setReason(e.target.value as any)} className="text-gold-500 focus:ring-gold-500" />
+              <span className="text-sm text-stone-700">{t(`report.reasons.${key}`)}</span>
             </label>
           ))}
           <textarea
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            placeholder="Detail tambahan (opsional)..."
+            placeholder={t('report.details_placeholder')}
             className="w-full p-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-gold-500"
             rows={3}
           />
@@ -71,7 +74,7 @@ export default function ReportModal({ isOpen, onClose, destinationId, onReport }
           disabled={submitting}
           className="w-full py-3 rounded-2xl bg-royal-950 hover:bg-royal-900 text-white font-semibold transition-all disabled:opacity-50"
         >
-          {submitting ? 'Mengirim...' : 'Kirim Laporan'}
+          {submitting ? t('report.submitting') : t('report.submit')}
         </button>
       </div>
     </div>

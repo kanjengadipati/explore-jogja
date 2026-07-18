@@ -5,10 +5,9 @@ import AuthModal from './components/AuthModal';
 import Hero from './components/Hero';
 import CategoryLinks from './components/CategoryLinks';
 import DestinationCard, { isLandscape } from './components/DestinationCard';
-import ConversationalAI from './components/ConversationalAI';
 
 import { Destination, Festival } from './types';
-import { destinations, events, config, auth } from './lib/api';
+import { destinations, events, config, auth, ai, APIResponse } from '@/lib/api';
 import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, CalendarDays, Map, Sun, Utensils, Leaf, Sunset, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -17,17 +16,15 @@ export default function App() {
   const initialTab = searchParams.get('tab') || 'discover';
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [conversationalQuery, setConversationalQuery] = useState<string>('');
-  const [initialImageResult, setInitialImageResult] = useState<{
-    imageUrl: string;
-    reply: string;
-    matchedDestinationIds: string[];
-  } | null>(null);
   
    const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
   const [allEvents, setAllEvents] = useState<Festival[]>([]);
   const [allQuotes, setAllQuotes] = useState<{ text: string; author: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [aiPicks, setAiPicks] = useState<Array<{
+    destinationId: string; headline: string; reason: string;
+    badge: string; crowd: string; imageUrl: string; rating: number; location: string;
+  }>>([]);
 
   useEffect(() => {
     Promise.all([
@@ -175,13 +172,14 @@ export default function App() {
   }, [searchParams]);
 
   const handleHeroSearch = (query: string) => {
-    setConversationalQuery(query);
-    navigateToTab('ai-assistant');
+    router.push(`/ai?q=${encodeURIComponent(query)}`);
   };
 
   const handleHeroImageSearch = (imageUrl: string, reply: string, matchedDestinationIds: string[]) => {
-    setInitialImageResult({ imageUrl, reply, matchedDestinationIds });
-    navigateToTab('ai-assistant');
+    try {
+      sessionStorage.setItem('ai_image_result', JSON.stringify({ imageUrl, reply, matchedDestinationIds }));
+    } catch { /* ignore */ }
+    router.push('/ai');
   };
 
   const toSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -189,6 +187,20 @@ export default function App() {
   const handleExploreDestination = (dest: Destination) => {
     router.push(`/destinations/${toSlug(dest.name)}`);
   };
+
+  // Fetch AI multi-picks when destinations are ready
+  useEffect(() => {
+    if (allDestinations.length === 0) return;
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 11 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    ai.recommendMulti(timeOfDay)
+      .then((res: APIResponse<{ items: any[] }>) => {
+        if (res.status === 'success' && res.data?.items?.length) {
+          setAiPicks(res.data.items);
+        }
+      })
+      .catch(() => {});
+  }, [allDestinations]);
 
   // Quick helper to choose random quote
   const [quoteIdx, setQuoteIdx] = useState(0);
@@ -427,45 +439,56 @@ export default function App() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        {/* Card 1: Merapi Sunrise Jeep Tour */}
-                        {(() => {
-                          const dest = allDestinations.find(d => d.id === 'merapi') || allDestinations[0];
+                        {(aiPicks.length > 0
+                          ? aiPicks.slice(0, 4)
+                          : [
+                              { destinationId: 'merapi',     badge: 'AI Pick Today', headline: 'Merapi Sunrise Jeep Tour', crowd: 'Low',  rating: 4.8 },
+                              { destinationId: 'goajomblang', badge: 'Hidden Gem',   headline: 'Celestial Beam Cave',      crowd: 'Low',  rating: 4.9 },
+                              { destinationId: 'prambanan',  badge: 'Heritage Gem',  headline: 'Prambanan Temple',         crowd: 'Medium', rating: 4.7 },
+                              { destinationId: 'parangtritis', badge: 'Sunset Spot', headline: 'Parangtritis Beach',       crowd: 'High', rating: 4.5 },
+                            ]
+                        ).map((pick) => {
+                          const dest = allDestinations.find(d => d.id === pick.destinationId);
                           if (!dest) return null;
+                          const imgUrl = (pick as any).imageUrl || dest.images[0]?.url || '';
                           return (
                             <div
+                              key={pick.destinationId}
                               onClick={() => handleExploreDestination(dest)}
-                              className="group relative h-full min-h-[220px] lg:min-h-0 w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
+                              className="group relative h-full min-h-[180px] lg:min-h-0 w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
-                              <img 
-                                src={dest.images[0]?.url || ''} 
-                                alt={dest.name} 
-                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108" 
+                              <img
+                                src={imgUrl}
+                                alt={dest.name}
+                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
-                              
-                              {/* Top Badge */}
-                              <div className="absolute top-3.5 left-3.5 bg-amber-500 border border-amber-400/10 px-2.5 py-0.5 rounded-full text-[9px] font-sans font-semibold text-white uppercase tracking-[0.08em]">
-                                AI Pick Today
+
+                              {/* Badge */}
+                              <div className="absolute top-3.5 left-3.5 bg-amber-500/90 px-2.5 py-0.5 rounded-full text-[9px] font-sans font-semibold text-white uppercase tracking-[0.08em]">
+                                {pick.badge}
                               </div>
- 
-                              {/* Heart button */}
-                              <button className="absolute top-3.5 right-3.5 flex h-7.5 w-7.5 items-center justify-center rounded-full bg-black/20 hover:bg-black/45 text-white backdrop-blur-sm border border-white/10">
-                                <Heart className="h-3.5 w-3.5 text-white" />
+
+                              {/* Heart */}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleToggleSave(dest); }}
+                                className="absolute top-3.5 right-3.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/20 hover:bg-black/45 text-white backdrop-blur-sm border border-white/10"
+                              >
+                                <Heart className={`h-3.5 w-3.5 ${isSaved(dest.id) ? 'fill-gold-400 text-gold-400' : 'text-white'}`} />
                               </button>
- 
-                              {/* Text Overlay Details */}
-                              <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col justify-end text-left">
-                                <h3 className="font-manrope text-sm font-bold tracking-tight text-white leading-tight mb-2.5 group-hover:text-gold-300 transition-colors">
+
+                              {/* Bottom info */}
+                              <div className="absolute bottom-0 inset-x-0 p-3.5 flex flex-col justify-end text-left">
+                                <h3 className="font-manrope text-xs font-bold tracking-tight text-white leading-tight mb-2 group-hover:text-gold-300 transition-colors line-clamp-2">
                                   {dest.name}
                                 </h3>
-                                
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center space-x-1.5">
-                                    <span className="text-[10px] font-mono text-gold-400 font-bold">★ 4.8</span>
-                                    <span className="text-[9px] font-mono font-bold text-white/50 bg-white/10 px-1.5 py-0.5 rounded">Low Crowd</span>
+                                    <span className="text-[10px] font-mono text-gold-400 font-bold">★ {(pick.rating || dest.rating || 0).toFixed(1)}</span>
+                                    <span className="text-[9px] font-mono font-bold text-white/50 bg-white/10 px-1.5 py-0.5 rounded">{pick.crowd} Crowd</span>
                                   </div>
-                                  <div className="h-6.5 w-6.5 rounded-full bg-gold-400 text-royal-950 flex items-center justify-center shadow-md group-hover:bg-gold-300 transition-colors">
-                                    <svg className="h-3.5 w-3.5 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3">
+                                  <div className="h-6 w-6 rounded-full bg-gold-400 text-royal-950 flex items-center justify-center shadow-md group-hover:bg-gold-300 transition-colors shrink-0">
+                                    <svg className="h-3 w-3 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3">
                                       <path d="M5 12h14M12 5l7 7-7 7" />
                                     </svg>
                                   </div>
@@ -473,55 +496,7 @@ export default function App() {
                               </div>
                             </div>
                           );
-                        })()}
- 
-                        {/* Card 2: Jomblang Cave */}
-                        {(() => {
-                          const dest = allDestinations.find(d => d.id === 'goajomblang') || allDestinations[1];
-                          if (!dest) return null;
-                          return (
-                            <div
-                              onClick={() => handleExploreDestination(dest)}
-                              className="group relative h-full min-h-[220px] lg:min-h-0 w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
-                            >
-                              <img 
-                                src={dest.images[0]?.url || ''} 
-                                alt={dest.name} 
-                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108" 
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
-                              
-                              {/* Top Badge */}
-                              <div className="absolute top-3.5 left-3.5 bg-emerald-600 border border-emerald-500/10 px-2.5 py-0.5 rounded-full text-[9px] font-sans font-semibold text-white uppercase tracking-[0.08em]">
-                                Hidden Gem
-                              </div>
- 
-                              {/* Heart button */}
-                              <button className="absolute top-3.5 right-3.5 flex h-7.5 w-7.5 items-center justify-center rounded-full bg-black/20 hover:bg-black/45 text-white backdrop-blur-sm border border-white/10">
-                                <Heart className="h-3.5 w-3.5 text-white" />
-                              </button>
- 
-                              {/* Text Overlay Details */}
-                              <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col justify-end text-left">
-                                <h3 className="font-manrope text-sm font-bold tracking-tight text-white leading-tight mb-2.5 group-hover:text-gold-300 transition-colors">
-                                  {dest.name}
-                                </h3>
-                                
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-1.5">
-                                    <span className="text-[10px] font-mono text-gold-400 font-bold">★ 4.9</span>
-                                    <span className="text-[9px] font-mono font-bold text-white/50 bg-white/10 px-1.5 py-0.5 rounded">Heavenly Light</span>
-                                  </div>
-                                  <div className="h-6.5 w-6.5 rounded-full bg-gold-400 text-royal-950 flex items-center justify-center shadow-md group-hover:bg-gold-300 transition-colors">
-                                    <svg className="h-3.5 w-3.5 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3">
-                                      <path d="M5 12h14M12 5l7 7-7 7" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })()}
+                        })}
                       </div>
                     </div>
 
@@ -703,18 +678,7 @@ export default function App() {
               </section>
             )}
 
-            {/* Active Tab: AI Assistant (Conversational Local Advisor) */}
-            {activeTab === 'ai-assistant' && (
-              <ConversationalAI
-                initialQuery={conversationalQuery}
-                initialImageResult={initialImageResult}
-                onClearImageResult={() => setInitialImageResult(null)}
-                onExploreDestination={handleExploreDestination}
-                onToggleSave={handleToggleSave}
-                isSaved={isSaved}
-              />
-            )}
-
+            {/* Active Tab: AI Assistant → /ai route */}
             {/* Active Tab: Trip Planner → /planner route */}
             {/* Active Tab: Saved → /saved route */}
         </>
@@ -760,7 +724,7 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => navigateToTab('ai-assistant')}
+          onClick={() => router.push('/ai')}
           className={`flex flex-col items-center justify-center space-y-0.5 ${
             activeTab === 'ai-assistant' ? 'text-gold-400 font-semibold' : 'text-white/60'
           }`}
