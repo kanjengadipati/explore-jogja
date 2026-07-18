@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 import Hero from './components/Hero';
@@ -378,10 +379,11 @@ export default function App() {
                               onClick={() => router.push(`/events/${fest.id}`)}
                               className="group relative aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
-                              <img 
+                              <Image 
                                 src={fest.image} 
                                 alt={fest.name} 
-                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108" 
+                                fill
+                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-108" 
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
                               
@@ -460,10 +462,11 @@ export default function App() {
                               onClick={() => handleExploreDestination(dest)}
                               className="group relative h-full min-h-[180px] lg:min-h-0 w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
-                              <img
+                              <Image
                                 src={imgUrl}
                                 alt={dest.name}
-                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                fill
+                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
 
@@ -556,7 +559,7 @@ export default function App() {
                                 <span className="text-[9px] sm:text-[10px] text-stone-500 font-medium truncate mt-1 max-w-[85px] sm:max-w-[95px] leading-tight block">{dest.name}</span>
                               </div>
                               <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
-                                <img src={dest.images[0]?.url || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt={dest.name} />
+                                <Image src={dest.images[0]?.url || ''} fill className="object-cover" referrerPolicy="no-referrer" alt={dest.name} />
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 text-left">
                                   <span className="text-[9px] sm:text-[10px] font-bold text-white block truncate leading-none">{dest.name}</span>
                                 </div>
@@ -608,7 +611,7 @@ export default function App() {
                       <div key={evt.id} className="group rounded-3xl overflow-hidden bg-white border border-[#E8E0D5] shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
                         <div className="relative h-44 overflow-hidden bg-stone-100">
                           {evt.image ? (
-                            <img src={evt.image} alt={evt.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
+                            <Image src={evt.image} alt={evt.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-50 to-amber-100">
                               <Calendar className="h-10 w-10 text-gold-400" />
@@ -698,7 +701,7 @@ export default function App() {
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
             <div className="flex items-center justify-center md:justify-start space-x-2">
-              <img src="/logo-gold-new.png" alt="Jogjagem" className="h-6 w-auto" />
+              <Image src="/logo-gold-new.png" alt="Jogjagem" width={24} height={24} className="h-6 w-auto" />
               <span className="font-manrope font-bold text-sm tracking-[0.08em] uppercase text-white">Jogjagem</span>
             </div>
             <p className="text-[10px] text-gold-100/40 font-mono tracking-widest uppercase mt-1">

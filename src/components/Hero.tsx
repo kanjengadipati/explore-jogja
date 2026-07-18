@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Search, ChevronLeft, ChevronRight, Mic, MicOff, Camera, Loader2, Bookmark, X, Star, CalendarDays } from 'lucide-react';
 import { Destination } from '../types';
@@ -237,7 +238,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
       >
         <div className="relative h-[60px] lg:h-[80px]">
           {item.imageUrl
-            ? <img src={item.imageUrl} alt={item.headline} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ? <Image src={item.imageUrl} alt={item.headline} fill className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             : <div className="w-full h-full bg-white/5 flex items-center justify-center"><CalendarDays className="h-8 w-8 text-white/20" /></div>
           }
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -279,7 +280,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
               key={item.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-70' : 'opacity-0'}`}
             >
-              <img src={item.image} alt={item.name} className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
+              <Image src={item.image} alt={item.name} fill className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
               <div className="absolute inset-0 bg-gradient-to-t from-royal-950 via-royal-950/20 to-royal-950/40" />
               <div className="absolute inset-0 bg-gradient-to-r from-royal-950/40 via-transparent to-royal-950/40" />
             </div>
@@ -296,7 +297,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
             {recommendation ? (
               <div className="absolute top-[22px] right-4 sm:right-6 lg:right-8 z-20 w-[140px] sm:w-[185px] lg:w-[210px] flex flex-col gap-3">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl animate-fade-in border border-gold-500/30">
-                  <img src={recommendation.image} alt={recommendation.dest.name} className="absolute inset-0 w-full h-full object-cover object-center" referrerPolicy="no-referrer" />
+                  <Image src={recommendation.image} alt={recommendation.dest.name} fill className="absolute inset-0 w-full h-full object-cover object-center" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/30 to-black/80" />
                   <div className="relative z-10 flex flex-col h-full px-3 pt-3 pb-3">
                     <div className="flex items-center justify-between mb-1.5">

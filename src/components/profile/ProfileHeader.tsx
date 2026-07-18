@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Check, MapPin, Share2, Compass, MessageSquare, Heart, CalendarDays, Pencil, Camera, Loader2 } from 'lucide-react';
 import { auth, type ProfileResponse } from '../../lib/api';
 import { uploadToCloudinary } from '../../lib/cloudinary';
@@ -117,7 +118,7 @@ export default function ProfileHeader({
         className="relative h-44 sm:h-52 w-full overflow-hidden bg-stone-200 group cursor-pointer"
         onClick={handleCoverClick}
       >
-        <img src={coverImage} alt="Cover" className="w-full h-full object-cover transition-opacity" />
+        <Image src={coverImage} alt="Cover" fill className="w-full h-full object-cover transition-opacity" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
         {/* Cover overlay — always visible on mobile, hover on desktop */}

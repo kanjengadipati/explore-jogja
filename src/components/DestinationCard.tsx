@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Star, Heart, Flag } from 'lucide-react';
 import { Destination } from '../types';
 import { auth } from '../lib/api';
@@ -89,9 +90,10 @@ export default function DestinationCard({
         className={`group relative w-full overflow-hidden rounded-[24px] bg-[#FCFAF8] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl cursor-pointer border border-stone-200/40 ${heightClass} ${className}`}
       >
         {/* Immersive Destination Thumbnail */}
-        <img
+        <Image
           src={destination.images[0]?.url || ''}
           alt={destination.name}
+          fill
           className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
           referrerPolicy="no-referrer"
         />

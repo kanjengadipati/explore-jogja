@@ -1,7 +1,37 @@
 import type { Metadata } from 'next';
+import { Manrope, Inter, JetBrains_Mono, DM_Serif_Display } from 'next/font/google';
 import './globals.css';
 import { WebsiteJsonLd } from '@/components/JsonLd';
 import I18nProvider from '@/contexts/I18nProvider';
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-manrope-family',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-inter-family',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono-family',
+  display: 'swap',
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-display-family',
+  display: 'swap',
+});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jogjagem.com';
 const SITE_NAME = 'Jogjagem';
@@ -88,13 +118,18 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     alternates: {
       canonical: SITE_URL,
+      languages: {
+        'id': SITE_URL,
+        'en': SITE_URL,
+        'x-default': SITE_URL,
+      },
     },
   };
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id">
+    <html lang="id" className={`${manrope.variable} ${inter.variable} ${jetbrainsMono.variable} ${dmSerifDisplay.variable}`}>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />

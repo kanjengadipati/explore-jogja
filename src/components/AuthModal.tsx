@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { X, Mail, Lock, User, Loader2, Check, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
@@ -94,7 +95,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 'l
           {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-royal-950 mb-3">
-              <img src="/logo-gold-new.png" alt="Jogjagem" className="h-6 w-auto" />
+              <Image src="/logo-gold-new.png" alt="Jogjagem" width={24} height={24} className="h-6 w-auto" />
             </div>
             <h2 className="font-manrope text-xl font-bold text-royal-950">
               {mode === 'login' ? t('auth.welcome_back') : t('auth.create_account')}

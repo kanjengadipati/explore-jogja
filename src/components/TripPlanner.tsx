@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   CalendarDays, Trash, Sparkles,
   PlusCircle, CheckCircle, Info, Save, Loader2
@@ -299,7 +300,7 @@ export default function TripPlanner({
                       onClick={() => onExploreDestination(dest)}
                       className="flex items-center space-x-3 cursor-pointer flex-1"
                     >
-                      <img src={getImgUrl(dest)} alt={dest.name} className="h-12 w-12 rounded-xl object-cover border border-gold-100" />
+                      <Image src={getImgUrl(dest)} alt={dest.name} width={48} height={48} className="h-12 w-12 rounded-xl object-cover border border-gold-100" />
                       <div>
                         <h4 className="font-manrope font-bold text-xs text-royal-950 hover:text-gold-700 transition-colors">
                           {dest.name}
@@ -423,7 +424,7 @@ export default function TripPlanner({
                         </div>
 
                         <div className="flex items-center space-x-3">
-                          <img src={getImgUrl(dest)} alt={dest.name} className="h-12 w-12 rounded-xl object-cover" />
+                          <Image src={getImgUrl(dest)} alt={dest.name} width={48} height={48} className="h-12 w-12 rounded-xl object-cover" />
                           <div>
                             <h4 className="font-manrope font-bold text-xs text-royal-950 hover:text-gold-700 transition-colors" onClick={() => onExploreDestination(dest)}>
                               {dest.name}

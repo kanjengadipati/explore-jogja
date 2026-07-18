@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import {
   Map as MapIcon, MapPin, Eye, Layers, RefreshCw, Car, Flame,
   Compass, Navigation, Bus, Star, ExternalLink, ShieldAlert,
@@ -471,7 +472,7 @@ export default function InteractiveMap({ onExploreDestination, selectedDestinati
               {selectedPin.type === 'partner' && selectedPin.data && (
                 <div className="bg-gold-50 rounded-xl p-3 border border-gold-100 space-y-2">
                   {selectedPin.data.image && (
-                    <img src={selectedPin.data.image} alt={selectedPin.name} className="w-full h-20 object-cover rounded-lg" />
+                    <Image src={selectedPin.data.image} alt={selectedPin.name} width={400} height={80} className="w-full h-20 object-cover rounded-lg" />
                   )}
                   <div>
                     <span className="text-[9px] font-mono text-gold-700 uppercase font-bold">{selectedPin.data.category}</span>

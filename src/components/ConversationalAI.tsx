@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Send, Brain, Bot, User, RefreshCw, CornerDownRight, MapPin, ChevronDown, Sparkles, Lock } from 'lucide-react';
 import { Destination } from '../types';
 import DestinationCard from './DestinationCard';
@@ -431,11 +432,13 @@ export default function ConversationalAI({
               <div className="max-w-[72%]">
                 {msg.imageUrl && (
                   <div className="mb-2 overflow-hidden rounded-2xl border border-gold-600/20 bg-black/10 max-w-xs">
-                    <img
+                    <Image
                       src={msg.imageUrl}
                       alt="Uploaded scene"
                       className="w-full h-auto object-cover max-h-48"
                       referrerPolicy="no-referrer"
+                      width={400}
+                      height={300}
                     />
                   </div>
                 )}

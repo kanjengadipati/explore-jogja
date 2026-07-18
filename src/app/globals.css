@@ -1,12 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "DM Serif Display", serif;
-  --font-manrope: "Manrope", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-inter-family), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-family), serif;
+  --font-manrope: var(--font-manrope-family), sans-serif;
+  --font-mono: var(--font-mono-family), ui-monospace, SFMono-Regular, monospace;
 
   --color-gold-50: #fbf7ee;
   --color-gold-100: #f5edd6;

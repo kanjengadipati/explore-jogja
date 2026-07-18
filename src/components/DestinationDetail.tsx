@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { 
   ArrowLeft, Heart, Share2, Star, Clock, Ticket, Sparkles, 
   MapPin, ShieldAlert, CheckCircle, HelpCircle, Thermometer,
@@ -728,11 +729,12 @@ export default function DestinationDetail({
         
         {/* Parallax Main Image Slider */}
         <div className="absolute inset-0">
-          <img 
+          <Image 
             src={destination.images[activeImageIdx]?.url || ''} 
             alt={destination.name} 
             className="w-full h-full object-cover opacity-85 transition-all duration-700 transform scale-102 filter brightness-[0.78]"
             referrerPolicy="no-referrer"
+            fill
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f100c]/90 via-[#0f100c]/20 to-transparent" />
         </div>
@@ -787,9 +789,9 @@ export default function DestinationDetail({
             <div className="lg:col-span-4 flex flex-col items-start lg:items-end space-y-4">
               <div className="bg-black/45 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center space-x-3 text-left w-full sm:w-auto shadow-2xl">
                 <div className="flex -space-x-2.5">
-                  <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.name)}&backgroundColor=d6a147`} alt={`${destination.name} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" />
-                  <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.location)}&backgroundColor=4d3c1e`} alt={`${destination.location} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" />
-                  <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.subRegion || 'jogja')}&backgroundColor=1c1a17`} alt={`${destination.subRegion || 'Jogja'} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" />
+                  <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.name)}&backgroundColor=d6a147`} alt={`${destination.name} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" width={28} height={28} />
+                  <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.location)}&backgroundColor=4d3c1e`} alt={`${destination.location} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" width={28} height={28} />
+                  <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.subRegion || 'jogja')}&backgroundColor=1c1a17`} alt={`${destination.subRegion || 'Jogja'} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" width={28} height={28} />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] text-gold-300 font-mono tracking-wider font-bold uppercase">{t('destination_detail.community_label')}</span>
@@ -863,7 +865,7 @@ export default function DestinationDetail({
                       : 'border-white/20 opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={img?.url || ''} alt={`${destination.name} foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  <Image src={img?.url || ''} alt={`${destination.name} foto ${idx + 1}`} className="w-full h-full object-cover" fill />
                 </button>
               ))}
             </div>
@@ -979,10 +981,11 @@ export default function DestinationDetail({
                 {/* Decorative Side Photo Frame */}
                 <div className="md:col-span-5">
                   <div className="relative rounded-2xl overflow-hidden border border-gold-200/30 shadow-md group aspect-[4/3] bg-royal-950">
-                    <img 
+                    <Image 
                       src={destination.images[1]?.url || destination.images[0]?.url || ''} 
                       alt={`${destination.name} detail foto`} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95"
+                      fill
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-4 flex flex-col justify-end text-left">
                       <span className="text-[9px] font-mono text-gold-300 tracking-widest uppercase">{t('destination_detail.detail_relief')}</span>
@@ -1118,7 +1121,7 @@ export default function DestinationDetail({
                       className="flex items-center space-x-3 text-left w-full sm:w-auto cursor-pointer hover:opacity-90 transition-opacity"
                       title="View Partner Details"
                     >
-                      <img src={selectedMapPartner.image} alt={selectedMapPartner.name} className="h-14 w-14 rounded-xl object-cover border border-white/10 shrink-0" />
+                      <Image src={selectedMapPartner.image} alt={selectedMapPartner.name} className="h-14 w-14 rounded-xl object-cover border border-white/10 shrink-0" width={56} height={56} />
                       <div>
                         <div className="flex items-center space-x-1.5">
                           <span className="text-[8px] font-mono font-bold tracking-widest text-gold-300 uppercase">{selectedMapPartner.category}</span>
@@ -1215,7 +1218,7 @@ export default function DestinationDetail({
                   const badge = event.category?.charAt(0).toUpperCase() + event.category?.slice(1) || 'Event';
                   return (
                     <div key={event.id} className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950">
-                      <img src={event.image_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" />
+                      <Image src={event.image_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" fill />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
                       
                       <div className="absolute top-3 left-3 bg-red-600 text-white text-[9px] font-mono uppercase tracking-widest font-bold px-2 py-0.5 rounded-full">
@@ -1659,7 +1662,7 @@ export default function DestinationDetail({
                       onClick={() => setSelectedPartner(partner)}
                       className="group border border-stone-100 p-2.5 rounded-xl flex space-x-3 hover:border-gold-300 hover:bg-stone-50/50 transition-all duration-300 text-left cursor-pointer"
                     >
-                      <img src={partner.image} alt={partner.name} className="h-14 w-14 rounded-lg object-cover border shrink-0 bg-stone-100" />
+                      <Image src={partner.image} alt={partner.name} className="h-14 w-14 rounded-lg object-cover border shrink-0 bg-stone-100" width={56} height={56} />
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
                           <div className="flex items-center justify-between">
@@ -1703,7 +1706,7 @@ export default function DestinationDetail({
                     }}
                     className="group flex items-center space-x-3 cursor-pointer text-left"
                   >
-                    <img src={similar.images[0]?.url || ''} alt={similar.name} className="h-12 w-16 rounded-xl object-cover shrink-0 bg-stone-100" />
+                    <Image src={similar.images[0]?.url || ''} alt={similar.name} className="h-12 w-16 rounded-xl object-cover shrink-0 bg-stone-100" width={64} height={48} />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-manrope text-xs font-bold text-stone-900 group-hover:text-gold-600 transition-all truncate leading-tight">{similar.name}</h4>
                       <p className="text-[9px] text-stone-500 font-light truncate mt-0.5">{similar.tagline}</p>
@@ -1734,7 +1737,7 @@ export default function DestinationDetail({
               <div key={story.id} className="bg-white border border-stone-200/40 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
                 {/* Visual image box */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-royal-950">
-                  <img src={story.img} alt={`Cerita wisata ${story.user}`} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" />
+                  <Image src={story.img} alt={`Cerita wisata ${story.user}`} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" fill />
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-full text-[8.5px] font-mono text-stone-700 font-semibold border">
                     {story.tag}
                   </div>
@@ -1748,7 +1751,7 @@ export default function DestinationDetail({
                   
                   <div className="flex items-center justify-between border-t border-stone-100 pt-3">
                     <div className="flex items-center space-x-2">
-                      <img src={story.avatar} alt={story.user} className="h-7 w-7 rounded-full object-cover border" />
+                      <Image src={story.avatar} alt={story.user} className="h-7 w-7 rounded-full object-cover border" width={28} height={28} />
                       <div className="text-left">
                         <span className="block text-[10px] font-bold text-stone-900 leading-none">{story.user}</span>
                         <span className="block text-[8px] font-mono text-stone-500 leading-none mt-0.5">{story.location} traveler</span>

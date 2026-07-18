@@ -188,10 +188,12 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                   onClick={() => router.push('/profile')}
                   className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 hover:bg-white/15 transition-colors cursor-pointer"
                 >
-                  <img
+                  <Image
                     src={user?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || t('common.user'))}`}
                     className="h-5 w-5 rounded-full bg-stone-200"
                     alt={user?.name || t('common.user')}
+                    width={20}
+                    height={20}
                   />
                   <span className="text-xs font-medium text-white/90 max-w-[100px] truncate">
                     {user?.name || t('common.user')}
@@ -327,10 +329,12 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
           {isAuthenticated ? (
             <button onClick={() => { router.push('/profile'); setDrawerOpen(false); }} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-all">
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src={user?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || t('common.user'))}`}
                   className="h-9 w-9 rounded-full object-cover ring-2 ring-gold-500/30"
                   alt={user?.name || t('common.user')}
+                  width={36}
+                  height={36}
                 />
                 <div className="text-left">
                   <span className="block text-sm font-semibold text-white truncate max-w-[150px]">{user?.name || t('common.user')}</span>

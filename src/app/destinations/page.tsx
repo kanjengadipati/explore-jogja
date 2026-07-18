@@ -9,6 +9,7 @@ import DestinationCard, { isLandscape } from '@/components/DestinationCard';
 import CategoryLinks from '@/components/CategoryLinks';
 import { Destination } from '@/types';
 import { destinations as destinationApi } from '@/lib/api';
+import Image from 'next/image';
 import { Search, ArrowLeft } from 'lucide-react';
 
 function mapApiToDestination(raw: Record<string, unknown>): Destination {
@@ -232,7 +233,7 @@ function DestinationsPageInner() {
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
             <div className="flex items-center justify-center md:justify-start space-x-2">
-              <img src="/logo-gold-new.png" alt="Jogjagem" className="h-6 w-auto" />
+              <Image src="/logo-gold-new.png" alt="Jogjagem" width={24} height={24} className="h-6 w-auto" />
               <span className="font-manrope font-bold text-sm tracking-[0.08em] uppercase text-white">Jogjagem</span>
             </div>
             <p className="text-[10px] text-gold-100/40 font-mono tracking-widest uppercase mt-1">
