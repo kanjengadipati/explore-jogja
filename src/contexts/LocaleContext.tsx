@@ -9,7 +9,7 @@ type Locale = 'id' | 'en';
 interface LocaleContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const messages: Record<Locale, Record<string, any>> = { id: idMessages, en: enMessages };
@@ -41,8 +41,14 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(newLocale);
   };
 
-  const t = useCallback((key: string): string => {
-    return getNestedValue(messages[locale], key) ?? key;
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
+    let value = getNestedValue(messages[locale], key) ?? key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        value = value.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      }
+    }
+    return value;
   }, [locale]);
 
   return (

@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'api.dicebear.com' },
+      { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      { protocol: 'https', hostname: 'commons.wikimedia.org' },
+      { protocol: 'https', hostname: 'tourismdev.id' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
 };

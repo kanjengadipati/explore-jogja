@@ -92,13 +92,25 @@ export default function DestinationCard({
         className={`group relative w-full overflow-hidden rounded-[24px] bg-[#FCFAF8] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl cursor-pointer border border-stone-200/40 ${heightClass} ${className}`}
       >
         {/* Immersive Destination Thumbnail */}
-        <Image
-          src={destination.images[0]?.url || ''}
-          alt={destination.name}
-          fill
-          className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
-          referrerPolicy="no-referrer"
-        />
+        {destination.images[0]?.url ? (
+          <Image
+            src={destination.images[0].url}
+            alt={destination.name}
+            fill
+            className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+            referrerPolicy="no-referrer"
+          />
+        ) : destination.ogImageUrl ? (
+          <Image
+            src={destination.ogImageUrl}
+            alt={destination.name}
+            fill
+            className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-royal-900 to-royal-950" />
+        )}
         
         {/* Ambient Overlay for text readability (Dark Gradient at bottom) */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent transition-opacity duration-300 group-hover:from-black/100" />

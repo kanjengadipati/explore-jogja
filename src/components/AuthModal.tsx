@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { X, Mail, Lock, User, Loader2, Check, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
+import SocialLoginButtons from './SocialLoginButtons';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -191,6 +192,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 'l
               <span>{mode === 'login' ? t('auth.signin_btn') : t('auth.create_btn')}</span>
             </button>
           </form>
+
+          {/* Social Login */}
+          <div className="mt-5">
+            <SocialLoginButtons onError={setError} onSuccess={() => { onClose(); resetForm(); }} />
+          </div>
 
           {/* Toggle */}
           <div className="mt-5 text-center">

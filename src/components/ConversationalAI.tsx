@@ -406,17 +406,13 @@ export default function ConversationalAI({
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {msg.matchedDestinations.map((dest) => (
-                          <div
+                          <DestinationCard
                             key={dest.id}
-                            className="transform scale-95 origin-top-left hover:scale-100 transition-transform duration-300"
-                          >
-                            <DestinationCard
-                              destination={dest}
-                              onExplore={onExploreDestination}
-                              onToggleSave={onToggleSave}
-                              isSaved={isSaved(dest.id)}
-                            />
-                          </div>
+                            destination={dest}
+                            onExplore={onExploreDestination}
+                            onToggleSave={onToggleSave}
+                            isSaved={isSaved(dest.id)}
+                          />
                         ))}
                       </div>
                     </div>
@@ -515,53 +511,43 @@ export default function ConversationalAI({
 
       {/* ── Input bar ─────────────────────────────────────────────── */}
       <div className="px-5 pb-5 pt-2">
-        {!isAuthenticated ? (
-          /* ── Guest prompt ── */
-          <button
-            onClick={() => setAuthModalOpen(true)}
-            className="w-full flex items-center gap-3 bg-white rounded-2xl border border-gold-200 shadow-sm px-4 py-3 hover:border-gold-400 hover:shadow-md transition-all group"
-          >
-            <div className="flex items-center gap-1 shrink-0 text-gold-400">
-              <Sparkles className="h-5 w-5" />
-              <ChevronDown className="h-3.5 w-3.5" />
-            </div>
-            <div className="h-5 w-px bg-stone-200 shrink-0" />
-            <span className="flex-1 text-sm text-stone-400 text-left">
-              {t('conversational_ai.guest_placeholder')}
-            </span>
-            <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold-600 text-white text-xs font-semibold group-hover:bg-gold-500 transition-colors">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendQuery(input);
+          }}
+          className="flex items-center gap-2 bg-white rounded-2xl border border-gold-200 shadow-sm px-4 py-2.5 focus-within:ring-2 focus-within:ring-gold-400/50 focus-within:border-gold-400 transition-all"
+        >
+          {/* Sparkle icon */}
+          <div className="flex items-center gap-1 shrink-0 text-gold-500">
+            <Sparkles className="h-5 w-5" />
+            <ChevronDown className="h-3.5 w-3.5" />
+          </div>
+
+          {/* Divider */}
+          <div className="h-5 w-px bg-stone-200 shrink-0" />
+
+          {/* Text input */}
+          <input
+            type="text"
+            placeholder={t('conversational_ai.guest_placeholder')}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={loading}
+            className="flex-1 bg-transparent text-sm text-royal-950 placeholder-stone-400 focus:outline-none min-w-0 py-1"
+          />
+
+          {/* Send button — shows lock icon for guests at limit, otherwise send */}
+          {!isAuthenticated && freePromptsUsed >= FREE_PROMPT_LIMIT ? (
+            <button
+              type="button"
+              onClick={() => setAuthModalOpen(true)}
+              className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold-600 text-white text-xs font-semibold hover:bg-gold-500 transition-colors shadow"
+            >
               <Lock className="h-3 w-3" />
               {t('conversational_ai.sign_in_chat')}
-            </div>
-          </button>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendQuery(input);
-            }}
-            className="flex items-center gap-2 bg-white rounded-2xl border border-gold-200 shadow-sm px-4 py-2.5 focus-within:ring-2 focus-within:ring-gold-400/50 focus-within:border-gold-400 transition-all"
-          >
-            {/* Sparkle + model selector */}
-            <div className="flex items-center gap-1 shrink-0 cursor-pointer text-gold-500 hover:text-gold-600 transition-colors">
-              <Sparkles className="h-5 w-5" />
-              <ChevronDown className="h-3.5 w-3.5" />
-            </div>
-
-            {/* Divider */}
-            <div className="h-5 w-px bg-stone-200 shrink-0" />
-
-            {/* Text input */}
-            <input
-              type="text"
-              placeholder={t('conversational_ai.guest_placeholder')}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={loading}
-              className="flex-1 bg-transparent text-sm text-royal-950 placeholder-stone-400 focus:outline-none min-w-0 py-1"
-            />
-
-            {/* Send button */}
+            </button>
+          ) : (
             <button
               type="submit"
               disabled={loading || !input.trim()}
@@ -569,8 +555,8 @@ export default function ConversationalAI({
             >
               <Send className="h-4 w-4" />
             </button>
-          </form>
-        )}
+          )}
+        </form>
 
         {/* Disclaimer */}
         <p className="mt-2.5 text-center text-[10px] text-stone-400 flex items-center justify-center gap-1">

@@ -211,7 +211,7 @@ export default function DestinationDetail({
           className: 'custom-detail-pk-marker',
           html: `
             <div class="p-1 bg-gray-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5 shadow-md">
-              <span>🅿 SECURE PARKING</span>
+              <span>{t('destination_detail.map_secure_parking')}</span>
             </div>
           `,
           iconSize: [90, 20],
@@ -226,7 +226,7 @@ export default function DestinationDetail({
           className: 'custom-detail-toilet-marker',
           html: `
             <div class="p-1 bg-teal-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5 shadow-md">
-              <span>🚽 ECO TOILETS</span>
+              <span>{t('destination_detail.map_eco_toilets')}</span>
             </div>
           `,
           iconSize: [80, 20],
@@ -241,7 +241,7 @@ export default function DestinationDetail({
           className: 'custom-detail-emergency-marker',
           html: `
             <div class="p-1 bg-red-600 text-white rounded-md text-[8px] font-bold border border-white flex items-center space-x-0.5 shadow-md">
-              <span>🏥 EMERGENCY CARE</span>
+              <span>{t('destination_detail.map_emergency_care')}</span>
             </div>
           `,
           iconSize: [100, 20],
@@ -279,7 +279,7 @@ export default function DestinationDetail({
         if (res.status === 'success' && Array.isArray(res.data)) {
           const mapped: Review[] = (res.data as any[]).map((r: any) => ({
             id: r.id || String(r.ID || ''),
-            userName: r.user_name || r.UserName || 'Anonymous',
+            userName: r.user_name || r.UserName || t('destination_detail.anonymous_user'),
             userAvatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(r.user_name || 'A')}`,
             rating: r.rating || r.Rating || 0,
             date: r.CreatedAt ? new Date(r.CreatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
@@ -449,9 +449,9 @@ export default function DestinationDetail({
     setSubmittingReview(true);
     setReviewError('');
     try {
-      let userName = 'Anonymous';
+      let userName = t('destination_detail.anonymous_user');
       if (user) {
-        userName = user.name || user.email || 'Anonymous';
+        userName = user.name || user.email || t('destination_detail.anonymous_user');
       }
 
       const res = await reviewsApi.create(
@@ -479,10 +479,10 @@ export default function DestinationDetail({
         setReviewSubmitted(true);
         setTimeout(() => setReviewSubmitted(false), 3000);
       } else {
-        setReviewError(res.message || 'Failed to submit review');
+        setReviewError(res.message || t('destination_detail.error_submit_review'));
       }
     } catch {
-      setReviewError('Network error. Please try again.');
+      setReviewError(t('destination_detail.error_network'));
     } finally {
       setSubmittingReview(false);
     }
@@ -498,24 +498,24 @@ export default function DestinationDetail({
     const recs: { text: string; time: string }[] = [];
 
     // Best time recommendation
-    recs.push({ text: `Visit during optimal hours (${bestTime}) for the best experience`, time: bestTime.split(' - ')[0] || '09:00 AM' });
+    recs.push({ text: t('destination_detail.rec_visit_optimal_hours', { time: bestTime.split(' - ')[0] || '09:00 AM' }), time: bestTime.split(' - ')[0] || '09:00 AM' });
 
     // Facility-based
     if (facilities.length > 0) {
-      recs.push({ text: `Use ${facilities[0]} for a smoother visit`, time: '10:00 AM' });
+      recs.push({ text: t('destination_detail.rec_use_facility', { facility: facilities[0] }), time: '10:00 AM' });
     }
 
     // Description-based contextual tips
     if (desc.includes('sunrise') || desc.includes('dawn')) {
-      recs.push({ text: 'Arrive before dawn for the best sunrise views', time: '05:30 AM' });
+      recs.push({ text: t('destination_detail.rec_arrive_dawn'), time: '05:30 AM' });
     } else if (desc.includes('sunset') || desc.includes('evening')) {
-      recs.push({ text: 'Stay until evening for golden hour photography', time: '05:00 PM' });
+      recs.push({ text: t('destination_detail.rec_stay_evening'), time: '05:00 PM' });
     } else if (desc.includes('market') || desc.includes('shop') || desc.includes('batik')) {
-      recs.push({ text: 'Visit early before crowds arrive for the best selections', time: '08:30 AM' });
+      recs.push({ text: t('destination_detail.rec_visit_early_crowds'), time: '08:30 AM' });
     } else if (desc.includes('cave') || desc.includes('adventure') || desc.includes('raft')) {
-      recs.push({ text: 'Book guided activity slots in advance to secure your spot', time: '09:00 AM' });
+      recs.push({ text: t('destination_detail.rec_book_slots_advance'), time: '09:00 AM' });
     } else {
-      recs.push({ text: 'Peak sunlight creates stunning photography opportunities', time: '11:00 AM' });
+      recs.push({ text: t('destination_detail.rec_peak_sunlight_photo'), time: '11:00 AM' });
     }
 
     // Travel tip-based
@@ -525,7 +525,7 @@ export default function DestinationDetail({
 
     // Food recommendation based on location
     if (destination.subRegion) {
-      recs.push({ text: `Explore local culinary spots in ${destination.subRegion} after your visit`, time: '01:00 PM' });
+      recs.push({ text: t('destination_detail.rec_culinary_spots', { region: destination.subRegion }), time: '01:00 PM' });
     }
 
     return recs.slice(0, 5);
@@ -540,34 +540,34 @@ export default function DestinationDetail({
     const steps: { time: string; title: string; desc: string }[] = [];
 
     // Morning arrival
-    steps.push({ time: '08:00', title: `${name} Morning Exploration`, desc: `Start your day early to experience ${name} with fewer crowds and better light.` });
+    steps.push({ time: '08:00', title: t('destination_detail.timeline_morning_title', { name }), desc: t('destination_detail.timeline_morning_desc', { name }) });
 
     // Mid-morning highlight based on category
     if (category.includes('heritage') || category.includes('temple')) {
-      steps.push({ time: '10:30', title: 'Heritage Deep Dive', desc: 'Explore the intricate architectural details and historical significance with a local guide.' });
+      steps.push({ time: '10:30', title: t('destination_detail.timeline_heritage_title'), desc: t('destination_detail.timeline_heritage_desc') });
     } else if (category.includes('beach') || category.includes('coast')) {
-      steps.push({ time: '10:30', title: 'Coastal Discovery', desc: 'Walk along the shoreline and discover hidden spots away from the main area.' });
+      steps.push({ time: '10:30', title: t('destination_detail.timeline_coastal_title'), desc: t('destination_detail.timeline_coastal_desc') });
     } else if (category.includes('mountain') || category.includes('adventure')) {
-      steps.push({ time: '10:30', title: 'Adventure Activity', desc: 'Try the main adventure activity while energy levels are highest.' });
+      steps.push({ time: '10:30', title: t('destination_detail.timeline_adventure_title'), desc: t('destination_detail.timeline_adventure_desc') });
     } else {
-      steps.push({ time: '10:30', title: 'Explore the Surroundings', desc: 'Wander through the area and discover what makes this destination unique.' });
+      steps.push({ time: '10:30', title: t('destination_detail.timeline_surroundings_title'), desc: t('destination_detail.timeline_surroundings_desc') });
     }
 
     // Lunch
-    steps.push({ time: '12:00', title: 'Local Culinary Break', desc: destination.subRegion ? `Savor authentic cuisine at a recommended spot in ${destination.subRegion}.` : 'Enjoy a traditional meal at a nearby local restaurant.' });
+    steps.push({ time: '12:00', title: t('destination_detail.timeline_culinary_title'), desc: destination.subRegion ? t('destination_detail.timeline_culinary_desc_named', { region: destination.subRegion }) : t('destination_detail.timeline_culinary_desc_generic') });
 
     // Afternoon
     if (desc.includes('museum') || desc.includes('gallery') || desc.includes('art')) {
-      steps.push({ time: '14:00', title: 'Cultural Immersion', desc: 'Dive deeper into the artistic and cultural exhibits at your own pace.' });
+      steps.push({ time: '14:00', title: t('destination_detail.timeline_cultural_title'), desc: t('destination_detail.timeline_cultural_desc') });
     } else {
-      steps.push({ time: '14:00', title: 'Afternoon Leisure', desc: 'Take your time revisiting favorite spots or discovering hidden corners.' });
+      steps.push({ time: '14:00', title: t('destination_detail.timeline_afternoon_title'), desc: t('destination_detail.timeline_afternoon_desc') });
     }
 
     // Sunset/evening
     if (desc.includes('sunset') || desc.includes('beach') || desc.includes('coast')) {
-      steps.push({ time: '17:00', title: 'Sunset Spectacle', desc: 'Find the perfect vantage point to watch the sun dip below the horizon.' });
+      steps.push({ time: '17:00', title: t('destination_detail.timeline_sunset_title'), desc: t('destination_detail.timeline_sunset_desc') });
     } else {
-      steps.push({ time: '17:30', title: 'Golden Hour Views', desc: 'The late afternoon light transforms the scenery — perfect for photography.' });
+      steps.push({ time: '17:30', title: t('destination_detail.timeline_golden_hour_title'), desc: t('destination_detail.timeline_golden_hour_desc') });
     }
 
     // Add first nearby event if exists
@@ -585,7 +585,7 @@ export default function DestinationDetail({
       user: rev.userName,
       location: 'Yogyakarta',
       avatar: rev.userAvatar,
-      tag: `${rev.rating.toFixed(1)}★ Review`,
+      tag: t('destination_detail.review_tag', { rating: rev.rating.toFixed(1) }),
       text: rev.comment,
       img: destination.images[i % destination.images.length]?.url || destination.images[0]?.url || ''
     }));
@@ -615,36 +615,36 @@ export default function DestinationDetail({
     const allText = `${tagline} ${desc}`.toLowerCase();
 
     const keywords: string[] = [];
-    if (allText.includes('temple') || allText.includes('candi') || allText.includes('heritage')) keywords.push('Heritage Explorers');
-    if (allText.includes('sunrise') || allText.includes('dawn')) keywords.push('Sunrise Chasers');
-    if (allText.includes('culture') || allText.includes('tradition') || allText.includes('history')) keywords.push('Culture Seekers');
-    if (allText.includes('photo') || allText.includes('view') || allText.includes('panoram')) keywords.push('Panoramic Photographers');
-    if (allText.includes('family') || allText.includes('children')) keywords.push('Family Travelers');
-    if (allText.includes('cave') || allText.includes('adventure') || allText.includes('hike')) keywords.push('Adventure Enthusiasts');
-    if (allText.includes('nature') || allText.includes('forest') || allText.includes('mountain')) keywords.push('Nature Lovers');
-    if (allText.includes('art') || allText.includes('craft') || allText.includes('batik')) keywords.push('Art & Craft Enthusiasts');
+    if (allText.includes('temple') || allText.includes('candi') || allText.includes('heritage')) keywords.push(t('destination_detail.audience_heritage_explorers'));
+    if (allText.includes('sunrise') || allText.includes('dawn')) keywords.push(t('destination_detail.audience_sunrise_chasers'));
+    if (allText.includes('culture') || allText.includes('tradition') || allText.includes('history')) keywords.push(t('destination_detail.audience_culture_seekers'));
+    if (allText.includes('photo') || allText.includes('view') || allText.includes('panoram')) keywords.push(t('destination_detail.audience_panoramic_photographers'));
+    if (allText.includes('family') || allText.includes('children')) keywords.push(t('destination_detail.audience_family_travelers'));
+    if (allText.includes('cave') || allText.includes('adventure') || allText.includes('hike')) keywords.push(t('destination_detail.audience_adventure_enthusiasts'));
+    if (allText.includes('nature') || allText.includes('forest') || allText.includes('mountain')) keywords.push(t('destination_detail.audience_nature_lovers'));
+    if (allText.includes('art') || allText.includes('craft') || allText.includes('batik')) keywords.push(t('destination_detail.audience_art_craft_enthusiasts'));
 
-    if (keywords.length === 0) keywords.push('Curious Travelers', 'Culture Seekers', 'Photography Enthusiasts');
+    if (keywords.length === 0) keywords.push(t('destination_detail.audience_curious_travelers'), t('destination_detail.audience_culture_seekers'), t('destination_detail.audience_photography_enthusiasts'));
 
     const audience = keywords.length <= 2 ? keywords.join(' and ') : `${keywords.slice(0, -1).join(', ')} and ${keywords[keywords.length - 1]}`;
-    return `A perfect pick for ${audience} — ${name} is a destination worth planning your Yogyakarta journey around.`;
+    return t('destination_detail.curator_quote_full', { audience, name });
   };
 
   // Dynamic visiting season based on category
   const getVisitingSeason = () => {
     const cat = (destination.category || '').toLowerCase();
-    if (cat.includes('temple') || cat.includes('candi') || cat.includes('heritage')) return 'Year-round (Peak: May–Sep)';
-    if (cat.includes('beach') || cat.includes('coast')) return 'Dry Season (Apr–Oct)';
-    if (cat.includes('mountain') || cat.includes('adventure')) return 'Dry Months (May–Oct)';
-    return 'Year-round (Best: May–Oct)';
+    if (cat.includes('temple') || cat.includes('candi') || cat.includes('heritage')) return t('destination_detail.season_yearround_peak');
+    if (cat.includes('beach') || cat.includes('coast')) return t('destination_detail.season_dry');
+    if (cat.includes('mountain') || cat.includes('adventure')) return t('destination_detail.season_dry_months');
+    return t('destination_detail.season_yearround_best');
   };
 
   const getSeasonDetail = () => {
     const cat = (destination.category || '').toLowerCase();
-    if (cat.includes('temple') || cat.includes('candi') || cat.includes('heritage')) return 'Open-air & sheltered sites';
-    if (cat.includes('beach') || cat.includes('coast')) return 'Calm seas, clear skies';
-    if (cat.includes('mountain') || cat.includes('adventure')) return 'Clear views, safe trails';
-    return 'Balanced weather';
+    if (cat.includes('temple') || cat.includes('candi') || cat.includes('heritage')) return t('destination_detail.season_detail_open_air');
+    if (cat.includes('beach') || cat.includes('coast')) return t('destination_detail.season_detail_calm_seas');
+    if (cat.includes('mountain') || cat.includes('adventure')) return t('destination_detail.season_detail_clear_views');
+    return t('destination_detail.season_detail_balanced');
   };
 
   // Calculate ticket pricing from destination data
@@ -905,12 +905,12 @@ export default function DestinationDetail({
 
               <div className="border-t border-gold-200/40 pt-6 grid grid-cols-2 sm:grid-cols-3 gap-5">
                 {[
-                  { label: t('destination_detail.optimal_visit'), value: destination.bestTime || "09:00 AM - 11:30 AM", detail: t('destination_detail.golden_hour'), icon: Clock },
-                  { label: t('destination_detail.opening_hours'), value: destination.openingHours || "08:00 - 17:00", detail: t('destination_detail.daily_access'), icon: Ticket },
+                  { label: t('destination_detail.optimal_visit'), value: destination.bestTime || t('destination_detail.fallback_best_time'), detail: t('destination_detail.golden_hour'), icon: Clock },
+                  { label: t('destination_detail.opening_hours'), value: destination.openingHours || t('destination_detail.fallback_opening_hours'), detail: t('destination_detail.daily_access'), icon: Ticket },
                   { label: t('destination_detail.visiting_season'), value: getVisitingSeason(), detail: getSeasonDetail(), icon: CloudSun },
-                  { label: t('destination_detail.terrain_access'), value: destination.facilities?.[0] || "Flat Pathway", detail: destination.facilities?.[1] || t('destination_detail.easy_walking'), icon: Landmark },
-                  { label: t('destination_detail.ticket_price'), value: `IDR ${domesticTicketPrice}`, detail: `Foreign: IDR ${foreignTicketPrice}`, icon: Ticket },
-                  { label: t('destination_detail.climate'), value: `Live ${destination.weather.temp || '27°C'} • ${destination.weather.condition || 'Sunny'}`, detail: destination.weather.status || t('destination_detail.mild_climate'), icon: Thermometer }
+                  { label: t('destination_detail.terrain_access'), value: destination.facilities?.[0] || t('destination_detail.fallback_flat_pathway'), detail: destination.facilities?.[1] || t('destination_detail.easy_walking'), icon: Landmark },
+                  { label: t('destination_detail.ticket_price'), value: `IDR ${domesticTicketPrice}`, detail: `${t('destination_detail.foreign_price_label')}: IDR ${foreignTicketPrice}`, icon: Ticket },
+                  { label: t('destination_detail.climate'), value: `Live ${destination.weather.temp || t('destination_detail.fallback_temp')} • ${destination.weather.condition || t('destination_detail.fallback_sunny')}`, detail: destination.weather.status || t('destination_detail.mild_climate'), icon: Thermometer }
                 ].map((item, i) => {
                   const Icon = item.icon;
                   return (
@@ -943,7 +943,7 @@ export default function DestinationDetail({
                 {/* Story description text with expandable transition */}
                 <div className="md:col-span-7 space-y-4">
                   <h3 className="font-display text-2.5xl text-royal-950 leading-snug">
-                    {destination.tagline || 'Discover the heritage and beauty of this destination.'}
+                    {destination.tagline || t('destination_detail.fallback_tagline')}
                   </h3>
                   
                   {/* Dropcap paragraph */}
@@ -1020,20 +1020,20 @@ export default function DestinationDetail({
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {(travelerIntent && travelerIntent.intent !== 'general'
                   ? orderCardsByIntent([
-                      { title: t('destination_detail.card_stay'), icon: Hotel, desc: t('destination_detail.card_stay_desc'), color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: "🏨 STAY" },
-                      { title: t('destination_detail.card_eat'), icon: Utensils, desc: t('destination_detail.card_eat_desc'), color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: "🍜 CULINARY" },
-                      { title: t('destination_detail.card_experiences'), icon: Sparkles, desc: t('destination_detail.card_experiences_desc'), color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: "🎭 DISCOVER" },
-                      { title: t('destination_detail.card_shopping'), icon: ShoppingBag, desc: t('destination_detail.card_shopping_desc'), color: "text-[#7c1212] bg-red-50 border-red-100", label: "🛍 CRAFT" },
-                      { title: t('destination_detail.card_guide'), icon: Users, desc: t('destination_detail.card_guide_desc'), color: "text-[#125c7c] bg-blue-50 border-blue-100", label: "👨 SERVICE" },
-                      { title: t('destination_detail.card_transport'), icon: MapPinned, desc: t('destination_detail.card_transport_desc'), color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: "🚗 RIDE" }
+                      { title: t('destination_detail.card_stay'), icon: Hotel, desc: t('destination_detail.card_stay_desc'), color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: t('destination_detail.card_label_stay') },
+                      { title: t('destination_detail.card_eat'), icon: Utensils, desc: t('destination_detail.card_eat_desc'), color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: t('destination_detail.card_label_culinary') },
+                      { title: t('destination_detail.card_experiences'), icon: Sparkles, desc: t('destination_detail.card_experiences_desc'), color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: t('destination_detail.card_label_discover') },
+                      { title: t('destination_detail.card_shopping'), icon: ShoppingBag, desc: t('destination_detail.card_shopping_desc'), color: "text-[#7c1212] bg-red-50 border-red-100", label: t('destination_detail.card_label_craft') },
+                      { title: t('destination_detail.card_guide'), icon: Users, desc: t('destination_detail.card_guide_desc'), color: "text-[#125c7c] bg-blue-50 border-blue-100", label: t('destination_detail.card_label_service') },
+                      { title: t('destination_detail.card_transport'), icon: MapPinned, desc: t('destination_detail.card_transport_desc'), color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: t('destination_detail.card_label_ride') }
                     ], travelerIntent)
                   : [
-                      { title: t('destination_detail.card_stay'), icon: Hotel, desc: t('destination_detail.card_stay_desc'), color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: "🏨 STAY" },
-                      { title: t('destination_detail.card_eat'), icon: Utensils, desc: t('destination_detail.card_eat_desc'), color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: "🍜 CULINARY" },
-                      { title: t('destination_detail.card_experiences'), icon: Sparkles, desc: t('destination_detail.card_experiences_desc'), color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: "🎭 DISCOVER" },
-                      { title: t('destination_detail.card_shopping'), icon: ShoppingBag, desc: t('destination_detail.card_shopping_desc'), color: "text-[#7c1212] bg-red-50 border-red-100", label: "🛍 CRAFT" },
-                      { title: t('destination_detail.card_guide'), icon: Users, desc: t('destination_detail.card_guide_desc'), color: "text-[#125c7c] bg-blue-50 border-blue-100", label: "👨 SERVICE" },
-                      { title: t('destination_detail.card_transport'), icon: MapPinned, desc: t('destination_detail.card_transport_desc'), color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: "🚗 RIDE" }
+                      { title: t('destination_detail.card_stay'), icon: Hotel, desc: t('destination_detail.card_stay_desc'), color: "text-[#2e4d3c] bg-emerald-50 border-emerald-100", label: t('destination_detail.card_label_stay') },
+                      { title: t('destination_detail.card_eat'), icon: Utensils, desc: t('destination_detail.card_eat_desc'), color: "text-[#7c4d12] bg-amber-50 border-amber-100", label: t('destination_detail.card_label_culinary') },
+                      { title: t('destination_detail.card_experiences'), icon: Sparkles, desc: t('destination_detail.card_experiences_desc'), color: "text-[#6c2e7c] bg-purple-50 border-purple-100", label: t('destination_detail.card_label_discover') },
+                      { title: t('destination_detail.card_shopping'), icon: ShoppingBag, desc: t('destination_detail.card_shopping_desc'), color: "text-[#7c1212] bg-red-50 border-red-100", label: t('destination_detail.card_label_craft') },
+                      { title: t('destination_detail.card_guide'), icon: Users, desc: t('destination_detail.card_guide_desc'), color: "text-[#125c7c] bg-blue-50 border-blue-100", label: t('destination_detail.card_label_service') },
+                      { title: t('destination_detail.card_transport'), icon: MapPinned, desc: t('destination_detail.card_transport_desc'), color: "text-[#4d4d4d] bg-stone-50 border-stone-100", label: t('destination_detail.card_label_ride') }
                     ]
                 ).map((item, idx) => {
                   const Icon = item.icon;
@@ -1120,7 +1120,7 @@ export default function DestinationDetail({
                     <div
                       onClick={() => setSelectedPartner(selectedMapPartner)}
                       className="flex items-center space-x-3 text-left w-full sm:w-auto cursor-pointer hover:opacity-90 transition-opacity"
-                      title="View Partner Details"
+                      title={t('destination_detail.view_partner')}
                     >
                       <Image src={selectedMapPartner.image} alt={selectedMapPartner.name} className="h-14 w-14 rounded-xl object-cover border border-white/10 shrink-0" width={56} height={56} />
                       <div>
@@ -1136,12 +1136,12 @@ export default function DestinationDetail({
                     <div className="flex items-center space-x-2.5 w-full sm:w-auto justify-end">
                       <div className="text-right">
                         <span className="block text-xs font-bold text-amber-400">★ {selectedMapPartner.rating.toFixed(1)}</span>
-                        <span className="block text-[8px] font-mono text-white/50">{selectedMapPartner.promotion || 'Special Offer'}</span>
+                        <span className="block text-[8px] font-mono text-white/50">{selectedMapPartner.promotion || t('destination_detail.special_offer')}</span>
                       </div>
                       <a 
                         href={`tel:${selectedMapPartner.phone || '+62274'}`}
                         className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-xs"
-                        title="Call Partner"
+                        title={t('destination_detail.call_partner')}
                       >
                         <Phone className="h-4 w-4" />
                       </a>
@@ -1207,7 +1207,7 @@ export default function DestinationDetail({
                     {t('destination_detail.upcoming_events')}
                   </h2>
                 </div>
-                <span className="text-xs text-stone-500">{nearbyEvents.length > 0 ? `${nearbyEvents.length} event${nearbyEvents.length > 1 ? 's' : ''} nearby` : t('destination_detail.no_nearby_events')}</span>
+                <span className="text-xs text-stone-500">{nearbyEvents.length > 0 ? t('destination_detail.events_nearby_count', { count: nearbyEvents.length }) : t('destination_detail.no_nearby_events')}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1216,7 +1216,7 @@ export default function DestinationDetail({
                   const now = new Date();
                   const diffDays = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
                   const countdown = diffDays <= 0 ? t('destination_detail.happening_now') : diffDays === 1 ? t('destination_detail.tomorrow') : `${t('destination_detail.in_days')} ${diffDays} ${t('destination_detail.days')}`;
-                  const badge = event.category?.charAt(0).toUpperCase() + event.category?.slice(1) || 'Event';
+                  const badge = event.category?.charAt(0).toUpperCase() + event.category?.slice(1) || t('destination_detail.event_badge_fallback');
                   return (
                     <div key={event.id} className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950">
                       <Image src={event.image_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" fill />
@@ -1313,7 +1313,7 @@ export default function DestinationDetail({
                           </li>
                         )) || (destination.travelTips.length > 0
                           ? destination.travelTips.slice(0, 3)
-                          : [destination.description?.slice(0, 50) || 'Unique destination', 'Beautiful scenery', 'Rich cultural heritage']
+                          : [destination.description?.slice(0, 50) || t('destination_detail.pro_unique'), t('destination_detail.pro_scenery'), t('destination_detail.pro_heritage')]
                         ).map((tip: string, i: number) => (
                           <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-700">
                             <span className="text-emerald-500 mt-0.5 shrink-0">●</span>{tip}
@@ -1331,11 +1331,11 @@ export default function DestinationDetail({
                         )) || (() => {
                           const reviewText = communityReviews.map(r => r.comment?.toLowerCase() || ' ').join(' ');
                           const cons: string[] = [];
-                          if (reviewText.includes('crowd') || reviewText.includes('busy')) cons.push('Can get crowded during peak hours');
-                          if (reviewText.includes('parking') || reviewText.includes('walk')) cons.push('Some walking required');
-                          if (reviewText.includes('hot') || reviewText.includes('sun')) cons.push('Bring sun protection');
-                          if (cons.length === 0) cons.push('Peak hours can be busy');
-                          if (cons.length < 2) cons.push('Check opening hours before visiting');
+                          if (reviewText.includes('crowd') || reviewText.includes('busy')) cons.push(t('destination_detail.con_crowded'));
+                          if (reviewText.includes('parking') || reviewText.includes('walk')) cons.push(t('destination_detail.con_walking'));
+                          if (reviewText.includes('hot') || reviewText.includes('sun')) cons.push(t('destination_detail.con_sun'));
+                          if (cons.length === 0) cons.push(t('destination_detail.con_peak'));
+                          if (cons.length < 2) cons.push(t('destination_detail.con_hours'));
                           return cons.slice(0, 2);
                         })().map((con: string, i: number) => (
                           <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-500">
@@ -1351,11 +1351,11 @@ export default function DestinationDetail({
               {/* ── Filter chips with counts ── */}
               <div className="flex overflow-x-auto scrollbar-none gap-2 pb-1">
                 {[
-                  { key: 'all', label: `All (${communityReviews.length})` },
-                  { key: 'Solo', label: `Solo (${communityReviews.filter(r => (r as any).travelerType === 'Solo' || (r as any).traveler_type === 'Solo').length})` },
-                  { key: 'Couple', label: `Couple (${communityReviews.filter(r => (r as any).travelerType === 'Couple' || (r as any).traveler_type === 'Couple').length})` },
-                  { key: 'Family', label: `Family (${communityReviews.filter(r => (r as any).travelerType === 'Family' || (r as any).traveler_type === 'Family').length})` },
-                  { key: 'Friends', label: `Friends (${communityReviews.filter(r => (r as any).travelerType === 'Friends' || (r as any).traveler_type === 'Friends').length})` },
+                  { key: 'all', label: t('destination_detail.filter_all_reviews', { count: communityReviews.length }) },
+                  { key: 'Solo', label: t('destination_detail.filter_solo_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Solo' || (r as any).traveler_type === 'Solo').length }) },
+                  { key: 'Couple', label: t('destination_detail.filter_couple_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Couple' || (r as any).traveler_type === 'Couple').length }) },
+                  { key: 'Family', label: t('destination_detail.filter_family_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Family' || (r as any).traveler_type === 'Family').length }) },
+                  { key: 'Friends', label: t('destination_detail.filter_friends_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Friends' || (r as any).traveler_type === 'Friends').length }) },
                 ].map(({ key, label }) => (
                   <button
                     key={key}
@@ -1409,14 +1409,14 @@ export default function DestinationDetail({
                           <span className="text-[12px] font-semibold text-stone-500 ml-1">{newReviewRating}/5</span>
                         </div>
                         <div className="flex gap-1.5">
-                          {(['Solo','Couple','Family','Friends'] as const).map(t => (
+                          {(['Solo','Couple','Family','Friends'] as const).map(type => (
                             <button
-                              key={t}
-                              onClick={() => setNewReviewTravelerType(t)}
+                              key={type}
+                              onClick={() => setNewReviewTravelerType(type)}
                               className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border-2 transition-all ${
-                                newReviewTravelerType === t ? 'bg-amber-50 border-amber-400 text-amber-800' : 'bg-white border-stone-200 text-stone-500'
+                                newReviewTravelerType === type ? 'bg-amber-50 border-amber-400 text-amber-800' : 'bg-white border-stone-200 text-stone-500'
                               }`}
-                            >{t}</button>
+                            >{t(`destination_detail.traveler_${type.toLowerCase()}`)}</button>
                           ))}
                         </div>
                       </div>
@@ -1517,7 +1517,7 @@ export default function DestinationDetail({
                         onClick={() => setVisibleReviews(v => v + 6)}
                         className="px-8 py-2.5 border border-stone-300 text-[12px] font-semibold text-stone-600 rounded-full hover:bg-stone-50 hover:border-stone-400 transition-all"
                       >
-                        Load More Reviews ({filteredReviews.length - visibleReviews} {t('destination_detail.remaining')})
+                        {t('destination_detail.load_more_reviews_btn')} ({filteredReviews.length - visibleReviews} {t('destination_detail.remaining')})
                       </button>
                     </div>
                   )}
@@ -1558,7 +1558,7 @@ export default function DestinationDetail({
                 <div className="bg-white/5 p-2 rounded-xl text-center">
                   <span className="block text-[8px] font-mono text-white/40 uppercase">{t('destination_detail.crowd')}</span>
                   <span className={`text-xs font-bold font-mono mt-0.5 block ${liveCrowdLevel === 'High' ? 'text-red-400' : 'text-emerald-400'}`}>
-                    {liveCrowdLevel}
+                    {liveCrowdLevel === 'High' ? t('destination_detail.crowd_high') : liveCrowdLevel === 'Moderate' ? t('destination_detail.crowd_moderate') : t('destination_detail.crowd_low')}
                   </span>
                 </div>
               </div>
@@ -1738,7 +1738,7 @@ export default function DestinationDetail({
               <div key={story.id} className="bg-white border border-stone-200/40 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
                 {/* Visual image box */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-royal-950">
-                  <Image src={story.img} alt={`Cerita wisata ${story.user}`} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" fill />
+                  <Image src={story.img} alt={t('destination_detail.story_image_alt', { name: story.user })} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" fill />
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-full text-[8.5px] font-mono text-stone-700 font-semibold border">
                     {story.tag}
                   </div>
@@ -1755,7 +1755,7 @@ export default function DestinationDetail({
                       <Image src={story.avatar} alt={story.user} className="h-7 w-7 rounded-full object-cover border" width={28} height={28} />
                       <div className="text-left">
                         <span className="block text-[10px] font-bold text-stone-900 leading-none">{story.user}</span>
-                        <span className="block text-[8px] font-mono text-stone-500 leading-none mt-0.5">{story.location} traveler</span>
+                        <span className="block text-[8px] font-mono text-stone-500 leading-none mt-0.5">{t('destination_detail.story_traveler_label', { location: story.location })}</span>
                       </div>
                     </div>
                     <span className="text-[9px] font-mono text-gold-700 bg-gold-50 px-2 py-0.5 rounded-md font-bold">{t('destination_detail.ai_highlight')}</span>
@@ -1785,7 +1785,7 @@ export default function DestinationDetail({
                 }}
                 className="text-white/60 hover:text-white font-mono text-xs cursor-pointer"
               >
-                [ CLOSE ]
+                {t('destination_detail.close_btn')}
               </button>
             </div>
 
@@ -1804,7 +1804,7 @@ export default function DestinationDetail({
                   <span>{t('destination_detail.pass_destination')}: {destination.name}</span>
                   <span className="block">{t('destination_detail.pass_quantity')}: {ticketQuantity} x {ticketCategory.toUpperCase()}</span>
                   <span className="block font-bold text-gold-700">{t('destination_detail.pass_total')}: IDR {calculatePrice()}</span>
-                  <span className="block text-[8px] text-stone-400">Security Hash: {Math.random().toString(16).substr(2, 8).toUpperCase()}</span>
+                  <span className="block text-[8px] text-stone-400">{t('destination_detail.pass_security_hash')}: {Math.random().toString(16).substr(2, 8).toUpperCase()}</span>
                 </div>
                 <button 
                   onClick={() => {

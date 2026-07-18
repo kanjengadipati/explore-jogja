@@ -448,28 +448,35 @@ export default function App() {
                       <div className="grid grid-cols-2 gap-4">
                         {(aiPicks.length > 0
                           ? aiPicks.slice(0, 4)
-                          : [
-                              { destinationId: 'merapi',     badge: t('home.ai_pick_badge'), headline: 'Merapi Sunrise Jeep Tour', crowd: 'Low',  rating: 4.8 },
-                              { destinationId: 'goajomblang', badge: t('category.hidden_gem'),   headline: 'Celestial Beam Cave',      crowd: 'Low',  rating: 4.9 },
-                              { destinationId: 'prambanan',  badge: t('category.heritage'),  headline: 'Prambanan Temple',         crowd: 'Medium', rating: 4.7 },
-                              { destinationId: 'parangtritis', badge: t('hero.cta_beach_sunset').split('{name}')[0].trim() || 'Sunset Spot', headline: 'Parangtritis Beach',       crowd: 'High', rating: 4.5 },
-                            ]
+                          : allDestinations.length > 0
+                            ? allDestinations.slice(0, 4).map(d => ({
+                                destinationId: d.id,
+                                badge: t('home.ai_pick_badge'),
+                                headline: d.name,
+                                crowd: 'Low',
+                                rating: d.rating,
+                              }))
+                            : []
                         ).map((pick) => {
                           const dest = allDestinations.find(d => d.id === pick.destinationId);
                           if (!dest) return null;
-                          const imgUrl = (pick as any).imageUrl || dest.images[0]?.url || '';
+                          const imgUrl = (pick as any).imageUrl || dest.images?.[0]?.url || dest.ogImageUrl || '';
                           return (
                             <div
                               key={pick.destinationId}
                               onClick={() => handleExploreDestination(dest)}
                               className="group relative h-full min-h-[180px] lg:min-h-0 w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
-                              <Image
-                                src={imgUrl}
-                                alt={dest.name}
-                                fill
-                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                              />
+                              {imgUrl ? (
+                                <Image
+                                  src={imgUrl}
+                                  alt={dest.name}
+                                  fill
+                                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 bg-gradient-to-br from-royal-900 to-royal-950" />
+                              )}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
 
                               {/* Badge */}
