@@ -41,7 +41,7 @@ const FALLBACK = {
   title: 'Jogjagem — Jelajahi Yogyakarta Lebih Dalam',
   description: 'Temukan destinasi wisata terbaik di Yogyakarta. Panduan lengkap Candi Prambanan, Malioboro, Pantai Parangtritis, Gunung Merapi, hidden gems, dan 100+ destinasi lainnya.',
   keywords: 'wisata Yogyakarta, jogja, travel guide Yogyakarta, destinasi wisata jogja, Candi Prambanan, Malioboro, Pantai Parangtritis, Gunung Merapi, paket wisata jogja, hidden gems Yogyakarta',
-  ogImage: '/og-default.png',
+  ogImage: '/og.png',
   twitterHandle: '@jogjagem',
 };
 
