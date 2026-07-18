@@ -162,10 +162,15 @@ export default function App() {
     return savedDestinations.some(d => d.id === id);
   };
 
-  // Keep URL in sync with active tab so back/forward and direct links work
+  // Keep URL in sync with active tab so back/forward and direct links work.
+  // For the default 'discover' tab we stay on clean '/' — no ?tab= needed.
   const navigateToTab = (tab: string) => {
     setActiveTab(tab);
-    router.push(`/?tab=${tab}`, { scroll: false });
+    if (tab === 'discover') {
+      router.push('/', { scroll: false });
+    } else {
+      router.push(`/?tab=${tab}`, { scroll: false });
+    }
   };
 
   useEffect(() => {

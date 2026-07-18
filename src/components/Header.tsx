@@ -56,7 +56,7 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
             <div 
             id="brand-logo-container" 
             className="flex cursor-pointer items-center group shrink-0"
-            onClick={() => setActiveTab('discover')}
+            onClick={() => { setActiveTab('discover'); router.push('/', { scroll: false }); }}
           >
             <div className="text-gold-400 transition-transform duration-300 group-hover:scale-105 mr-2">
               <Image src="/logo-gold-new.png" alt="Jogjagem Logo" width={40} height={40} className="object-contain" />
@@ -280,7 +280,7 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
       <div className={`lg:hidden fixed top-0 left-0 z-[70] h-full w-[300px] bg-royal-950 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Drawer header */}
         <div className="flex items-center justify-between px-5 py-5 border-b border-white/10">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNav('discover')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTab('discover'); router.push('/', { scroll: false }); setDrawerOpen(false); }}>
             <Image src="/logo-gold-new.png" alt="Jogjagem Logo" width={34} height={34} className="object-contain" />
             <div>
               <span className="block font-manrope text-[15px] font-bold tracking-widest text-white">Jogjagem</span>
