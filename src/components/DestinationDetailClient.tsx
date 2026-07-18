@@ -68,24 +68,36 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
       setLoading(true);
       const slugStr = slug.join('/');
 
-      const allRes = await destinations.getAll();
-      if (allRes.status === 'success' && Array.isArray(allRes.data)) {
-        const mapped = allRes.data.map(mapApiToDestination);
-        setAllDestinations(mapped);
-        const found = mapped.find(d => toSlug(d.name) === slugStr || d.id === slugStr);
-        if (found) {
-          setDestination(found);
-          setLoading(false);
-          return;
-        }
-      }
-
+      // First, try to fetch the single destination by ID/slug
       try {
         const res = await destinations.getById(slugStr);
         if (res.status === 'success' && res.data) {
           setDestination(mapApiToDestination(res.data));
           setLoading(false);
+
+          // Lazy-load all destinations for "similar destinations" section (non-blocking)
+          destinations.getAll().then((allRes) => {
+            if (allRes.status === 'success' && Array.isArray(allRes.data)) {
+              setAllDestinations(allRes.data.map(mapApiToDestination));
+            }
+          }).catch(() => {});
+
           return;
+        }
+      } catch {}
+
+      // Fallback: try finding by slug in all destinations
+      try {
+        const allRes = await destinations.getAll();
+        if (allRes.status === 'success' && Array.isArray(allRes.data)) {
+          const mapped = allRes.data.map(mapApiToDestination);
+          setAllDestinations(mapped);
+          const found = mapped.find(d => toSlug(d.name) === slugStr || d.id === slugStr);
+          if (found) {
+            setDestination(found);
+            setLoading(false);
+            return;
+          }
         }
       } catch {}
 

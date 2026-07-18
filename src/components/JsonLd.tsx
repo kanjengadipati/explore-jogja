@@ -129,3 +129,24 @@ export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
   };
   return <JsonLd data={data} />;
 }
+
+interface FAQJsonLdProps {
+  items: { question: string; answer: string }[];
+}
+
+export function FAQJsonLd({ items }: FAQJsonLdProps) {
+  if (!items.length) return null;
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+  return <JsonLd data={data} />;
+}

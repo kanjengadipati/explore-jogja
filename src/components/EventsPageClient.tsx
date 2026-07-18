@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Calendar, MapPin, Loader2 } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
@@ -81,17 +82,18 @@ function EventsPageContent() {
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {eventList.map((evt) => (
-              <div
+              <Link
                 key={evt.id}
-                onClick={() => router.push(`/events/${evt.id}`)}
-                className="group rounded-3xl overflow-hidden bg-white border border-[#E8E0D5] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                href={`/events/${evt.id}`}
+                className="group rounded-3xl overflow-hidden bg-white border border-[#E8E0D5] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer block"
               >
                 <div className="relative h-48 overflow-hidden bg-stone-100">
                   {evt.image_url ? (
-                    <img
+                    <Image
                       src={evt.image_url}
                       alt={evt.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                       loading="lazy"
                     />
@@ -141,7 +143,7 @@ function EventsPageContent() {
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

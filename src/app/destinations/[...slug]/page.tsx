@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import DestinationDetailClient from '@/components/DestinationDetailClient';
-import { TouristDestinationJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
+import { TouristDestinationJsonLd, BreadcrumbJsonLd, FAQJsonLd } from '@/components/JsonLd';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jogjagem.com';
 const SITE_NAME = 'Jogjagem';
@@ -141,6 +141,7 @@ export default async function DestinationDetailPage({ params }: PageProps) {
   const rating = dest?.rating || dest?.Rating || 0;
   const reviewCount = dest?.review_count || dest?.ReviewCount || 0;
   const location = dest?.location || dest?.Location || '';
+  const faqs = dest?.faqs || dest?.Faqs || dest?.FAQs || [];
 
   return (
     <>
@@ -165,6 +166,14 @@ export default async function DestinationDetailPage({ params }: PageProps) {
               { name, url: `${SITE_URL}/destinations/${slugStr}` },
             ]}
           />
+          {Array.isArray(faqs) && faqs.length > 0 && (
+            <FAQJsonLd
+              items={faqs.map((faq: any) => ({
+                question: faq.question || faq.Question || '',
+                answer: faq.answer || faq.Answer || '',
+              })).filter((item: { question: string; answer: string }) => item.question && item.answer)}
+            />
+          )}
         </>
       )}
       <DestinationDetailClient slug={slug} />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Star, Heart, Flag } from 'lucide-react';
 import { Destination } from '../types';
 import { auth } from '../lib/api';
@@ -79,14 +80,15 @@ export default function DestinationCard({
 
   const badgeText = BADGE_MAP[destination.id] || destination.category.replace('-', ' ').toUpperCase();
   const heightClass = 'h-[160px] sm:h-[360px] md:h-[400px]';
+  const slug = destination.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   return (
     <>
       <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} destinationId={destination.id} onReport={handleReport} />
 
-      <div
+      <Link
         id={`destination-card-${destination.id}`}
-        onClick={() => onExplore(destination)}
+        href={`/destinations/${slug}`}
         className={`group relative w-full overflow-hidden rounded-[24px] bg-[#FCFAF8] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl cursor-pointer border border-stone-200/40 ${heightClass} ${className}`}
       >
         {/* Immersive Destination Thumbnail */}
@@ -163,7 +165,7 @@ export default function DestinationCard({
             </span>
           </div>
         </div>
-      </div>
+      </Link>
     </>
   );
 }

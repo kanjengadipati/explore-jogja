@@ -15,14 +15,14 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-inter-family',
-  display: 'swap',
+  display: 'optional',
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-mono-family',
-  display: 'swap',
+  display: 'optional',
 });
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -30,7 +30,7 @@ const dmSerifDisplay = DM_Serif_Display({
   weight: ['400'],
   style: ['normal', 'italic'],
   variable: '--font-display-family',
-  display: 'swap',
+  display: 'optional',
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jogjagem.com';
@@ -92,6 +92,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: 'website',
       locale: 'id_ID',
+      alternateLocale: 'en_US',
       url: SITE_URL,
       siteName: SITE_NAME,
       title,
@@ -118,11 +119,6 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     alternates: {
       canonical: SITE_URL,
-      languages: {
-        'id': SITE_URL,
-        'en': SITE_URL,
-        'x-default': SITE_URL,
-      },
     },
   };
 }
