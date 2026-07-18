@@ -3,6 +3,7 @@ import { Manrope, Inter, JetBrains_Mono, DM_Serif_Display } from 'next/font/goog
 import './globals.css';
 import { WebsiteJsonLd } from '@/components/JsonLd';
 import I18nProvider from '@/contexts/I18nProvider';
+import { Analytics } from '@vercel/analytics/next';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -135,6 +136,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <I18nProvider>{children}</I18nProvider>
+        <Analytics />
       </body>
     </html>
   );
