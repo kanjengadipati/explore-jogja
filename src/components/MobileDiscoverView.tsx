@@ -88,12 +88,14 @@ function toSlug(name: string) {
 }
 
 const HERO_SLIDES = [
-  { id: 'prambanan', name: 'Prambanan Temple', tagline: 'Candi Hindu abad ke-9 yang megah.', image: 'https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?auto=format&fit=crop&w=1200&q=80' },
-  { id: 'parangtritis', name: 'Parangtritis Beach', tagline: 'Pasir vulkanik hitam dan sunset mistis.', image: 'https://images.unsplash.com/photo-1602137704924-9a038cfb5253?auto=format&fit=crop&w=1200&q=80' },
-  { id: 'merapi', name: 'Mount Merapi', tagline: 'Petualangan jeep lava tour.', image: 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=1200&q=80' },
-  { id: 'tamansari', name: 'Taman Sari', tagline: 'Istana air kerajaan yang tersembunyi.', image: 'https://images.unsplash.com/photo-1625506276715-76ad63823181?auto=format&fit=crop&w=1200&q=80' },
-  { id: 'goajomblang', name: 'Goa Jomblang', tagline: 'Cahaya surga di dalam gua.', image: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'prambanan',    name: 'Candi Prambanan',   tagline: 'Candi Hindu abad ke-9 yang megah.',         image: 'https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'parangtritis', name: 'Pantai Parangtritis', tagline: 'Pasir vulkanik hitam dan sunset mistis.',  image: 'https://images.unsplash.com/photo-1602137704924-9a038cfb5253?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'merapi',       name: 'Gunung Merapi',       tagline: 'Petualangan jeep lava tour.',             image: 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'tamansari',    name: 'Taman Sari',          tagline: 'Istana air kerajaan yang tersembunyi.',   image: 'https://images.unsplash.com/photo-1625506276715-76ad63823181?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'goajomblang',  name: 'Goa Jomblang',        tagline: 'Cahaya surga di dalam gua.',             image: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=1200&q=80' },
 ];
+
+const MAX_SLIDES = 10;
 
 function parseEventDate(raw: string): { day: string; month: string } {
   const ISO_RE = /(\d{4})-(\d{2})-(\d{2})/;
@@ -158,10 +160,21 @@ export default function MobileDiscoverView({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const heroSlides = [...allDestinations]
+    .filter(d => d.images?.[0]?.url)
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, MAX_SLIDES)
+    .map(d => ({
+      id: d.id,
+      name: d.name,
+      tagline: d.tagline || d.description?.slice(0, 80) || '',
+      image: d.images[0].url,
+    }));
+
   useEffect(() => {
-    const timer = setInterval(() => setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length), 5000);
+    const timer = setInterval(() => setCurrentSlide(prev => (prev + 1) % heroSlides.length), 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   useEffect(() => {
     if (allDestinations.length === 0) return;
@@ -305,12 +318,12 @@ export default function MobileDiscoverView({
       <div className="relative">
         {/* Background slideshow — covers entire first screen */}
         <div className="absolute inset-0 overflow-hidden -z-0">
-          {HERO_SLIDES.map((slide, idx) => (
+          {heroSlides.map((slide, idx) => (
             <div
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-70' : 'opacity-0'}`}
             >
-              <Image src={slide.image} alt={slide.name} fill className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
+              <Image src={slide.image} alt={slide.name} fill sizes="100vw" className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
               <div className="absolute inset-0 bg-gradient-to-b from-[#0f0e0c]/40 via-[#0f0e0c]/20 to-[#0f0e0c]" />
             </div>
           ))}
@@ -367,7 +380,7 @@ export default function MobileDiscoverView({
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/destinations/${toSlug(recommendation.dest.name)}`); }}
                   className="relative w-[130px] sm:w-[156px] aspect-[2/3] rounded-2xl overflow-hidden shrink-0 border border-gold-500/30 shadow-lg cursor-pointer"
                 >
-                  {img && <Image src={img} alt={recommendation.dest.name} fill className="object-cover object-center" referrerPolicy="no-referrer" />}
+                  {img && <Image src={img} alt={recommendation.dest.name} fill sizes="50vw" className="object-cover object-center" referrerPolicy="no-referrer" />}
                   <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/30 to-black/80" />
                   <div className="relative z-10 flex flex-col h-full px-2.5 pt-2.5 pb-2.5">
                     <div className="flex items-center justify-between mb-1">
@@ -385,10 +398,12 @@ export default function MobileDiscoverView({
                     <h3 className="text-[12px] font-bold text-white leading-tight mb-0.5 drop-shadow">{recommendation.dest.name}</h3>
                     <p className="text-[8px] text-white/70 leading-relaxed line-clamp-2 mb-auto drop-shadow">{recommendation.reason || recommendation.dest.tagline}</p>
                     <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-0.5 text-[7px] text-white/60">
+                        <span>📍</span><span>{recommendation.dest.subRegion || (recommendation.dest as any).sub_region || recommendation.dest.location}</span>
+                      </span>
                       <span className="flex items-center gap-0.5 text-[8px] font-bold text-gold-400">
                         <Star className="h-2 w-2 fill-gold-400" />{recommendation.dest.rating?.toFixed(1) ?? '4.9'}
                       </span>
-                      <span className="text-[7px] text-white/40 font-mono">📍 {recommendation.headline ? t('hero.ai_recommendation') : recommendation.dest.subRegion || recommendation.dest.location}</span>
                     </div>
                   </div>
                 </div>
@@ -399,12 +414,12 @@ export default function MobileDiscoverView({
           {/* Slide tagline — below headline + card row */}
           <div className="px-4">
             <p className="text-white/50 text-[11px] mt-5 leading-relaxed">
-              {HERO_SLIDES[currentSlide].tagline}
+              {heroSlides[currentSlide].tagline}
             </p>
 
             {/* Slide indicators */}
             <div className="flex items-center gap-1.5 mt-3">
-              {HERO_SLIDES.map((_, idx) => (
+              {heroSlides.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
@@ -485,7 +500,7 @@ export default function MobileDiscoverView({
                     >
                       <div className="relative h-[72px]">
                         {item.imageUrl
-                          ? <Image src={item.imageUrl} alt={item.headline} fill className="object-cover" referrerPolicy="no-referrer" />
+                          ? <Image src={item.imageUrl} alt={item.headline} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />
                           : <div className="w-full h-full bg-white/10" />
                         }
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -594,7 +609,7 @@ export default function MobileDiscoverView({
                   className="relative rounded-[18px] overflow-hidden bg-white/5 border border-white/8 text-left cursor-pointer active:scale-[0.98] transition-transform"
                   style={{ aspectRatio: '1/1' }}
                 >
-                  {img && <Image src={img} alt={dest.name} fill className="object-cover" referrerPolicy="no-referrer" />}
+                  {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                   <button
                     onClick={(e) => handleToggleSave(e, dest)}
@@ -641,7 +656,7 @@ export default function MobileDiscoverView({
                   >
                     <div className="relative h-[80px]">
                       {evt.image
-                        ? <Image src={evt.image} alt={evt.name} fill className="object-cover" referrerPolicy="no-referrer" />
+                        ? <Image src={evt.image} alt={evt.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />
                         : <div className="w-full h-full bg-white/10" />
                       }
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -685,7 +700,7 @@ export default function MobileDiscoverView({
                     className="relative rounded-[18px] overflow-hidden bg-white/5 border border-white/8 text-left cursor-pointer active:scale-[0.98] transition-transform"
                     style={{ aspectRatio: '1/1' }}
                   >
-                    {img && <Image src={img} alt={dest.name} fill className="object-cover" referrerPolicy="no-referrer" />}
+                    {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                     <div className="absolute top-2.5 left-2.5 bg-amber-500/90 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                       {pick.badge}
