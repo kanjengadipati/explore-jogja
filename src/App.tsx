@@ -12,7 +12,7 @@ import { useLocale } from '@/contexts/LocaleContext';
 
 import { Destination, Festival } from './types';
 import { destinations, events, config, auth, ai, APIResponse } from '@/lib/api';
-import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, CalendarDays, Map, Sun, Utensils, Leaf, Sunset, RefreshCw } from 'lucide-react';
+import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, CalendarDays, Map, Sun, Utensils, Leaf, Sunset, RefreshCw, User } from 'lucide-react';
 
 export default function App() {
   const { t } = useLocale();
@@ -717,61 +717,74 @@ export default function App() {
       </footer>
 
       {/* Mobile Sticky Bottom Tab Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-royal-950/95 backdrop-blur-md border-t border-royal-900 px-4 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))] flex justify-around items-center text-white">
-        <button
-          onClick={() => navigateToTab('discover')}
-          className={`flex flex-col items-center justify-center space-y-0.5 ${
-            ['discover','events','experiences'].includes(activeTab) ? 'text-gold-400 font-semibold' : 'text-white/60'
-          }`}
-        >
-          <Compass className="h-5 w-5" />
-          <span className="text-[10px]">{t('common.explore')}</span>
-        </button>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+        {/* Glass bar */}
+        <div className="bg-royal-950/95 backdrop-blur-xl border-t border-white/8 px-6 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-2 flex items-end justify-around">
 
-        <button
-          onClick={() => router.push('/ai')}
-          className={`flex flex-col items-center justify-center space-y-0.5 ${
-            activeTab === 'ai-assistant' ? 'text-gold-400 font-semibold' : 'text-white/60'
-          }`}
-        >
-          <Brain className="h-5 w-5" />
-          <span className="text-[10px]">{t('common.ai_assistant')}</span>
-        </button>
+          {/* Beranda */}
+          <button
+            onClick={() => navigateToTab('discover')}
+            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
+              ['discover','events','experiences'].includes(activeTab) ? 'text-gold-400' : 'text-white/40'
+            }`}
+          >
+            <div className={`p-1.5 rounded-xl transition-all duration-200 ${['discover','events','experiences'].includes(activeTab) ? 'bg-gold-400/15' : ''}`}>
+              <Compass className="h-[22px] w-[22px]" />
+            </div>
+            <span className="text-[9px] font-semibold tracking-wide">{t('common.explore')}</span>
+          </button>
 
-        <button
-          onClick={() => router.push('/planner')}
-          className={`flex flex-col items-center justify-center space-y-0.5 ${
-            activeTab === 'planner' ? 'text-gold-400 font-semibold' : 'text-white/60'
-          }`}
-        >
-          <CalendarDays className="h-5 w-5" />
-          <span className="text-[10px]">{t('common.planner')}</span>
-        </button>
+          {/* Jelajah */}
+          <button
+            onClick={() => router.push('/destinations')}
+            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
+              activeTab === 'destinations' ? 'text-gold-400' : 'text-white/40'
+            }`}
+          >
+            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'destinations' ? 'bg-gold-400/15' : ''}`}>
+              <Map className="h-[22px] w-[22px]" />
+            </div>
+            <span className="text-[9px] font-semibold tracking-wide">{t('common.map')}</span>
+          </button>
 
-        <button
-          onClick={() => router.push('/map')}
-          className={`flex flex-col items-center justify-center space-y-0.5 ${
-            activeTab === 'map' ? 'text-gold-400 font-semibold' : 'text-white/60'
-          }`}
-        >
-          <Map className="h-5 w-5" />
-          <span className="text-[10px]">{t('common.map')}</span>
-        </button>
+          {/* AI — center elevated pill */}
+          <div className="flex flex-col items-center -mt-5">
+            <button
+              onClick={() => router.push('/ai')}
+              className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 shadow-[0_4px_20px_rgba(180,130,40,0.5)] active:scale-95 transition-transform duration-150"
+            >
+              <Sparkles className="h-6 w-6 text-royal-950" />
+            </button>
+            <span className="text-[9px] font-semibold tracking-wide text-gold-400 mt-1">AI</span>
+          </div>
 
-        <button
-          onClick={() => router.push('/saved')}
-          className={`flex flex-col items-center justify-center space-y-0.5 relative ${
-            activeTab === 'saved' ? 'text-gold-400 font-semibold' : 'text-white/60'
-          }`}
-        >
-          <Heart className={`h-5 w-5 ${savedDestinations.length > 0 ? 'fill-gold-400 text-gold-400' : ''}`} />
-          {savedDestinations.length > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[8px] font-bold text-white">
-              {savedDestinations.length}
-            </span>
-          )}
-          <span className="text-[10px]">{t('common.saved')}</span>
-        </button>
+          {/* Itinerary */}
+          <button
+            onClick={() => router.push('/planner')}
+            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
+              activeTab === 'planner' ? 'text-gold-400' : 'text-white/40'
+            }`}
+          >
+            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'planner' ? 'bg-gold-400/15' : ''}`}>
+              <CalendarDays className="h-[22px] w-[22px]" />
+            </div>
+            <span className="text-[9px] font-semibold tracking-wide">{t('common.planner')}</span>
+          </button>
+
+          {/* Profil */}
+          <button
+            onClick={() => router.push('/profile')}
+            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
+              activeTab === 'profile' ? 'text-gold-400' : 'text-white/40'
+            }`}
+          >
+            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'profile' ? 'bg-gold-400/15' : ''}`}>
+              <User className="h-[22px] w-[22px]" />
+            </div>
+            <span className="text-[9px] font-semibold tracking-wide">{t('common.user')}</span>
+          </button>
+
+        </div>
       </div>
     </div>
   );
