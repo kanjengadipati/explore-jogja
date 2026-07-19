@@ -5,12 +5,23 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Search, MapPin, Bell, Star, Heart, ChevronRight,
-  Grid2x2, Compass, Utensils, Calendar, MoreHorizontal,
+  Grid2x2, Compass, Utensils, Calendar, MoreHorizontal, Bookmark,
   Mic, MicOff, Camera, Loader2,
 } from 'lucide-react';
 import { Destination, Festival } from '../types';
 import { auth, ai } from '../lib/api';
 import { useLocation } from '@/contexts/LocationContext';
+import {
+  TuguJogjaIcon,
+  HiddenGemsIcon,
+  NatureEscapesIcon,
+  CulinaryLegendsIcon,
+  HeritageIcon,
+  AdventureIcon,
+  BeachesIcon,
+  FamilyFriendlyIcon,
+  WeekendIdeasIcon,
+} from './CategoryIcons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
 
@@ -49,21 +60,21 @@ interface MobileDiscoverViewProps {
 // ─── Category pill config ─────────────────────────────────────────────────────
 
 const MOBILE_CATS = [
-  { id: null,        label: 'Semua',    Icon: Grid2x2 },
-  { id: 'heritage',  label: 'Destinasi', Icon: Compass },
-  { id: 'culinary',  label: 'Kuliner',   Icon: Utensils },
-  { id: 'adventure', label: 'Event',     Icon: Calendar },
-  { id: '__more__',  label: 'Lainnya',   Icon: MoreHorizontal },
+  { id: null,        label: 'Semua',      Icon: TuguJogjaIcon },
+  { id: 'heritage',  label: 'Destinasi',  Icon: HeritageIcon },
+  { id: 'culinary',  label: 'Kuliner',    Icon: CulinaryLegendsIcon },
+  { id: 'adventure', label: 'Petualangan',Icon: AdventureIcon },
+  { id: '__more__',  label: 'Lainnya',    Icon: WeekendIdeasIcon },
 ] as const;
 
 // ─── All categories for "Lainnya" expanded row ───────────────────────────────
 
 const MORE_CATS = [
-  { id: 'hidden-gem', label: 'Hidden Gems',    emoji: '💎' },
-  { id: 'nature',     label: 'Alam',           emoji: '🌿' },
-  { id: 'beach',      label: 'Pantai',         emoji: '🏖️' },
-  { id: 'family',     label: 'Keluarga',       emoji: '👨‍👩‍👧' },
-  { id: 'weekend',    label: 'Akhir Pekan',    emoji: '📅' },
+  { id: 'hidden-gem', label: 'Hidden Gems', Icon: HiddenGemsIcon },
+  { id: 'nature',     label: 'Alam',        Icon: NatureEscapesIcon },
+  { id: 'beach',      label: 'Pantai',      Icon: BeachesIcon },
+  { id: 'family',     label: 'Keluarga',    Icon: FamilyFriendlyIcon },
+  { id: 'weekend',    label: 'Akhir Pekan', Icon: WeekendIdeasIcon },
 ] as const;
 
 const DEFAULT_ORDER = [
@@ -137,6 +148,9 @@ export default function MobileDiscoverView({
   const { isAuthenticated, user } = useAuth();
   const { t } = useLocale();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [recommendation, setRecommendation] = useState<{
+    dest: Destination; headline: string; reason: string;
+  } | null>(null);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [showMoreCats, setShowMoreCats] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,6 +162,25 @@ export default function MobileDiscoverView({
     const timer = setInterval(() => setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length), 5000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (allDestinations.length === 0) return;
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 11 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    const fallbackDest = allDestinations.find(d => d.id === 'merapi' || d.id === 'prambanan') || allDestinations[0];
+    if (fallbackDest && !recommendation) {
+      setRecommendation({ dest: fallbackDest, headline: '', reason: fallbackDest.tagline });
+    }
+    ai.recommend(timeOfDay).then(res => {
+      if (res.status === 'success' && res.data) {
+        const data = res.data;
+        const recommendedDest = allDestinations.find(d => d.id?.toLowerCase() === data.destinationId?.toLowerCase());
+        if (recommendedDest) {
+          setRecommendation({ dest: recommendedDest, headline: data.headline, reason: data.reason });
+        }
+      }
+    }).catch(() => {});
+  }, [allDestinations]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,58 +340,64 @@ export default function MobileDiscoverView({
         <div className="relative z-10 space-y-6 pt-4 pb-6">
 
           {/* ── Hero greeting + Rec card ── */}
-          <div className="px-4">
-            <p className="text-gold-400 text-[11px] font-semibold uppercase tracking-widest mb-1">
-              {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
-            </p>
-            <div className="flex items-start justify-between gap-3">
-              {/* Left: headline */}
-              <div className="flex-1">
-                <h1 className="font-manrope text-[26px] font-extrabold leading-tight text-white">
-                  Jelajahi <br />
-                  Yogyakarta <br />
-                  <span className="text-gold-400">Lebih Dalam</span>
-                </h1>
-                <p className="text-white/50 text-[11px] mt-1.5 leading-relaxed max-w-[180px]">
-                  {HERO_SLIDES[currentSlide].tagline}
-                </p>
-              </div>
+          <div className="px-4 flex items-start justify-between gap-3">
+            {/* Left: greeting + headline */}
+            <div className="flex-1">
+              <p className="text-gold-400 text-[11px] font-semibold uppercase tracking-widest mb-1">
+                {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
+              </p>
+              <h1 className="font-manrope text-[26px] font-extrabold leading-tight text-white">
+                Jelajahi <br />
+                Yogyakarta <br />
+                <span className="text-gold-400">Lebih Dalam</span>
+              </h1>
+            </div>
 
-              {/* Right: recommendation mini-card (synced with slide) */}
-              {allDestinations.length > 0 && (() => {
-                const rec = allDestinations.find(d => d.id === HERO_SLIDES[currentSlide].id) || allDestinations.find(d => d.id === 'prambanan') || allDestinations[0];
-                const img = rec.images?.[0]?.url || rec.ogImageUrl || '';
-                return (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => router.push(`/destinations/${toSlug(rec.name)}`)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/destinations/${toSlug(rec.name)}`); }}
-                    className="relative w-[120px] h-[130px] rounded-2xl overflow-hidden shrink-0 border border-gold-500/30 shadow-lg cursor-pointer"
-                  >
-                    {img && <Image src={img} alt={rec.name} fill className="object-cover" />}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                    <div className="absolute top-2 left-2 bg-gold-500 text-royal-950 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                      Jogjagem Rekom
-                    </div>
-                    <button
-                      onClick={(e) => handleToggleSave(e, rec)}
-                      className="absolute top-2 right-2 h-5 w-5 rounded-full bg-black/40 flex items-center justify-center"
-                    >
-                      <Heart className={`h-3 w-3 ${isSaved(rec.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                    </button>
-                    <div className="absolute bottom-0 inset-x-0 p-2 text-left">
-                      <p className="text-white font-bold text-[11px] leading-tight line-clamp-1">{rec.name}</p>
-                      <p className="text-white/50 text-[9px] mt-0.5">{rec.subRegion || rec.location}</p>
-                      <div className="flex items-center gap-0.5 mt-0.5">
-                        <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
-                        <span className="text-gold-400 text-[9px] font-bold">{rec.rating.toFixed(1)}</span>
+            {/* Right: AI recommendation card */}
+            {recommendation && (() => {
+              const img = recommendation.dest.images?.[0]?.url || recommendation.dest.ogImageUrl || '';
+              return (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/destinations/${toSlug(recommendation.dest.name)}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/destinations/${toSlug(recommendation.dest.name)}`); }}
+                  className="relative w-[156px] h-[169px] rounded-2xl overflow-hidden shrink-0 border border-gold-500/30 shadow-lg cursor-pointer"
+                >
+                  {img && <Image src={img} alt={recommendation.dest.name} fill className="object-cover object-center" referrerPolicy="no-referrer" />}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/30 to-black/80" />
+                  <div className="relative z-10 flex flex-col h-full px-2.5 pt-2.5 pb-2.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-gold-400 shrink-0"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/></svg>
+                        <span className="text-[7px] font-bold tracking-widest uppercase text-gold-400">AI Pick</span>
                       </div>
+                      <button
+                        onClick={(e) => handleToggleSave(e, recommendation.dest)}
+                        className="flex items-center justify-center h-4 w-4 rounded-full"
+                      >
+                        <Bookmark className={`h-2.5 w-2.5 ${isSaved(recommendation.dest.id) ? 'fill-gold-400 text-gold-400' : 'text-white/60'}`} />
+                      </button>
+                    </div>
+                    <h3 className="text-[12px] font-bold text-white leading-tight mb-0.5 drop-shadow">{recommendation.dest.name}</h3>
+                    <p className="text-[8px] text-white/70 leading-relaxed line-clamp-2 mb-auto drop-shadow">{recommendation.reason || recommendation.dest.tagline}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-0.5 text-[8px] font-bold text-gold-400">
+                        <Star className="h-2 w-2 fill-gold-400" />{recommendation.dest.rating?.toFixed(1) ?? '4.9'}
+                      </span>
+                      <span className="text-[7px] text-white/40 font-mono">📍 {recommendation.headline ? 'AI Rekomendasi' : recommendation.dest.subRegion || recommendation.dest.location}</span>
                     </div>
                   </div>
-                );
-              })()}
-            </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Slide tagline — below headline + card row */}
+          <div className="px-4">
+            <p className="text-white/50 text-[11px] mt-3 leading-relaxed">
+              {HERO_SLIDES[currentSlide].tagline}
+            </p>
 
             {/* Slide indicators */}
             <div className="flex items-center gap-1.5 mt-3">
@@ -490,12 +529,18 @@ export default function MobileDiscoverView({
                   }}
                   className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
                     active
-                      ? 'bg-gold-500 border-gold-500 text-royal-950'
-                      : 'bg-white/6 border-white/10 text-white/70'
+                      ? 'bg-[#1C1A17] border-[#1C1A17]'
+                      : 'bg-white/6 border-white/10'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 ${active ? 'text-royal-950' : 'text-gold-400'}`} />
-                  <span className="text-[9px] font-bold text-center leading-tight px-0.5">{label}</span>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                    active ? 'bg-gold-500/20 text-gold-400' : 'bg-white/10 text-gold-400'
+                  }`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-white' : 'text-white/60'}`}>
+                    {label}
+                  </span>
                 </button>
               );
             })}
@@ -514,13 +559,15 @@ export default function MobileDiscoverView({
                       setShowMoreCats(false);
                     }}
                     className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
-                      active
-                        ? 'bg-gold-500 border-gold-500 text-royal-950'
-                        : 'bg-white/6 border-white/10 text-white/70'
+                      active ? 'bg-[#1C1A17] border-[#1C1A17]' : 'bg-white/6 border-white/10'
                     }`}
                   >
-                    <span className="text-[18px] leading-none">{cat.emoji}</span>
-                    <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : ''}`}>
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                      active ? 'bg-gold-500/20 text-gold-400' : 'bg-white/10 text-gold-400'
+                    }`}>
+                      <cat.Icon className="h-5 w-5" />
+                    </div>
+                    <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-white' : 'text-white/60'}`}>
                       {cat.label}
                     </span>
                   </button>
