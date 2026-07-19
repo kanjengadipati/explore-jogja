@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
@@ -17,9 +17,7 @@ import { Sparkles, Calendar, Quote, Compass, Eye, Heart, MapPin, Brain, Calendar
 export default function App() {
   const { t } = useLocale();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'discover';
-  const [activeTab, setActiveTab] = useState<string>(initialTab);
+  const [activeTab, setActiveTab] = useState<string>('discover');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
    const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
@@ -166,20 +164,7 @@ export default function App() {
   // For the default 'discover' tab we stay on clean '/' — no ?tab= needed.
   const navigateToTab = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'discover') {
-      router.push('/', { scroll: false });
-    } else {
-      router.push(`/?tab=${tab}`, { scroll: false });
-    }
   };
-
-  useEffect(() => {
-    const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
 
   const handleHeroSearch = (query: string) => {
     router.push(`/ai?q=${encodeURIComponent(query)}`);
@@ -317,7 +302,7 @@ export default function App() {
                       </span>
                       <h2 className="font-manrope text-2xl sm:text-3xl font-bold tracking-tight text-royal-950">
                         {selectedCategory 
-                          ? `Curated ${selectedCategory.replace('-', ' ')}` 
+                          ? t('home.curated_category', { category: selectedCategory.replace('-', ' ') }) 
                           : t('home.popular_destinations')
                         }
                       </h2>
@@ -376,7 +361,7 @@ export default function App() {
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="flex sm:grid sm:grid-cols-3 gap-4 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible sm:pb-0">
                         {allEvents.slice(0, 3).map((fest, idx) => {
                           const badges = [t('common.badge_limited'), t('common.badge_popular'), t('common.badge_live_tonight')];
                           const subBadge = [t('common.badge_starts_5'), t('common.badge_starts_18'), t('common.badge_tonight_7')];
@@ -384,7 +369,7 @@ export default function App() {
                             <div
                               key={fest.id}
                               onClick={() => router.push(`/events/${fest.id}`)}
-                              className="group relative aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
+                              className="group relative flex-shrink-0 w-[52vw] sm:w-auto aspect-[3/4] overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
                               <Image 
                                 src={fest.image} 
@@ -458,7 +443,7 @@ export default function App() {
                                 destinationId: d.id,
                                 badge: t('home.ai_pick_badge'),
                                 headline: d.name,
-                                crowd: 'Low',
+                                crowd: t('home.crowd_low'),
                                 rating: d.rating,
                               }))
                             : []
