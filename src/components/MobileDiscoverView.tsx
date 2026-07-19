@@ -54,17 +54,14 @@ const MOBILE_CATS = [
   { id: '__more__',  label: 'Lainnya',   Icon: MoreHorizontal },
 ] as const;
 
-// ─── All categories for "Lainnya" bottom sheet ───────────────────────────────
+// ─── All categories for "Lainnya" expanded row ───────────────────────────────
 
-const ALL_CATS = [
-  { id: 'hidden-gem', label: 'Hidden Gems' },
-  { id: 'nature',     label: 'Alam' },
-  { id: 'culinary',   label: 'Kuliner' },
-  { id: 'heritage',   label: 'Warisan Budaya' },
-  { id: 'adventure',  label: 'Petualangan' },
-  { id: 'beach',      label: 'Pantai' },
-  { id: 'family',     label: 'Keluarga' },
-  { id: 'weekend',    label: 'Ide Akhir Pekan' },
+const MORE_CATS = [
+  { id: 'hidden-gem', label: 'Hidden Gems',    emoji: '💎' },
+  { id: 'nature',     label: 'Alam',           emoji: '🌿' },
+  { id: 'beach',      label: 'Pantai',         emoji: '🏖️' },
+  { id: 'family',     label: 'Keluarga',       emoji: '👨‍👩‍👧' },
+  { id: 'weekend',    label: 'Akhir Pekan',    emoji: '📅' },
 ] as const;
 
 const DEFAULT_ORDER = [
@@ -627,7 +624,7 @@ export default function MobileDiscoverView({
           <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-4" />
           <p className="text-white font-manrope font-bold text-[15px] mb-4">Semua Kategori</p>
           <div className="grid grid-cols-4 gap-3">
-            {ALL_CATS.map(cat => {
+            {MORE_CATS.map(cat => {
               const active = selectedCat === cat.id;
               return (
                 <button
@@ -642,15 +639,7 @@ export default function MobileDiscoverView({
                       : 'bg-white/6 border-white/10 text-white/70'
                   }`}
                 >
-                  <span className="text-[18px]">
-                    {cat.id === 'hidden-gem' ? '💎' :
-                     cat.id === 'nature'     ? '🌿' :
-                     cat.id === 'culinary'   ? '🍜' :
-                     cat.id === 'heritage'   ? '🏛️' :
-                     cat.id === 'adventure'  ? '⛰️' :
-                     cat.id === 'beach'      ? '🏖️' :
-                     cat.id === 'family'     ? '👨‍👩‍👧' : '📅'}
-                  </span>
+                  <span className="text-[18px]">{cat.emoji}</span>
                   <span className="text-[9px] font-bold text-center leading-tight px-1">{cat.label}</span>
                 </button>
               );

@@ -812,72 +812,93 @@ export default function App() {
       </footer>
 
       {/* Mobile Sticky Bottom Tab Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        {/* Glass bar */}
-        <div className="bg-royal-950/95 backdrop-blur-xl border-t border-white/8 px-6 pb-[calc(12px+env(safe-area-inset-bottom,0px))] pt-2 flex items-end justify-around">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pb-[calc(8px+env(safe-area-inset-bottom,0px))]">
+        <div className="bg-[#1c1a17]/95 backdrop-blur-xl border border-white/10 rounded-[28px] px-2 py-2 flex items-center justify-around shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
 
           {/* Beranda */}
-          <button
-            onClick={() => navigateToTab('discover')}
-            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
-              ['discover','events','experiences'].includes(activeTab) ? 'text-gold-400' : 'text-white/40'
-            }`}
-          >
-            <div className={`p-1.5 rounded-xl transition-all duration-200 ${['discover','events','experiences'].includes(activeTab) ? 'bg-gold-400/15' : ''}`}>
-              <Compass className="h-[22px] w-[22px]" />
-            </div>
-            <span className="text-[9px] font-semibold tracking-wide">{t('common.explore')}</span>
-          </button>
+          {(() => {
+            const isActive = ['discover','events','experiences'].includes(activeTab);
+            return (
+              <button
+                onClick={() => navigateToTab('discover')}
+                className="flex flex-col items-center gap-1 flex-1 py-1"
+              >
+                <div className={`flex items-center justify-center w-10 h-8 rounded-2xl transition-all duration-200 ${isActive ? 'bg-gold-400/20' : ''}`}>
+                  <Compass className={`h-5 w-5 transition-colors ${isActive ? 'text-gold-400' : 'text-white/40'}`} />
+                </div>
+                <span className={`text-[9px] font-semibold tracking-wide transition-colors ${isActive ? 'text-gold-400' : 'text-white/30'}`}>
+                  Beranda
+                </span>
+              </button>
+            );
+          })()}
 
           {/* Jelajah */}
-          <button
-            onClick={() => router.push('/destinations')}
-            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
-              activeTab === 'destinations' ? 'text-gold-400' : 'text-white/40'
-            }`}
-          >
-            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'destinations' ? 'bg-gold-400/15' : ''}`}>
-              <Map className="h-[22px] w-[22px]" />
-            </div>
-            <span className="text-[9px] font-semibold tracking-wide">{t('common.map')}</span>
-          </button>
+          {(() => {
+            const isActive = activeTab === 'destinations';
+            return (
+              <button
+                onClick={() => router.push('/destinations')}
+                className="flex flex-col items-center gap-1 flex-1 py-1"
+              >
+                <div className={`flex items-center justify-center w-10 h-8 rounded-2xl transition-all duration-200 ${isActive ? 'bg-gold-400/20' : ''}`}>
+                  <Map className={`h-5 w-5 transition-colors ${isActive ? 'text-gold-400' : 'text-white/40'}`} />
+                </div>
+                <span className={`text-[9px] font-semibold tracking-wide transition-colors ${isActive ? 'text-gold-400' : 'text-white/30'}`}>
+                  Jelajahi
+                </span>
+              </button>
+            );
+          })()}
 
-          {/* AI — center elevated pill */}
-          <div className="flex flex-col items-center -mt-5">
+          {/* AI — center elevated */}
+          <div className="flex flex-col items-center flex-1 -mt-6">
             <button
               onClick={() => router.push('/ai')}
-              className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 shadow-[0_4px_20px_rgba(180,130,40,0.5)] active:scale-95 transition-transform duration-150"
+              className="flex flex-col items-center gap-1 active:scale-95 transition-transform duration-150"
             >
-              <Sparkles className="h-6 w-6 text-royal-950" />
+              <div className="w-14 h-14 rounded-[20px] bg-gradient-to-br from-gold-400 to-amber-600 flex items-center justify-center shadow-[0_4px_16px_rgba(180,130,40,0.45)] border border-gold-300/20">
+                <Sparkles className="h-6 w-6 text-royal-950" />
+              </div>
+              <span className="text-[9px] font-semibold tracking-wide text-gold-400">AI</span>
             </button>
-            <span className="text-[9px] font-semibold tracking-wide text-gold-400 mt-1">AI</span>
           </div>
 
           {/* Itinerary */}
-          <button
-            onClick={() => router.push('/planner')}
-            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
-              activeTab === 'planner' ? 'text-gold-400' : 'text-white/40'
-            }`}
-          >
-            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'planner' ? 'bg-gold-400/15' : ''}`}>
-              <CalendarDays className="h-[22px] w-[22px]" />
-            </div>
-            <span className="text-[9px] font-semibold tracking-wide">{t('common.planner')}</span>
-          </button>
+          {(() => {
+            const isActive = activeTab === 'planner';
+            return (
+              <button
+                onClick={() => router.push('/planner')}
+                className="flex flex-col items-center gap-1 flex-1 py-1"
+              >
+                <div className={`flex items-center justify-center w-10 h-8 rounded-2xl transition-all duration-200 ${isActive ? 'bg-gold-400/20' : ''}`}>
+                  <CalendarDays className={`h-5 w-5 transition-colors ${isActive ? 'text-gold-400' : 'text-white/40'}`} />
+                </div>
+                <span className={`text-[9px] font-semibold tracking-wide transition-colors ${isActive ? 'text-gold-400' : 'text-white/30'}`}>
+                  Itinerary
+                </span>
+              </button>
+            );
+          })()}
 
           {/* Profil */}
-          <button
-            onClick={() => router.push('/profile')}
-            className={`flex flex-col items-center gap-1 min-w-[48px] transition-all duration-200 ${
-              activeTab === 'profile' ? 'text-gold-400' : 'text-white/40'
-            }`}
-          >
-            <div className={`p-1.5 rounded-xl transition-all duration-200 ${activeTab === 'profile' ? 'bg-gold-400/15' : ''}`}>
-              <User className="h-[22px] w-[22px]" />
-            </div>
-            <span className="text-[9px] font-semibold tracking-wide">{t('common.user')}</span>
-          </button>
+          {(() => {
+            const isActive = activeTab === 'profile';
+            return (
+              <button
+                onClick={() => router.push('/profile')}
+                className="flex flex-col items-center gap-1 flex-1 py-1"
+              >
+                <div className={`flex items-center justify-center w-10 h-8 rounded-2xl transition-all duration-200 ${isActive ? 'bg-gold-400/20' : ''}`}>
+                  <User className={`h-5 w-5 transition-colors ${isActive ? 'text-gold-400' : 'text-white/40'}`} />
+                </div>
+                <span className={`text-[9px] font-semibold tracking-wide transition-colors ${isActive ? 'text-gold-400' : 'text-white/30'}`}>
+                  Pengguna
+                </span>
+              </button>
+            );
+          })()}
 
         </div>
       </div>
