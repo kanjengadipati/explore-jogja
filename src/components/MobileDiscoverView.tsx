@@ -60,21 +60,21 @@ interface MobileDiscoverViewProps {
 // ─── Category pill config ─────────────────────────────────────────────────────
 
 const MOBILE_CATS = [
-  { id: null,        label: 'Semua',      Icon: TuguJogjaIcon },
-  { id: 'heritage',  label: 'Destinasi',  Icon: HeritageIcon },
-  { id: 'culinary',  label: 'Kuliner',    Icon: CulinaryLegendsIcon },
-  { id: 'adventure', label: 'Petualangan',Icon: AdventureIcon },
-  { id: '__more__',  label: 'Lainnya',    Icon: MoreHorizontal },
+  { id: null,         label: 'Semua',       Icon: TuguJogjaIcon },
+  { id: 'hidden-gem', label: 'Hidden Gems', Icon: HiddenGemsIcon },
+  { id: 'culinary',   label: 'Kuliner',     Icon: CulinaryLegendsIcon },
+  { id: 'adventure',  label: 'Petualangan', Icon: AdventureIcon },
+  { id: '__more__',   label: 'Lainnya',     Icon: MoreHorizontal },
 ] as const;
 
 // ─── All categories for "Lainnya" expanded row ───────────────────────────────
 
 const MORE_CATS = [
-  { id: 'hidden-gem', label: 'Hidden Gems', Icon: HiddenGemsIcon },
-  { id: 'nature',     label: 'Alam',        Icon: NatureEscapesIcon },
-  { id: 'beach',      label: 'Pantai',      Icon: BeachesIcon },
-  { id: 'family',     label: 'Keluarga',    Icon: FamilyFriendlyIcon },
-  { id: 'weekend',    label: 'Akhir Pekan', Icon: WeekendIdeasIcon },
+  { id: 'heritage', label: 'Destinasi',  Icon: HeritageIcon },
+  { id: 'nature',   label: 'Alam',       Icon: NatureEscapesIcon },
+  { id: 'beach',    label: 'Pantai',     Icon: BeachesIcon },
+  { id: 'family',   label: 'Keluarga',   Icon: FamilyFriendlyIcon },
+  { id: 'weekend',  label: 'Akhir Pekan',Icon: WeekendIdeasIcon },
 ] as const;
 
 const DEFAULT_ORDER = [
@@ -170,7 +170,7 @@ export default function MobileDiscoverView({
 
   const heroSlides = allDestinations.length > 0
     ? [...allDestinations]
-        .filter(d => d.images?.[0]?.url && d.category !== 'event' && d.category !== 'weekend')
+        .filter(d => d.images?.[0]?.url && d.category !== 'event' && d.category !== 'weekend' && d.category !== 'culinary')
         .sort((a, b) => b.rating - a.rating)
         .slice(0, MAX_SLIDES)
         .map(d => ({
@@ -336,7 +336,7 @@ export default function MobileDiscoverView({
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-70' : 'opacity-0'}`}
             >
-              <Image src={slide.image} alt={slide.name} fill sizes="100vw" className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
+              <Image src={slide.image} alt={slide.name} fill className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
               <div className="absolute inset-0 bg-gradient-to-b from-[#0f0e0c]/40 via-[#0f0e0c]/20 to-[#0f0e0c]" />
             </div>
           ))}
@@ -474,10 +474,10 @@ export default function MobileDiscoverView({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={t('hero.search_placeholder_mobile')}
-                className="flex-1 bg-transparent text-white text-[13px] placeholder-white/35 outline-none font-medium min-w-0"
+                className="flex-1 bg-transparent text-white text-[13px] placeholder-white/35 outline-none font-medium min-w-0 pr-2 overflow-hidden text-ellipsis"
               />
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center shrink-0">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -561,7 +561,7 @@ export default function MobileDiscoverView({
       </div>
 
       {/* ═══ Rest of the page (no slideshow bg) ═══ */}
-      <div className="space-y-6 pt-6">
+      <div className="bg-[#1a1814] space-y-6 pt-6 pb-20 rounded-t-[28px] relative z-20 -mt-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
 
         {/* ── Category pills ── */}
         <div>
