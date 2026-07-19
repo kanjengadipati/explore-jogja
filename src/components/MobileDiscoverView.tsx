@@ -495,9 +495,9 @@ export default function MobileDiscoverView({
             })}
           </div>
 
-          {/* Expanded "Lainnya" row — inline below main pills */}
+          {/* Expanded "Lainnya" row — same pill style as main row */}
           {showMoreCats && (
-            <div className="grid grid-cols-4 gap-2 px-4 mt-2 animate-fade-in">
+            <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 mt-2">
               {MORE_CATS.map(cat => {
                 const active = selectedCat === cat.id;
                 return (
@@ -507,14 +507,14 @@ export default function MobileDiscoverView({
                       setSelectedCat(active ? null : cat.id);
                       setShowMoreCats(false);
                     }}
-                    className={`flex flex-col items-center gap-1 py-2.5 rounded-2xl border transition-all ${
+                    className={`shrink-0 flex flex-col items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border transition-all duration-200 min-w-[64px] ${
                       active
-                        ? 'bg-gold-500 border-gold-500'
-                        : 'bg-white/6 border-white/10'
+                        ? 'bg-gold-500 border-gold-500 text-royal-950'
+                        : 'bg-white/6 border-white/10 text-white/70'
                     }`}
                   >
-                    <span className="text-[16px]">{cat.emoji}</span>
-                    <span className={`text-[9px] font-bold text-center leading-tight px-1 ${active ? 'text-royal-950' : 'text-white/70'}`}>
+                    <span className="text-[18px] leading-none">{cat.emoji}</span>
+                    <span className={`text-[10px] font-bold whitespace-nowrap ${active ? 'text-royal-950' : ''}`}>
                       {cat.label}
                     </span>
                   </button>
