@@ -361,7 +361,7 @@ export default function App() {
                         </button>
                       </div>
 
-                      <div className="flex sm:grid sm:grid-cols-3 gap-3 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible sm:pb-0">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {allEvents.slice(0, 3).map((fest, idx) => {
                           const badges = [t('common.badge_limited'), t('common.badge_popular'), t('common.badge_live_tonight')];
                           const subBadge = [t('common.badge_starts_5'), t('common.badge_starts_18'), t('common.badge_tonight_7')];
@@ -369,7 +369,7 @@ export default function App() {
                             <div
                               key={fest.id}
                               onClick={() => router.push(`/events/${fest.id}`)}
-                              className="group relative flex-shrink-0 w-[44vw] sm:w-auto aspect-square sm:aspect-[3/4] overflow-hidden rounded-[20px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
+                              className="group relative aspect-square sm:aspect-[3/4] w-full overflow-hidden rounded-[20px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
                               <Image 
                                 src={fest.image} 
