@@ -11,6 +11,8 @@ import {
 import { Destination, Festival } from '../types';
 import { auth, ai } from '../lib/api';
 import { useLocation } from '@/contexts/LocationContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLocale } from '@/contexts/LocaleContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -132,6 +134,8 @@ export default function MobileDiscoverView({
   onOpenAuth,
 }: MobileDiscoverViewProps) {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const { t } = useLocale();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [showMoreCats, setShowMoreCats] = useState(false);
@@ -226,13 +230,6 @@ export default function MobileDiscoverView({
       .catch(() => {});
   }, [coords]);
 
-  const greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 11) return 'Selamat Pagi';
-    if (h < 15) return 'Selamat Siang';
-    if (h < 18) return 'Selamat Sore';
-    return 'Selamat Malam';
-  })();
 
   // Popular destinations — fixed order, filtered by category
   const popularDests = (() => {
@@ -295,57 +292,86 @@ export default function MobileDiscoverView({
       <div className="space-y-6 pt-4">
 
         {/* ── Hero greeting + AI card ── */}
-        <div className="px-4">
-          <p className="text-gold-400 text-[11px] font-semibold uppercase tracking-widest mb-1">
-            {greeting}, Traveler! ✨
-          </p>
-          <div className="flex items-start justify-between gap-3">
-            {/* Left: headline */}
-            <div className="flex-1">
-              <h1 className="font-manrope text-[26px] font-extrabold leading-tight text-white">
-                Jelajahi <br />
-                Yogyakarta <br />
-                <span className="text-gold-400">Lebih Dalam</span>
-              </h1>
-              <p className="text-white/50 text-[11px] mt-1.5 leading-relaxed max-w-[180px]">
-                Temukan destinasi terbaik, kuliner, event seru dan pengalaman tak terlupakan.
-              </p>
-            </div>
+        <div className="relative px-4 pt-5 pb-6 -mt-[52px]">
+          {/* Background slideshow */}
+          <div className="absolute inset-0 overflow-hidden">
+            {HERO_SLIDES.map((slide, idx) => (
+              <div
+                key={slide.id}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-70' : 'opacity-0'}`}
+              >
+                <Image src={slide.image} alt={slide.name} fill className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0f0e0c] via-[#0f0e0c]/60 to-[#0f0e0c]/30" />
+              </div>
+            ))}
+          </div>
 
-            {/* Right: AI recommendation mini-card */}
-            {allDestinations.length > 0 && (() => {
-              const rec = allDestinations.find(d => d.id === 'prambanan') || allDestinations[0];
-              const img = rec.images?.[0]?.url || rec.ogImageUrl || '';
-              return (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => router.push(`/destinations/${toSlug(rec.name)}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/destinations/${toSlug(rec.name)}`); }}
-                  className="relative w-[120px] h-[130px] rounded-2xl overflow-hidden shrink-0 border border-gold-500/30 shadow-lg cursor-pointer"
-                >
-                  {img && <Image src={img} alt={rec.name} fill className="object-cover" />}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                  <div className="absolute top-2 left-2 bg-gold-500 text-royal-950 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                    Jogjagem Rekom
-                  </div>
-                  <button
-                    onClick={(e) => handleToggleSave(e, rec)}
-                    className="absolute top-2 right-2 h-5 w-5 rounded-full bg-black/40 flex items-center justify-center"
+          <div className="relative z-10">
+            <p className="text-gold-400 text-[11px] font-semibold uppercase tracking-widest mb-1">
+              {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
+            </p>
+            <div className="flex items-start justify-between gap-3">
+              {/* Left: headline */}
+              <div className="flex-1">
+                <h1 className="font-manrope text-[26px] font-extrabold leading-tight text-white">
+                  Jelajahi <br />
+                  Yogyakarta <br />
+                  <span className="text-gold-400">Lebih Dalam</span>
+                </h1>
+                <p className="text-white/50 text-[11px] mt-1.5 leading-relaxed max-w-[180px]">
+                  {HERO_SLIDES[currentSlide].tagline}
+                </p>
+              </div>
+
+              {/* Right: recommendation mini-card (synced with slide) */}
+              {allDestinations.length > 0 && (() => {
+                const rec = allDestinations.find(d => d.id === HERO_SLIDES[currentSlide].id) || allDestinations.find(d => d.id === 'prambanan') || allDestinations[0];
+                const img = rec.images?.[0]?.url || rec.ogImageUrl || '';
+                return (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push(`/destinations/${toSlug(rec.name)}`)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/destinations/${toSlug(rec.name)}`); }}
+                    className="relative w-[120px] h-[130px] rounded-2xl overflow-hidden shrink-0 border border-gold-500/30 shadow-lg cursor-pointer"
                   >
-                    <Heart className={`h-3 w-3 ${isSaved(rec.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                  </button>
-                  <div className="absolute bottom-0 inset-x-0 p-2 text-left">
-                    <p className="text-white font-bold text-[11px] leading-tight line-clamp-1">{rec.name}</p>
-                    <p className="text-white/50 text-[9px] mt-0.5">{rec.subRegion || rec.location}</p>
-                    <div className="flex items-center gap-0.5 mt-0.5">
-                      <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
-                      <span className="text-gold-400 text-[9px] font-bold">{rec.rating.toFixed(1)}</span>
+                    {img && <Image src={img} alt={rec.name} fill className="object-cover" />}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                    <div className="absolute top-2 left-2 bg-gold-500 text-royal-950 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                      Jogjagem Rekom
+                    </div>
+                    <button
+                      onClick={(e) => handleToggleSave(e, rec)}
+                      className="absolute top-2 right-2 h-5 w-5 rounded-full bg-black/40 flex items-center justify-center"
+                    >
+                      <Heart className={`h-3 w-3 ${isSaved(rec.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                    </button>
+                    <div className="absolute bottom-0 inset-x-0 p-2 text-left">
+                      <p className="text-white font-bold text-[11px] leading-tight line-clamp-1">{rec.name}</p>
+                      <p className="text-white/50 text-[9px] mt-0.5">{rec.subRegion || rec.location}</p>
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
+                        <span className="text-gold-400 text-[9px] font-bold">{rec.rating.toFixed(1)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
+            </div>
+
+            {/* Slide indicators */}
+            <div className="flex items-center gap-1.5 mt-3">
+              {HERO_SLIDES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-0.5 rounded-full transition-all duration-300 ${
+                    idx === currentSlide ? 'w-5 bg-gold-400' : 'w-2 bg-white/30'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -444,6 +470,7 @@ export default function MobileDiscoverView({
         {/* ── Category pills ── */}
         <div>
           <SectionHeader title="Jelajahi Kategori" />
+          {/* Main category pills row */}
           <div className="flex gap-2 overflow-x-auto scrollbar-none px-4">
             {MOBILE_CATS.map(({ id, label, Icon }) => {
               const active = id === '__more__' ? showMoreCats : selectedCat === id;
@@ -451,7 +478,8 @@ export default function MobileDiscoverView({
                 <button
                   key={String(id)}
                   onClick={() => {
-                    if (id === '__more__') { setShowMoreCats(true); return; }
+                    if (id === '__more__') { setShowMoreCats(v => !v); return; }
+                    setShowMoreCats(false);
                     setSelectedCat(active ? null : (id as string | null));
                   }}
                   className={`shrink-0 flex flex-col items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border transition-all duration-200 min-w-[64px] ${
@@ -466,6 +494,34 @@ export default function MobileDiscoverView({
               );
             })}
           </div>
+
+          {/* Expanded "Lainnya" row — inline below main pills */}
+          {showMoreCats && (
+            <div className="grid grid-cols-4 gap-2 px-4 mt-2 animate-fade-in">
+              {MORE_CATS.map(cat => {
+                const active = selectedCat === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCat(active ? null : cat.id);
+                      setShowMoreCats(false);
+                    }}
+                    className={`flex flex-col items-center gap-1 py-2.5 rounded-2xl border transition-all ${
+                      active
+                        ? 'bg-gold-500 border-gold-500'
+                        : 'bg-white/6 border-white/10'
+                    }`}
+                  >
+                    <span className="text-[16px]">{cat.emoji}</span>
+                    <span className={`text-[9px] font-bold text-center leading-tight px-1 ${active ? 'text-royal-950' : 'text-white/70'}`}>
+                      {cat.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* ── Popular destinations ── */}
@@ -612,42 +668,6 @@ export default function MobileDiscoverView({
         )}
 
       </div>
-
-    {/* ── "Lainnya" category bottom sheet ── */}
-    {showMoreCats && (
-      <>
-        <div
-          className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowMoreCats(false)}
-        />
-        <div className="fixed bottom-0 left-0 right-0 z-[70] bg-[#1a1814] rounded-t-3xl border-t border-white/10 px-4 pt-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))]">
-          <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-4" />
-          <p className="text-white font-manrope font-bold text-[15px] mb-4">Semua Kategori</p>
-          <div className="grid grid-cols-4 gap-3">
-            {MORE_CATS.map(cat => {
-              const active = selectedCat === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCat(active ? null : cat.id);
-                    setShowMoreCats(false);
-                  }}
-                  className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border transition-all ${
-                    active
-                      ? 'bg-gold-500 border-gold-500 text-royal-950'
-                      : 'bg-white/6 border-white/10 text-white/70'
-                  }`}
-                >
-                  <span className="text-[18px]">{cat.emoji}</span>
-                  <span className="text-[9px] font-bold text-center leading-tight px-1">{cat.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </>
-    )}
     </div>
   );
 }
