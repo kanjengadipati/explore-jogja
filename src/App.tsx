@@ -244,7 +244,7 @@ export default function App() {
   }
 
   return (
-    <div id="explore-jogja-app-root" className="min-h-screen bg-[#F7F3EE] flex flex-col justify-between">
+    <div id="explore-jogja-app-root" className="min-h-screen bg-[#0f0e0c] md:bg-[#F7F3EE] flex flex-col justify-between">
       
       {/* Premium Header — desktop only (mobile has its own in MobileDiscoverView) */}
       <div className="hidden md:block">

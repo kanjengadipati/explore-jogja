@@ -37,6 +37,7 @@ interface MobileDiscoverViewProps {
   allDestinations: Destination[];
   allEvents: Festival[];
   trendingItems: TrendingItem[];
+  trendingLoading: boolean;
   aiPicks: AIPick[];
   onToggleSave: (dest: Destination) => void;
   isSaved: (id: string) => boolean;
@@ -75,6 +76,14 @@ const DEFAULT_ORDER = [
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
+
+const HERO_SLIDES = [
+  { id: 'prambanan', name: 'Prambanan Temple', tagline: 'Candi Hindu abad ke-9 yang megah.', image: 'https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'parangtritis', name: 'Parangtritis Beach', tagline: 'Pasir vulkanik hitam dan sunset mistis.', image: 'https://images.unsplash.com/photo-1602137704924-9a038cfb5253?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'merapi', name: 'Mount Merapi', tagline: 'Petualangan jeep lava tour.', image: 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'tamansari', name: 'Taman Sari', tagline: 'Istana air kerajaan yang tersembunyi.', image: 'https://images.unsplash.com/photo-1625506276715-76ad63823181?auto=format&fit=crop&w=1200&q=80' },
+  { id: 'goajomblang', name: 'Goa Jomblang', tagline: 'Cahaya surga di dalam gua.', image: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=1200&q=80' },
+];
 
 function parseEventDate(raw: string): { day: string; month: string } {
   const ISO_RE = /(\d{4})-(\d{2})-(\d{2})/;
@@ -119,18 +128,25 @@ export default function MobileDiscoverView({
   allDestinations,
   allEvents,
   trendingItems,
+  trendingLoading,
   aiPicks,
   onToggleSave,
   isSaved,
   onOpenAuth,
 }: MobileDiscoverViewProps) {
   const router = useRouter();
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [showMoreCats, setShowMoreCats] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length), 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,11 +391,21 @@ export default function MobileDiscoverView({
         </div>
 
         {/* ── Trending ── */}
-        {trendingItems.length > 0 && (
+        {(trendingLoading || trendingItems.length > 0) && (
           <div>
             <SectionHeader title="Sedang Trending" onSeeAll={() => router.push('/destinations')} />
             <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
-              {trendingItems.slice(0, 6).map(item => {
+              {trendingLoading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="shrink-0 snap-start w-[100px] rounded-2xl overflow-hidden bg-white/5 border border-white/8 animate-pulse">
+                      <div className="h-[72px] bg-white/10" />
+                      <div className="p-2 space-y-1.5">
+                        <div className="h-2 w-16 bg-white/10 rounded" />
+                        <div className="h-2 w-10 bg-white/10 rounded" />
+                      </div>
+                    </div>
+                  ))
+                : trendingItems.slice(0, 6).map(item => {
                 const dest = item.type === 'destination'
                   ? allDestinations.find(d => d.id === item.id)
                   : null;
@@ -449,7 +475,13 @@ export default function MobileDiscoverView({
         <div>
           <SectionHeader title="Destinasi Populer" onSeeAll={() => router.push('/destinations')} />
           <div className="grid grid-cols-2 gap-2.5 px-4">
-            {popularDests.slice(0, 6).map(dest => {
+            {popularDests.length === 0
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="rounded-[18px] overflow-hidden bg-white/5 border border-white/8 animate-pulse" style={{ aspectRatio: '1/1' }}>
+                    <div className="w-full h-full bg-white/10" />
+                  </div>
+                ))
+              : popularDests.slice(0, 6).map(dest => {
               const img = dest.images?.[0]?.url || dest.ogImageUrl || '';
               return (
                 <div
@@ -484,11 +516,21 @@ export default function MobileDiscoverView({
         </div>
 
         {/* ── Event & Festival ── */}
-        {allEvents.length > 0 && (
+        {(allEvents.length > 0 || trendingLoading) && (
           <div>
             <SectionHeader title="Event & Festival" onSeeAll={() => router.push('/events')} />
             <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
-              {allEvents.slice(0, 6).map(evt => {
+              {allEvents.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-white/5 border border-white/8 animate-pulse">
+                      <div className="h-[80px] bg-white/10" />
+                      <div className="p-2 space-y-1.5">
+                        <div className="h-2 w-14 bg-white/10 rounded" />
+                        <div className="h-2 w-10 bg-white/10 rounded" />
+                      </div>
+                    </div>
+                  ))
+                : allEvents.slice(0, 6).map(evt => {
                 const { day, month } = parseEventDate(evt.date);
                 return (
                   <button
@@ -520,11 +562,17 @@ export default function MobileDiscoverView({
         )}
 
         {/* ── AI Picks ── */}
-        {aiDestinations.length > 0 && (
+        {(aiDestinations.length > 0 || trendingLoading) && (
           <div>
             <SectionHeader title="Pilihan AI Untukmu" onSeeAll={() => router.push('/ai')} />
             <div className="grid grid-cols-2 gap-2.5 px-4">
-              {aiDestinations.slice(0, 4).map(({ pick, dest }) => {
+              {aiDestinations.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="rounded-[18px] overflow-hidden bg-white/5 border border-white/8 animate-pulse" style={{ aspectRatio: '1/1' }}>
+                      <div className="w-full h-full bg-white/10" />
+                    </div>
+                  ))
+                : aiDestinations.slice(0, 4).map(({ pick, dest }) => {
                 const img = (pick as any).imageUrl || dest.images?.[0]?.url || dest.ogImageUrl || '';
                 return (
                   <div
@@ -572,10 +620,10 @@ export default function MobileDiscoverView({
     {showMoreCats && (
       <>
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
           onClick={() => setShowMoreCats(false)}
         />
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1814] rounded-t-3xl border-t border-white/10 px-4 pt-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))]">
+        <div className="fixed bottom-0 left-0 right-0 z-[70] bg-[#1a1814] rounded-t-3xl border-t border-white/10 px-4 pt-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))]">
           <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-4" />
           <p className="text-white font-manrope font-bold text-[15px] mb-4">Semua Kategori</p>
           <div className="grid grid-cols-4 gap-3">
