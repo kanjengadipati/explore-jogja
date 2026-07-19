@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, MapPin, Loader2 } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import Header from '@/components/Header';
@@ -68,8 +68,17 @@ function EventsPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 text-gold-500 animate-spin" />
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-3xl overflow-hidden bg-white border border-[#E8E0D5] animate-pulse">
+                <div className="h-48 bg-stone-100" />
+                <div className="p-4 space-y-2">
+                  <div className="h-3 w-3/4 bg-stone-200 rounded" />
+                  <div className="h-2.5 w-1/2 bg-stone-200 rounded" />
+                  <div className="h-2.5 w-2/3 bg-stone-200 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : eventList.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-white/40 p-6 max-w-md mx-auto">

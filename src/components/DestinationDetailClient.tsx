@@ -6,7 +6,7 @@ import Header from '@/components/Header';
 import DestinationDetail from '@/components/DestinationDetail';
 import { Destination } from '@/types';
 import { destinations } from '@/lib/api';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import I18nProvider from '@/contexts/I18nProvider';
@@ -167,8 +167,31 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
       <LocationProvider>
         <div className="min-h-screen bg-[#faf9f6] flex flex-col">
           <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} onOpenAuth={() => {}} />
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 text-gold-500 animate-spin" />
+          <div className="flex-1 px-4 py-6 max-w-3xl mx-auto w-full space-y-5">
+            {/* Image skeleton */}
+            <div className="w-full h-[260px] sm:h-[340px] rounded-2xl bg-stone-200 animate-pulse" />
+            {/* Title skeleton */}
+            <div className="space-y-2">
+              <div className="h-5 w-3/4 bg-stone-200 rounded animate-pulse" />
+              <div className="h-3 w-1/2 bg-stone-200 rounded animate-pulse" />
+            </div>
+            {/* Rating + location skeleton */}
+            <div className="flex items-center gap-4">
+              <div className="h-3 w-16 bg-stone-200 rounded animate-pulse" />
+              <div className="h-3 w-24 bg-stone-200 rounded animate-pulse" />
+            </div>
+            {/* Info cards skeleton */}
+            <div className="grid grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-16 bg-stone-200 rounded-xl animate-pulse" />
+              ))}
+            </div>
+            {/* Description skeleton */}
+            <div className="space-y-2">
+              <div className="h-3 w-full bg-stone-200 rounded animate-pulse" />
+              <div className="h-3 w-full bg-stone-200 rounded animate-pulse" />
+              <div className="h-3 w-2/3 bg-stone-200 rounded animate-pulse" />
+            </div>
           </div>
         </div>
       </LocationProvider>

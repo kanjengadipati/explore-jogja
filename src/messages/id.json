@@ -131,7 +131,11 @@
     "error_scanning_image": "Galat memindai gambar: ",
     "upload_image_file": "Silakan unggah file gambar.",
     "voice_not_supported": "Pengenalan suara tidak didukung di browser ini. Silakan coba Chrome atau Safari.",
-    "photo_credit": "oleh {name}"
+    "photo_credit": "oleh {name}",
+    "ai_recommendation": "Rekomendasi AI",
+    "search_placeholder_mobile": "Cari destinasi, kuliner, atau aktivitas...",
+    "browse_categories": "Jelajahi Kategori",
+    "jogjagem_rekom": "Jogjagem Pilih"
   },
   "category": {
     "all_journeys": "Semua Perjalanan",

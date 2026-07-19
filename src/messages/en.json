@@ -131,7 +131,11 @@
     "error_scanning_image": "Error scanning image: ",
     "upload_image_file": "Please upload an image file.",
     "voice_not_supported": "Voice recognition is not supported in this browser. Please try Chrome or Safari.",
-    "photo_credit": "by {name}"
+    "photo_credit": "by {name}",
+    "ai_recommendation": "AI Recommendation",
+    "search_placeholder_mobile": "Search destinations, food, or activities...",
+    "browse_categories": "Browse Categories",
+    "jogjagem_rekom": "Jogjagem Pick"
   },
   "category": {
     "all_journeys": "All Journeys",

@@ -160,16 +160,18 @@ export default function MobileDiscoverView({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const heroSlides = [...allDestinations]
-    .filter(d => d.images?.[0]?.url)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, MAX_SLIDES)
-    .map(d => ({
-      id: d.id,
-      name: d.name,
-      tagline: d.tagline || d.description?.slice(0, 80) || '',
-      image: d.images[0].url,
-    }));
+  const heroSlides = allDestinations.length > 0
+    ? [...allDestinations]
+        .filter(d => d.images?.[0]?.url)
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, MAX_SLIDES)
+        .map(d => ({
+          id: d.id,
+          name: d.name,
+          tagline: d.tagline || d.description?.slice(0, 80) || '',
+          image: d.images[0].url,
+        }))
+    : HERO_SLIDES;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentSlide(prev => (prev + 1) % heroSlides.length), 5000);
@@ -370,7 +372,7 @@ export default function MobileDiscoverView({
             </div>
 
             {/* Right: AI recommendation card */}
-            {recommendation && (() => {
+            {recommendation ? (() => {
               const img = recommendation.dest.images?.[0]?.url || recommendation.dest.ogImageUrl || '';
               return (
                 <div
@@ -408,7 +410,11 @@ export default function MobileDiscoverView({
                   </div>
                 </div>
               );
-            })()}
+            })() : (
+              <div className="w-[130px] sm:w-[156px] aspect-[2/3] rounded-2xl overflow-hidden shrink-0 border border-white/5 animate-pulse">
+                <div className="w-full h-full bg-white/5" />
+              </div>
+            )}
           </div>
 
           {/* Slide tagline — below headline + card row */}

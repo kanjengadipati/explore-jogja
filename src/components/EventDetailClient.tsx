@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Calendar, MapPin, Loader2, Users, Ticket, ExternalLink, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, Ticket, ExternalLink, CheckCircle } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import Header from '@/components/Header';
@@ -53,8 +53,27 @@ function EventDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F7F3EE] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-gold-500 animate-spin" />
+      <div className="min-h-screen bg-[#F7F3EE]">
+        <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+          {/* Image skeleton */}
+          <div className="w-full h-[240px] sm:h-[320px] rounded-2xl bg-stone-200 animate-pulse" />
+          {/* Title skeleton */}
+          <div className="space-y-2">
+            <div className="h-5 w-3/4 bg-stone-200 rounded animate-pulse" />
+            <div className="h-3 w-1/2 bg-stone-200 rounded animate-pulse" />
+          </div>
+          {/* Info row skeleton */}
+          <div className="flex items-center gap-4">
+            <div className="h-3 w-24 bg-stone-200 rounded animate-pulse" />
+            <div className="h-3 w-32 bg-stone-200 rounded animate-pulse" />
+          </div>
+          {/* Description skeleton */}
+          <div className="space-y-2">
+            <div className="h-3 w-full bg-stone-200 rounded animate-pulse" />
+            <div className="h-3 w-full bg-stone-200 rounded animate-pulse" />
+            <div className="h-3 w-2/3 bg-stone-200 rounded animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
