@@ -1,5 +1,15 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '/api/pleco';
 
+let currentLocale: string = 'id';
+
+export function setApiLocale(locale: string) {
+  currentLocale = locale;
+}
+
+export function getApiLocale(): string {
+  return currentLocale;
+}
+
 // BE review shape (snake_case from the API)
 interface BeReview {
   id: string;
@@ -54,13 +64,63 @@ interface ProfileResponse {
 // The source of truth is the httpOnly cookie managed by the server-side
 // Route Handlers in /api/auth/*. We never touch localStorage.
 let accessToken: string | null = null;
+// Timer ID for the proactive refresh scheduler
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
 function setAccessToken(token: string | null) {
   accessToken = token;
+  if (token) {
+    scheduleRefresh(token);
+  } else {
+    clearRefreshTimer();
+  }
 }
 
 function getAccessToken(): string | null {
   return accessToken;
+}
+
+/** Parse the `exp` claim from a JWT without a library (browser-safe). */
+function getJwtExpiry(token: string): number | null {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof decoded.exp === 'number' ? decoded.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearRefreshTimer() {
+  if (refreshTimer !== null) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+}
+
+/**
+ * Schedule a silent token refresh 5 minutes before the access token expires.
+ * On success the new token replaces the in-memory one and the timer re-arms
+ * itself automatically via setAccessToken → scheduleRefresh.
+ */
+function scheduleRefresh(token: string) {
+  clearRefreshTimer();
+  const exp = getJwtExpiry(token);
+  if (!exp) return;
+
+  const msUntilExpiry = exp * 1000 - Date.now();
+  const msUntilRefresh = msUntilExpiry - 5 * 60 * 1000; // 5 min before expiry
+
+  if (msUntilRefresh <= 0) {
+    // Token already expired or expiring imminently — refresh right away
+    tryRefresh().catch(() => {});
+    return;
+  }
+
+  refreshTimer = setTimeout(async () => {
+    await tryRefresh().catch(() => {});
+  }, msUntilRefresh);
 }
 
 /**
@@ -74,7 +134,8 @@ async function hydrateSession(): Promise<void> {
     if (!res.ok) return;
     const json: APIResponse<AuthResponse> = await res.json();
     if (json.status === 'success' && json.data?.access_token) {
-      accessToken = json.data.access_token;
+      // setAccessToken also arms the proactive refresh timer
+      setAccessToken(json.data.access_token);
     }
   } catch {
     // no session — stay logged out
@@ -87,6 +148,7 @@ async function request<T>(
 ): Promise<APIResponse<T>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Accept-Language': currentLocale,
     ...((options.headers as Record<string, string>) || {}),
   };
 

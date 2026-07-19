@@ -7,25 +7,33 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
-    const res = await fetch(`${BACKEND}/auth/login`, {
+    const backendRes = await fetch(`${BACKEND}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = await backendRes.json().catch(() => ({}));
 
-    if (!res.ok || !data?.data?.access_token) {
+    if (!backendRes.ok || !data?.data?.access_token) {
       return NextResponse.json(
         { status: 'error', message: data?.message || 'Invalid credentials' },
-        { status: res.status || 401 },
+        { status: backendRes.status || 401 },
       );
     }
 
     await createSession(data.data.access_token);
 
-    // Return the same shape the client already expects
-    return NextResponse.json({ status: 'success', data: data.data });
+    const response = NextResponse.json({ status: 'success', data: data.data });
+
+    // Forward pleco_refresh_token + pleco_device_id cookies set by the backend
+    // so the browser holds the refresh token needed for silent re-auth.
+    const setCookieHeaders = backendRes.headers.getSetCookie?.() ?? [];
+    for (const cookie of setCookieHeaders) {
+      response.headers.append('Set-Cookie', cookie);
+    }
+
+    return response;
   } catch {
     return NextResponse.json(
       { status: 'error', message: 'Network error' },
