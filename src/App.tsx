@@ -490,7 +490,7 @@ export default function App() {
                             <div
                               key={pick.destinationId}
                               onClick={() => handleExploreDestination(dest)}
-                              className="group relative h-full min-h-[180px] lg:min-h-0 w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
+                               className="group relative aspect-square md:aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-royal-950 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer border border-stone-200/10"
                             >
                               {imgUrl ? (
                                 <Image
@@ -736,7 +736,7 @@ export default function App() {
       <footer id="editorial-luxury-footer" className="bg-[#F5F0E8] md:bg-royal-950 text-white md:text-white border-t-0 md:border-t border-stone-200 md:border-royal-900">
 
         {/* Quote card — mobile only */}
-        <div className="md:hidden mx-4 mt-6 mb-0 bg-[#F5EDD8] rounded-3xl p-5 flex items-start gap-4 border border-[#E8D9B8]">
+        <div className="md:hidden mx-4 mt-3 mb-0 bg-[#F5EDD8] rounded-3xl p-5 flex items-start gap-4 border border-[#E8D9B8]">
           <span className="text-gold-500 text-4xl font-serif leading-none mt-1">"</span>
           <div className="flex-1">
             <p className="text-royal-950 font-manrope font-semibold text-[13px] leading-relaxed">

@@ -439,16 +439,19 @@ export default function MobileDiscoverView({
 
             {/* Trending */}
             {(trendingLoading || trendingItems.length > 0) && (
-              <div className="shrink-0">
+              <div className="shrink-0 mt-7">
                 <SectionHeader title="Sedang Trending" dark onSeeAll={() => router.push('/destinations')} />
                 <div className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
                   {trendingLoading
                     ? Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="shrink-0 snap-start w-[110px] rounded-2xl overflow-hidden bg-white/5 border border-white/10 animate-pulse">
-                          <div className="h-[70px] bg-white/10" />
-                          <div className="p-2 space-y-1.5">
-                            <div className="h-2 w-16 bg-white/10 rounded" />
-                            <div className="h-3 w-full bg-white/10 rounded" />
+                        <div key={i} className="shrink-0 snap-start w-[126px] h-[166px] flex flex-col rounded-2xl overflow-hidden bg-white/5 border border-white/10 animate-pulse">
+                          <div className="h-[98px] bg-white/10" />
+                          <div className="p-2 flex-1 flex flex-col justify-between">
+                            <div className="space-y-1">
+                              <div className="h-3 w-full bg-white/10 rounded" />
+                              <div className="h-3 w-2/3 bg-white/10 rounded" />
+                            </div>
+                            <div className="h-2.5 w-10 bg-white/10 rounded" />
                           </div>
                         </div>
                       ))
@@ -461,15 +464,15 @@ export default function MobileDiscoverView({
                               if (dest) router.push(`/destinations/${toSlug(dest.name)}`);
                               else if (item.type === 'event') router.push(`/events/${item.id}`);
                             }}
-                            className="shrink-0 snap-start w-[110px] rounded-2xl overflow-hidden bg-[#1c1a17]/60 border border-white/10 text-left active:scale-95 transition-transform"
+                            className="shrink-0 snap-start w-[126px] h-[166px] flex flex-col rounded-2xl overflow-hidden bg-[#1c1a17]/60 border border-white/10 text-left active:scale-95 transition-transform"
                           >
-                            <div className="relative h-[70px] w-full">
+                            <div className="relative h-[98px] w-full shrink-0">
                               {item.imageUrl
-                                ? <Image src={item.imageUrl} alt={item.headline} fill sizes="110px" className="object-cover" referrerPolicy="no-referrer" />
+                                ? <Image src={item.imageUrl} alt={item.headline} fill sizes="126px" className="object-cover" referrerPolicy="no-referrer" />
                                 : <div className="w-full h-full bg-white/10" />}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             </div>
-                            <div className="p-2">
+                            <div className="p-2 flex-1 flex flex-col justify-between">
                               <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{item.headline}</p>
                               {item.rating > 0 && (
                                 <div className="flex items-center gap-0.5 mt-1">
@@ -489,7 +492,7 @@ export default function MobileDiscoverView({
       </div>
 
       {/* ═══ Rest of the page (no slideshow bg) ═══ */}
-      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-32 relative z-20 -mt-4">
+      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-6 relative z-20 -mt-4">
 
         {/* ── Category pills ── */}
         <div>
@@ -512,8 +515,8 @@ export default function MobileDiscoverView({
                   }`}
                 >
                   <Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-400'}`} />
-                  <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-white/70'}`}>
-                    {t(tKey)}
+                  <span className={`text-[9px] font-bold text-center leading-none w-full truncate px-1 ${active ? 'text-royal-950' : 'text-white/70'}`}>
+                    {id === 'hidden-gem' ? t(tKey) : t(tKey).split(' ')[0]}
                   </span>
                 </button>
               );
