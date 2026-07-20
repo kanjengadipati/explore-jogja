@@ -25,6 +25,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import { AIPickCard } from './AIPickCard';
+import MobileDestinationCard from './MobileDestinationCard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -553,39 +554,21 @@ export default function MobileDiscoverView({
           <div className="grid grid-cols-2 gap-3 px-4">
             {popularDests.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse aspect-[3/4]" />
+                  <div key={i} className="rounded-[20px] overflow-hidden bg-[#1a1814] animate-pulse" style={{ height: 240 }} />
                 ))
-              : popularDests.slice(0, 6).map(dest => {
-              const img = dest.images?.[0]?.url || dest.ogImageUrl || '';
-              return (
-                <div
-                  key={dest.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => router.push(`/destinations/${toSlug(dest.name)}`)}
-                  className="relative rounded-[20px] overflow-hidden bg-white border border-[#E8E0D5] text-left cursor-pointer active:scale-[0.98] transition-all duration-300 shadow-sm hover:shadow-md aspect-[3/4]"
-                >
-                  {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover transition-transform duration-500 hover:scale-105" referrerPolicy="no-referrer" />}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 via-60% to-transparent" />
-                  <button
-                    onClick={(e) => handleToggleSave(e, dest)}
-                    className="absolute top-3 right-3 h-7 w-7 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
-                  >
-                    <Heart className={`h-3.5 w-3.5 ${isSaved(dest.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                  </button>
-                  <div className="absolute bottom-0 inset-x-0 p-3">
-                    <p className="text-white font-extrabold text-[13px] leading-tight line-clamp-2">{dest.name}</p>
-                    <p className="text-white/60 text-[10px] mt-0.5 truncate flex items-center gap-0.5">
-                      <span>📍</span> {dest.subRegion || dest.location}
-                    </p>
-                    <div className="flex items-center gap-0.5 mt-1">
-                      <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
-                      <span className="text-gold-400 text-[11px] font-extrabold">{dest.rating.toFixed(1)}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+              : popularDests.slice(0, 6).map(dest => (
+                  <MobileDestinationCard
+                    key={dest.id}
+                    destination={dest}
+                    isSaved={isSaved(dest.id)}
+                    onToggleSave={(d) => {
+                      if (!auth.isLoggedIn()) { onOpenAuth('login'); return; }
+                      onToggleSave(d);
+                    }}
+                    onAuthRequired={() => onOpenAuth('login')}
+                  />
+                ))
+            }
           </div>
         </div>
 
