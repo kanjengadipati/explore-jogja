@@ -431,7 +431,7 @@ export default function MobileDiscoverView({
           </div>
 
           {/* Slide tagline — below headline + card row */}
-          <div className="px-4 mt-4">
+          <div className="px-4 mt-3">
             <p className="text-white/50 text-[11px] leading-relaxed">
               {heroSlides[currentSlide].tagline}
             </p>
@@ -467,10 +467,10 @@ export default function MobileDiscoverView({
           </div>
 
           {/* Spacer — pushes search + trending to bottom */}
-          <div className="flex-1" />
+          <div className="flex-1 min-h-8" />
 
           {/* ── Search bar ── */}
-          <div className="px-4">
+          <div className="px-4 mt-auto">
             <form onSubmit={handleSearchSubmit} className="relative flex items-center rounded-full border border-white/20 bg-black/35 hover:bg-black/45 backdrop-blur-md p-1 shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/50 focus-within:border-gold-400">
               <Search className="ml-3 h-4 w-4 text-white/70 shrink-0" />
               <input
@@ -511,7 +511,7 @@ export default function MobileDiscoverView({
 
           {/* ── Trending ── */}
           {(trendingLoading || trendingItems.length > 0) && (
-            <div>
+            <div className="mt-4">
               <SectionHeader title="Sedang Trending" dark onSeeAll={() => router.push('/destinations')} />
               <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
                 {trendingLoading
