@@ -123,17 +123,19 @@ function parseEventDate(raw: string): { day: string; month: string } {
 function SectionHeader({
   title,
   onSeeAll,
+  dark,
 }: {
   title: string;
   onSeeAll?: () => void;
+  dark?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between mb-3 px-4">
-      <span className="text-white font-manrope font-bold text-[15px] tracking-tight">{title}</span>
+      <span className={`${dark ? 'text-white' : 'text-royal-950'} font-manrope font-bold text-[15px] tracking-tight`}>{title}</span>
       {onSeeAll && (
         <button
           onClick={onSeeAll}
-          className="flex items-center gap-0.5 text-gold-400 text-[11px] font-semibold"
+          className={`flex items-center gap-0.5 ${dark ? 'text-gold-400' : 'text-gold-600'} text-[11px] font-semibold`}
         >
           Lihat Semua <ChevronRight className="h-3.5 w-3.5" />
         </button>
@@ -325,10 +327,10 @@ export default function MobileDiscoverView({
     .filter((x): x is { pick: AIPick; dest: Destination } => x.dest !== undefined);
 
   return (
-    <div className="md:hidden min-h-screen bg-[#1a1814] pb-32">
+    <div className="md:hidden min-h-screen bg-[#F5F0E8] text-white">
 
       {/* ═══ Full-bleed hero section (slideshow bg behind header → hero → search → trending) ═══ */}
-      <div className="relative bg-[#0f0e0c]">
+      <div className="relative bg-[#1a1814] min-h-svh">
         {/* Background slideshow — covers entire first screen */}
         <div className="absolute inset-0 overflow-hidden -z-0">
           {heroSlides.map((slide, idx) => (
@@ -337,13 +339,13 @@ export default function MobileDiscoverView({
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-70' : 'opacity-0'}`}
             >
               <Image src={slide.image} alt={slide.name} fill className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#0f0e0c]/40 via-[#0f0e0c]/20 to-[#0f0e0c]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1814]/50 via-[#1a1814]/20 via-60% to-[#1a1814]/90" />
             </div>
           ))}
         </div>
 
         {/* ── Header ── */}
-        <div className="sticky top-0 z-40 bg-[#0f0e0c]/70 backdrop-blur-md px-4 pt-3 pb-2.5 flex items-center justify-between border-b border-white/5">
+        <div className="sticky top-0 z-40 bg-[#1a1814]/70 backdrop-blur-md px-4 pt-3 pb-2.5 flex items-center justify-between border-b border-white/5">
           <div className="flex items-center gap-2">
             <Image src="/logo-gold-new.png" alt="Jogjagem" width={24} height={24} className="h-6 w-auto" />
             <span className="font-manrope font-bold text-white text-[16px] tracking-widest uppercase">Jogjagem</span>
@@ -353,12 +355,12 @@ export default function MobileDiscoverView({
               onClick={() => permission !== 'granted' && requestLocation()}
               className="flex items-center gap-1 text-white/60 text-[11px] font-medium active:opacity-70"
             >
-              <MapPin className="h-3.5 w-3.5 text-gold-400 shrink-0" />
+              <MapPin className="h-3.5 w-3.5 text-gold-500 shrink-0" />
               <span className="max-w-[100px] truncate">{locationName}</span>
             </button>
             <button className="relative p-1.5">
               <Bell className="h-5 w-5 text-white/70" />
-              <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-gold-400" />
+              <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-gold-500" />
             </button>
           </div>
         </div>
@@ -377,7 +379,7 @@ export default function MobileDiscoverView({
                 Yogyakarta <br />
                 <span className="text-gold-400">Lebih Dalam</span>
               </h1>
-              <p className="text-white/50 text-[10px] sm:text-[11px] mt-1.5 leading-relaxed max-w-[150px] sm:max-w-[180px]">
+              <p className="text-white/60 text-[10px] sm:text-[11px] mt-1.5 leading-relaxed max-w-[150px] sm:max-w-[180px]">
                 Temukan destinasi terbaik, kuliner, event seru dan pengalaman tak terlupakan.
               </p>
             </div>
@@ -412,7 +414,7 @@ export default function MobileDiscoverView({
                     <p className="text-[8px] text-white/70 leading-relaxed line-clamp-2 mb-auto drop-shadow">{recommendation.reason || recommendation.dest.tagline}</p>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-0.5 text-[7px] text-white/60">
-                        <span>📍</span><span>{recommendation.dest.subRegion || (recommendation.dest as any).sub_region || recommendation.dest.location}</span>
+                        <span className="text-white/60">📍</span><span className="text-white/80">{recommendation.dest.subRegion || (recommendation.dest as any).sub_region || recommendation.dest.location}</span>
                       </span>
                       <span className="flex items-center gap-0.5 text-[8px] font-bold text-gold-400">
                         <Star className="h-2 w-2 fill-gold-400" />{recommendation.dest.rating?.toFixed(1) ?? '4.9'}
@@ -508,7 +510,7 @@ export default function MobileDiscoverView({
           {/* ── Trending ── */}
           {(trendingLoading || trendingItems.length > 0) && (
             <div>
-              <SectionHeader title="Sedang Trending" onSeeAll={() => router.push('/destinations')} />
+              <SectionHeader title="Sedang Trending" dark onSeeAll={() => router.push('/destinations')} />
               <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
                 {trendingLoading
                   ? Array.from({ length: 4 }).map((_, i) => (
@@ -563,7 +565,7 @@ export default function MobileDiscoverView({
       </div>
 
       {/* ═══ Rest of the page (no slideshow bg) ═══ */}
-      <div className="bg-[#1a1814] space-y-6 pt-6 pb-20 rounded-t-[28px] relative z-20 -mt-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-20 relative z-20 -mt-4">
 
         {/* ── Category pills ── */}
         <div>
@@ -583,36 +585,36 @@ export default function MobileDiscoverView({
                   className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
                     active
                       ? 'bg-gold-500 border-gold-500'
-                      : 'bg-white/6 border-white/10'
+                      : 'bg-royal-950/5 border-royal-950/10'
                   }`}
                 >
-                  <Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-400'}`} />
-                  <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-white/60'}`}>
-                    {t(tKey)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  <Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-600'}`} />
+                    <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-royal-950/60'}`}>
+                      {t(tKey)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* Expanded "Lainnya" row — same pill style, 5-col grid to match main row */}
-          {showMoreCats && (
-            <div className="grid grid-cols-5 gap-2 px-4 mt-2">
-              {MORE_CATS.map(cat => {
-                const active = selectedCat === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      setSelectedCat(active ? null : cat.id);
-                      setShowMoreCats(false);
-                    }}
-                    className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
-                      active ? 'bg-gold-500 border-gold-500' : 'bg-white/6 border-white/10'
-                    }`}
-                  >
-                    <cat.Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-400'}`} />
-                    <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-white/60'}`}>
+            {/* Expanded "Lainnya" row — same pill style, 5-col grid to match main row */}
+            {showMoreCats && (
+              <div className="grid grid-cols-5 gap-2 px-4 mt-2">
+                {MORE_CATS.map(cat => {
+                  const active = selectedCat === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setSelectedCat(active ? null : cat.id);
+                        setShowMoreCats(false);
+                      }}
+                      className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
+                        active ? 'bg-gold-500 border-gold-500' : 'bg-royal-950/5 border-royal-950/10'
+                      }`}
+                    >
+                      <cat.Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-600'}`} />
+                      <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-royal-950/60'}`}>
                       {t(cat.tKey)}
                     </span>
                   </button>
@@ -628,8 +630,8 @@ export default function MobileDiscoverView({
           <div className="grid grid-cols-2 gap-2.5 px-4">
             {popularDests.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-[18px] overflow-hidden bg-white/5 border border-white/8 animate-pulse" style={{ aspectRatio: '1/1' }}>
-                    <div className="w-full h-full bg-white/10" />
+                  <div key={i} className="rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse" style={{ aspectRatio: '1/1' }}>
+                    <div className="w-full h-full bg-royal-950/10" />
                   </div>
                 ))
               : popularDests.slice(0, 6).map(dest => {
@@ -641,7 +643,7 @@ export default function MobileDiscoverView({
                   tabIndex={0}
                   onClick={() => router.push(`/destinations/${toSlug(dest.name)}`)}
                   onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/destinations/${toSlug(dest.name)}`); }}
-                  className="relative rounded-[18px] overflow-hidden bg-white/5 border border-white/8 text-left cursor-pointer active:scale-[0.98] transition-transform"
+                  className="relative rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 text-left cursor-pointer active:scale-[0.98] transition-transform"
                   style={{ aspectRatio: '1/1' }}
                 >
                   {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />}
@@ -673,11 +675,11 @@ export default function MobileDiscoverView({
             <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
               {allEvents.length === 0
                 ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-white/5 border border-white/8 animate-pulse">
-                      <div className="h-[80px] bg-white/10" />
+                    <div key={i} className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse">
+                      <div className="h-[80px] bg-royal-950/10" />
                       <div className="p-2 space-y-1.5">
-                        <div className="h-2 w-14 bg-white/10 rounded" />
-                        <div className="h-2 w-10 bg-white/10 rounded" />
+                        <div className="h-2 w-14 bg-royal-950/10 rounded" />
+                        <div className="h-2 w-10 bg-royal-950/10 rounded" />
                       </div>
                     </div>
                   ))
@@ -687,7 +689,7 @@ export default function MobileDiscoverView({
                   <button
                     key={evt.id}
                     onClick={() => router.push(`/events/${evt.id}`)}
-                    className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-white/5 border border-white/8 text-left active:scale-95 transition-transform"
+                    className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-[#1a1814] border border-white/10 text-left active:scale-95 transition-transform"
                   >
                     <div className="relative h-[80px]">
                       {evt.image
@@ -703,7 +705,7 @@ export default function MobileDiscoverView({
                     </div>
                     <div className="p-2">
                       <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{evt.name}</p>
-                      <p className="text-white/40 text-[9px] mt-0.5 truncate">{evt.location}</p>
+                      <p className="text-white/50 text-[9px] mt-0.5 truncate">{evt.location}</p>
                     </div>
                   </button>
                 );
@@ -719,8 +721,8 @@ export default function MobileDiscoverView({
             <div className="grid grid-cols-2 gap-2.5 px-4">
               {aiDestinations.length === 0
                 ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="rounded-[18px] overflow-hidden bg-white/5 border border-white/8 animate-pulse" style={{ aspectRatio: '1/1' }}>
-                      <div className="w-full h-full bg-white/10" />
+                    <div key={i} className="rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse" style={{ aspectRatio: '1/1' }}>
+                      <div className="w-full h-full bg-royal-950/10" />
                     </div>
                   ))
                 : aiDestinations.slice(0, 4).map(({ pick, dest }) => {
@@ -732,7 +734,7 @@ export default function MobileDiscoverView({
                     tabIndex={0}
                     onClick={() => router.push(`/destinations/${toSlug(dest.name)}`)}
                     onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/destinations/${toSlug(dest.name)}`); }}
-                    className="relative rounded-[18px] overflow-hidden bg-white/5 border border-white/8 text-left cursor-pointer active:scale-[0.98] transition-transform"
+                    className="relative rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 text-left cursor-pointer active:scale-[0.98] transition-transform"
                     style={{ aspectRatio: '1/1' }}
                   >
                     {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />}

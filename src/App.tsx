@@ -237,14 +237,14 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F7F3EE] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center">
         <RefreshCw className="h-10 w-10 text-gold-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div id="explore-jogja-app-root" className="min-h-screen bg-[#0f0e0c] md:bg-[#F7F3EE] flex flex-col justify-between">
+    <div id="explore-jogja-app-root" className="min-h-screen bg-[#F5F0E8] flex flex-col justify-between">
       
       {/* Premium Header — desktop only (mobile has its own in MobileDiscoverView) */}
       <div className="hidden md:block">
@@ -291,7 +291,7 @@ export default function App() {
       </div>{/* end hidden md:block header */}
 
       {/* Main Core Content container */}
-      <main id="main-content-layout" className="flex-1 pb-16">
+      <main id="main-content-layout" className="flex-1 pb-4 md:pb-16 bg-[#F5F0E8]">
         
         <>
             {/* Active Tab: Discover (Homepage) */}
@@ -352,7 +352,7 @@ export default function App() {
                   </div>
 
                   {displayDestinations.length === 0 ? (
-                    <div className="text-center py-12 border border-dashed border-gold-200 rounded-3xl bg-[#FCFAF8] p-6">
+                    <div className="text-center py-12 border border-dashed border-gold-200 rounded-3xl bg-[#F5F0E8] p-6">
                       <span className="block text-sm font-medium text-royal-950">{t('home.no_matches')}</span>
                     </div>
                   ) : (
@@ -582,7 +582,7 @@ export default function App() {
                             {idx > 0 && <div className="flex-shrink-0 text-[#A78B71]/40 font-bold text-base sm:text-lg">&rarr;</div>}
                             <div 
                               onClick={() => handleExploreDestination(dest)}
-                              className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#F7F3EE] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
+                              className="flex-shrink-0 w-[275px] sm:w-[320px] lg:w-auto lg:flex-1 bg-[#F5F0E8] border border-stone-200/10 rounded-[24px] p-2.5 sm:p-3.5 flex items-center justify-between cursor-pointer hover:bg-[#FAF1E6] hover:shadow-md transition-all duration-300 group"
                             >
                               <div className="flex flex-col items-center justify-center flex-shrink-0 w-24 sm:w-28 text-center px-1">
                                 <div className="mb-2 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center" style={{ color: slot.color }}>
@@ -636,7 +636,7 @@ export default function App() {
                   <p className="text-sm text-royal-700/70 font-light">{t('home.events_desc')}</p>
                 </div>
                 {allEvents.length === 0 ? (
-                  <div className="text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-[#FCFAF8] p-6 max-w-md mx-auto">
+                  <div className="text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-[#F5F0E8] p-6 max-w-md mx-auto">
                     <Calendar className="h-10 w-10 text-gold-400 mx-auto mb-3" />
                     <h3 className="font-manrope text-base font-bold text-royal-950">{t('home.no_events_title')}</h3>
                     <p className="text-xs text-royal-700/60 font-light mt-1 max-w-xs mx-auto">{t('home.no_events_desc')}</p>
@@ -711,7 +711,7 @@ export default function App() {
                     ))
                   }
                   {allDestinations.filter(d => ['adventure', 'nature', 'hidden-gem', 'beach'].includes(d.category?.toLowerCase())).length === 0 && (
-                    <div className="col-span-full text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-[#FCFAF8] p-6">
+                    <div className="col-span-full text-center py-20 border border-dashed border-gold-200 rounded-3xl bg-[#F5F0E8] p-6">
                       <Leaf className="h-10 w-10 text-gold-400 mx-auto mb-3" />
                       <h3 className="font-manrope text-base font-bold text-royal-950">{t('home.loading_experiences')}</h3>
                     </div>
@@ -733,7 +733,7 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer id="editorial-luxury-footer" className="bg-[#F7F3EE] md:bg-royal-950 text-white border-t border-stone-200 md:border-royal-900">
+      <footer id="editorial-luxury-footer" className="bg-[#F5F0E8] md:bg-royal-950 text-white md:text-white border-t-0 md:border-t border-stone-200 md:border-royal-900">
 
         {/* Quote card — mobile only */}
         <div className="md:hidden mx-4 mt-6 mb-0 bg-[#F5EDD8] rounded-3xl p-5 flex items-start gap-4 border border-[#E8D9B8]">
