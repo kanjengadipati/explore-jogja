@@ -365,7 +365,7 @@ export default function MobileDiscoverView({
           </div>
         </div>
 
-        <div className="relative z-10 space-y-6 pt-4 pb-6">
+        <div className="relative z-10 flex flex-col min-h-[calc(100svh-56px)] pt-4 pb-6">
 
           {/* ── Hero greeting + Rec card ── */}
           <div className="px-4 flex items-center justify-between gap-3">
@@ -431,8 +431,8 @@ export default function MobileDiscoverView({
           </div>
 
           {/* Slide tagline — below headline + card row */}
-          <div className="px-4">
-            <p className="text-white/50 text-[11px] mt-5 leading-relaxed">
+          <div className="px-4 mt-4">
+            <p className="text-white/50 text-[11px] leading-relaxed">
               {heroSlides[currentSlide].tagline}
             </p>
             <div className="flex items-center gap-2 mt-1">
@@ -451,7 +451,6 @@ export default function MobileDiscoverView({
                 </span>
               )}
             </div>
-
             {/* Slide indicators */}
             <div className="flex items-center gap-1.5 mt-3">
               {heroSlides.map((_, idx) => (
@@ -466,6 +465,9 @@ export default function MobileDiscoverView({
               ))}
             </div>
           </div>
+
+          {/* Spacer — pushes search + trending to bottom */}
+          <div className="flex-1" />
 
           {/* ── Search bar ── */}
           <div className="px-4">
