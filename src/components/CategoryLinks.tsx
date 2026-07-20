@@ -54,53 +54,58 @@ export default function CategoryLinks({ selectedCategory, onSelectCategory }: Ca
         const translated = res.data.map(cat => ({
           ...cat,
           name: t(`category.${cat.id}`) || cat.name,
-          description: t(`category.${cat.id}_desc`) || cat.description,
         }));
         setCategories(translated);
       }
     }).catch(() => {});
   }, [t]);
 
-  const pillCls = (selected: boolean) =>
-    `flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-2xl border transition-all duration-200 cursor-pointer ${
+  const iconCls = 'h-7 w-7';
+
+  const iconContainerCls = (selected: boolean) =>
+    `w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${
       selected
-        ? 'bg-gold-500 border-gold-500'
-        : 'bg-stone-100/80 border-stone-200/60 hover:bg-stone-200/60'
+        ? 'bg-gold-500/20 text-gold-400'
+        : 'bg-white text-gold-600 shadow-sm border border-stone-100'
     }`;
 
-  const iconCls = (selected: boolean) =>
-    `h-7 w-7 ${selected ? 'text-royal-950' : 'text-gold-600'}`;
-
-  const labelCls = (selected: boolean) =>
-    `text-[10px] font-bold text-center leading-tight px-0.5 ${selected ? 'text-royal-950' : 'text-stone-700'}`;
-
-  const allCats = [
-    { id: null, name: t('category.all_journeys'), Icon: TuguJogjaIcon },
-    ...categories.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      Icon: ICON_MAP[cat.icon] || ICON_MAP[cat.id] || HiddenGemsIcon,
-    })),
-  ];
+  const cardCls = (selected: boolean) =>
+    `flex-shrink-0 w-36 h-32 sm:w-32 sm:h-28 flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 cursor-pointer ${
+      selected
+        ? 'bg-[#1C1A17] border-[#1C1A17] text-white shadow-lg -translate-y-0.5'
+        : 'bg-stone-50/70 border-stone-200/50 text-stone-800 hover:bg-stone-100/70'
+    }`;
 
   return (
-    <div id="category-links-section" className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+    <div id="category-links-section" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 overflow-hidden">
       <div
         id="categories-pill-row"
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${Math.min(allCats.length, 9)}, minmax(0, 1fr))` }}
+        className="flex items-center space-x-3 overflow-x-auto pb-4 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
       >
-        {allCats.map(({ id, name, Icon }) => {
-          const selected = selectedCategory === id;
+        {/* All Journeys */}
+        <button onClick={() => onSelectCategory(null)} className={cardCls(selectedCategory === null)}>
+          <div className={iconContainerCls(selectedCategory === null)}>
+            <TuguJogjaIcon className={iconCls} />
+          </div>
+          <span className="text-xs sm:text-[11px] font-bold tracking-tight">{t('category.all_journeys')}</span>
+        </button>
+
+        {categories.map((cat) => {
+          const isSelected = selectedCategory === cat.id;
+          const IconComponent = ICON_MAP[cat.icon] || ICON_MAP[cat.id] || HiddenGemsIcon;
           return (
             <button
-              key={String(id)}
-              id={id ? `category-btn-${id}` : 'category-btn-all'}
-              onClick={() => onSelectCategory(selected ? null : id)}
-              className={pillCls(selected)}
+              key={cat.id}
+              id={`category-btn-${cat.id}`}
+              onClick={() => onSelectCategory(isSelected ? null : cat.id)}
+              className={cardCls(isSelected)}
             >
-              <Icon className={iconCls(selected)} />
-              <span className={labelCls(selected)}>{name}</span>
+              <div className={iconContainerCls(isSelected)}>
+                <IconComponent className={iconCls} />
+              </div>
+              <span className="text-xs sm:text-[11px] font-bold tracking-tight text-center px-2 leading-tight">
+                {cat.name}
+              </span>
             </button>
           );
         })}
