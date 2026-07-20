@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Search, MapPin, Bell, Star, Heart, ChevronRight,
   Grid2x2, Compass, Utensils, Calendar, MoreHorizontal, Bookmark,
-  Mic, MicOff, Camera, Loader2,
+  Mic, MicOff, Camera, Loader2, Sparkles,
 } from 'lucide-react';
 import { Destination, Festival } from '../types';
 import { auth, ai } from '../lib/api';
@@ -24,6 +24,7 @@ import {
 } from './CategoryIcons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
+import { AIPickCard } from './AIPickCard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -59,22 +60,16 @@ interface MobileDiscoverViewProps {
 
 // ─── Category pill config ─────────────────────────────────────────────────────
 
-const MOBILE_CATS = [
+const ALL_CATEGORIES = [
   { id: null,         tKey: 'category.all_journeys', Icon: TuguJogjaIcon },
   { id: 'hidden-gem', tKey: 'category.hidden_gem',   Icon: HiddenGemsIcon },
   { id: 'culinary',   tKey: 'category.culinary',     Icon: CulinaryLegendsIcon },
   { id: 'adventure',  tKey: 'category.adventure',    Icon: AdventureIcon },
-  { id: '__more__',   tKey: 'category.more',         Icon: MoreHorizontal },
-] as const;
-
-// ─── All categories for "Lainnya" expanded row ───────────────────────────────
-
-const MORE_CATS = [
-  { id: 'heritage', tKey: 'category.heritage', Icon: HeritageIcon },
-  { id: 'nature',   tKey: 'category.nature',   Icon: NatureEscapesIcon },
-  { id: 'beach',    tKey: 'category.beach',    Icon: BeachesIcon },
-  { id: 'family',   tKey: 'category.family',   Icon: FamilyFriendlyIcon },
-  { id: 'weekend',  tKey: 'category.weekend',  Icon: WeekendIdeasIcon },
+  { id: 'heritage',   tKey: 'category.heritage',     Icon: HeritageIcon },
+  { id: 'nature',     tKey: 'category.nature',       Icon: NatureEscapesIcon },
+  { id: 'beach',      tKey: 'category.beach',        Icon: BeachesIcon },
+  { id: 'family',     tKey: 'category.family',       Icon: FamilyFriendlyIcon },
+  { id: 'weekend',    tKey: 'category.weekend',      Icon: WeekendIdeasIcon },
 ] as const;
 
 const DEFAULT_ORDER = [
@@ -164,7 +159,6 @@ export default function MobileDiscoverView({
     dest: Destination; headline: string; reason: string;
   } | null>(null);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
-  const [showMoreCats, setShowMoreCats] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -199,9 +193,9 @@ export default function MobileDiscoverView({
     if (fallbackDest && !recommendation) {
       setRecommendation({ dest: fallbackDest, headline: '', reason: fallbackDest.tagline });
     }
-    ai.recommend(timeOfDay).then(res => {
-      if (res.status === 'success' && res.data) {
-        const data = res.data;
+    ai.recommendMulti(timeOfDay).then(res => {
+      if (res.status === 'success' && res.data?.items?.length) {
+        const data = res.data.items[0];
         const recommendedDest = allDestinations.find(d => d.id?.toLowerCase() === data.destinationId?.toLowerCase());
         if (recommendedDest) {
           setRecommendation({ dest: recommendedDest, headline: data.headline, reason: data.reason });
@@ -302,9 +296,9 @@ export default function MobileDiscoverView({
       .filter((d): d is Destination => d !== undefined);
   })();
 
-  const handleToggleSave = (e: React.MouseEvent, dest: Destination) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleToggleSave = (e: React.MouseEvent | undefined, dest: Destination) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     if (!auth.isLoggedIn()) { onOpenAuth('login'); return; }
     onToggleSave(dest);
   };
@@ -330,7 +324,7 @@ export default function MobileDiscoverView({
     <div className="md:hidden min-h-screen bg-[#F5F0E8] text-white">
 
       {/* ═══ Full-bleed hero section (slideshow bg behind header → hero → search → trending) ═══ */}
-      <div className="relative bg-[#1a1814] min-h-svh">
+      <div className="relative bg-[#1a1814] h-svh flex flex-col overflow-hidden shrink-0">
         {/* Background slideshow — covers entire first screen */}
         <div className="absolute inset-0 overflow-hidden -z-0">
           {heroSlides.map((slide, idx) => (
@@ -338,16 +332,16 @@ export default function MobileDiscoverView({
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-70' : 'opacity-0'}`}
             >
-              <Image src={slide.image} alt={slide.name} fill className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1814]/50 via-[#1a1814]/20 via-60% to-[#1a1814]/90" />
+              <Image src={slide.image} alt={slide.name} fill sizes="100vw" className="h-full w-full object-cover object-center brightness-90" referrerPolicy="no-referrer" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1814]/50 via-[#1a1814]/20 via-60% to-[#1a1814]/95" />
             </div>
           ))}
         </div>
 
         {/* ── Header ── */}
-        <div className="sticky top-0 z-40 bg-[#1a1814]/70 backdrop-blur-md px-4 pt-3 pb-2.5 flex items-center justify-between border-b border-white/5">
+        <div className="z-40 bg-[#1a1814]/75 backdrop-blur-md px-4 pt-3 pb-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
           <div className="flex items-center gap-2">
-            <Image src="/logo-gold-new.png" alt="Jogjagem" width={24} height={24} className="h-6 w-auto" />
+            <Image src="/logo-gold-new.png" alt="Jogjagem" width={24} height={24} className="h-6 w-auto" style={{ width: 'auto' }} />
             <span className="font-manrope font-bold text-white text-[16px] tracking-widest uppercase">Jogjagem</span>
           </div>
           <div className="flex items-center gap-3">
@@ -365,276 +359,167 @@ export default function MobileDiscoverView({
           </div>
         </div>
 
-        <div className="relative z-10 flex flex-col min-h-[calc(100svh-56px)] pt-4 pb-6">
+        {/* ── Hero body ── */}
+        <div className="relative z-10 flex-1 flex flex-col pt-4 pb-24 px-4 min-h-0">
 
-          {/* ── Hero greeting + Rec card ── */}
-          <div className="px-4 flex items-center justify-between gap-3">
-            {/* Left: greeting + headline */}
-            <div className="flex-1">
-              <p className="text-gold-400 text-[11px] font-semibold uppercase tracking-widest mb-1">
-                {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
-              </p>
-              <h1 className="font-manrope text-[22px] sm:text-[26px] font-extrabold leading-tight text-white">
-                Jelajahi <br />
-                Yogyakarta <br />
-                <span className="text-gold-400">Lebih Dalam</span>
-              </h1>
-              <p className="text-white/60 text-[10px] sm:text-[11px] mt-1.5 leading-relaxed max-w-[150px] sm:max-w-[180px]">
-                Temukan destinasi terbaik, kuliner, event seru dan pengalaman tak terlupakan.
-              </p>
-            </div>
-
-            {/* Right: AI recommendation card */}
-            {recommendation ? (() => {
-              const img = recommendation.dest.images?.[0]?.url || recommendation.dest.ogImageUrl || '';
-              return (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => router.push(`/destinations/${toSlug(recommendation.dest.name)}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/destinations/${toSlug(recommendation.dest.name)}`); }}
-                  className="relative w-[130px] sm:w-[156px] aspect-[2/3] rounded-2xl overflow-hidden shrink-0 border border-gold-500/30 shadow-lg cursor-pointer"
-                >
-                  {img && <Image src={img} alt={recommendation.dest.name} fill sizes="50vw" className="object-cover object-center" referrerPolicy="no-referrer" />}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/30 to-black/80" />
-                  <div className="relative z-10 flex flex-col h-full px-2.5 pt-2.5 pb-2.5">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-gold-400 shrink-0"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/></svg>
-                        <span className="text-[7px] font-bold tracking-widest uppercase text-gold-400">{t('hero.jogjagem_rekom')}</span>
-                      </div>
-                      <button
-                        onClick={(e) => handleToggleSave(e, recommendation.dest)}
-                        className="flex items-center justify-center h-4 w-4 rounded-full"
-                      >
-                        <Bookmark className={`h-2.5 w-2.5 ${isSaved(recommendation.dest.id) ? 'fill-gold-400 text-gold-400' : 'text-white/60'}`} />
-                      </button>
-                    </div>
-                    <h3 className="text-[12px] font-bold text-white leading-tight mb-0.5 drop-shadow">{recommendation.dest.name}</h3>
-                    <p className="text-[8px] text-white/70 leading-relaxed line-clamp-2 mb-auto drop-shadow">{recommendation.reason || recommendation.dest.tagline}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-0.5 text-[7px] text-white/60">
-                        <span className="text-white/60">📍</span><span className="text-white/80">{recommendation.dest.subRegion || (recommendation.dest as any).sub_region || recommendation.dest.location}</span>
-                      </span>
-                      <span className="flex items-center gap-0.5 text-[8px] font-bold text-gold-400">
-                        <Star className="h-2 w-2 fill-gold-400" />{recommendation.dest.rating?.toFixed(1) ?? '4.9'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })() : (
-              <div className="w-[130px] sm:w-[156px] aspect-[2/3] rounded-2xl overflow-hidden shrink-0 border border-white/5 animate-pulse">
-                <div className="w-full h-full bg-white/5" />
-              </div>
-            )}
-          </div>
-
-          {/* Slide tagline — below headline + card row */}
-          <div className="px-4 mt-3">
-            <p className="text-white/50 text-[11px] leading-relaxed">
-              {heroSlides[currentSlide].tagline}
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              {heroSlides[currentSlide].subRegion && (
-                <button
-                  onClick={() => router.push(`/destinations/${toSlug(heroSlides[currentSlide].name)}#interactive-map-section`)}
-                  className="flex items-center gap-0.5 text-white/50 text-[9px] font-medium active:opacity-70"
-                >
-                  <MapPin className="h-3 w-3 text-gold-400 shrink-0 animate-bounce" />
-                  <span>{heroSlides[currentSlide].subRegion}</span>
-                </button>
-              )}
-              {coords && heroSlides[currentSlide].latitude && heroSlides[currentSlide].longitude && (
-                <span className="text-white/40 text-[9px] font-mono">
-                  · {Math.round(haversineKm(coords.lat, coords.lng, heroSlides[currentSlide].latitude, heroSlides[currentSlide].longitude))} km
-                </span>
-              )}
-            </div>
-            {/* Slide indicators */}
-            <div className="flex items-center gap-1.5 mt-3">
-              {heroSlides.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-0.5 rounded-full transition-all duration-300 ${
-                    idx === currentSlide ? 'w-5 bg-gold-400' : 'w-2 bg-white/30'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Spacer — pushes search + trending to bottom */}
-          <div className="flex-1 min-h-8" />
-
-          {/* ── Search bar ── */}
-          <div className="px-4 mt-auto">
-            <form onSubmit={handleSearchSubmit} className="relative flex items-center rounded-full border border-white/20 bg-black/35 hover:bg-black/45 backdrop-blur-md p-1 shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/50 focus-within:border-gold-400">
-              <Search className="ml-3 h-4 w-4 text-white/70 shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t('hero.search_placeholder')}
-                className="flex-1 bg-transparent py-2.5 pl-2 pr-2 text-sm text-white placeholder-white/60 focus:outline-none font-sans min-w-0"
+          {/* ── AI Card: absolute floating top-right ── */}
+          {recommendation ? (
+            <div className="absolute top-2 right-4 w-[184px] z-20 animate-[float_4s_ease-in-out_infinite]">
+              <AIPickCard
+                recommendation={recommendation}
+                isSaved={isSaved}
+                onToggleSave={(dest) => handleToggleSave(undefined, dest)}
+                onExplore={(dest) => router.push(`/destinations/${toSlug(dest.name)}`)}
+                className="relative w-full"
+                sizes="180px"
               />
+            </div>
+          ) : (
+            <div className="absolute top-2 right-4 w-[184px] aspect-[2/3] rounded-2xl border border-white/5 animate-pulse bg-white/5 z-20" />
+          )}
+
+          {/* ── Center block: greeting text ── */}
+          <div className="flex-1 flex flex-col justify-center pr-[196px]">
+            <p className="text-gold-400 text-[13px] font-semibold uppercase tracking-widest mb-2.5">
+              {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
+            </p>
+            <h1 className="font-manrope text-[32px] sm:text-[36px] font-extrabold leading-[1.15] text-white tracking-tight">
+              Jelajahi<br />
+              Yogyakarta<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 via-amber-400 to-gold-500">Lebih Dalam</span>
+            </h1>
+            <p className="text-white/70 text-[13px] mt-3.5 leading-relaxed max-w-[220px]">
+              Destinasi terbaik, kuliner legendaris, dan pengalaman otentik Yogyakarta.
+            </p>
+          </div>
+
+          {/* ── Bottom: search + trending ── */}
+          <div className="shrink-0 flex flex-col gap-3">
+            {/* Slide info + dots */}
+            <div className="px-1 flex items-center justify-between text-[10px] text-white/50">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span>📍</span>
+                <span className="font-semibold text-white/75 truncate max-w-[120px]">{heroSlides[currentSlide].name}</span>
+                {coords && heroSlides[currentSlide].latitude && heroSlides[currentSlide].longitude && (
+                  <span className="shrink-0">({Math.round(haversineKm(coords.lat, coords.lng, heroSlides[currentSlide].latitude, heroSlides[currentSlide].longitude))} km)</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 ml-auto shrink-0">
+                {heroSlides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    className={`h-0.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-4 bg-gold-400' : 'w-1.5 bg-white/30'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center rounded-full border border-white/20 bg-black/40 hover:bg-black/50 backdrop-blur-md p-1 shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/50 focus-within:border-gold-400 w-full">
+              <Search className="ml-3.5 h-4 w-4 text-white/70 shrink-0" />
+              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('hero.search_placeholder')} className="flex-1 bg-transparent py-2.5 pl-2 pr-2 text-xs text-white placeholder-white/60 focus:outline-none font-sans min-w-0" />
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
               <div className="flex items-center gap-0.5 shrink-0 mr-1">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingImage}
-                  className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50"
-                  title={t('hero.search_by_image')}
-                >
-                  {isUploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImage} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50" title={t('hero.search_by_image')}>
+                  {isUploadingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleVoiceSearch}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
-                  title={t('hero.search_by_voice')}
-                >
-                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                <button type="button" onClick={handleVoiceSearch} className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`} title={t('hero.search_by_voice')}>
+                  {isListening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
                 </button>
-                <button
-                  type="submit"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-500 hover:bg-gold-600 active:scale-95 text-white transition-all shadow-md"
-                >
-                  <Search className="h-4 w-4" />
+                <button type="submit" className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gold-400 to-amber-500 hover:from-gold-500 hover:to-amber-600 active:scale-95 text-white transition-all shadow-md">
+                  <Search className="h-3.5 w-3.5" />
                 </button>
               </div>
             </form>
-          </div>
 
-          {/* ── Trending ── */}
-          {(trendingLoading || trendingItems.length > 0) && (
-            <div className="mt-4">
-              <SectionHeader title="Sedang Trending" dark onSeeAll={() => router.push('/destinations')} />
-              <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
-                {trendingLoading
-                  ? Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="shrink-0 snap-start w-[100px] rounded-2xl overflow-hidden bg-white/5 border border-white/8 animate-pulse">
-                        <div className="h-[72px] bg-white/10" />
-                        <div className="p-2 space-y-1.5">
-                          <div className="h-2 w-16 bg-white/10 rounded" />
-                          <div className="h-2 w-10 bg-white/10 rounded" />
-                        </div>
-                      </div>
-                    ))
-                  : trendingItems.slice(0, 6).map(item => {
-                  const dest = item.type === 'destination'
-                    ? allDestinations.find(d => d.id === item.id)
-                    : null;
-                  return (
-                    <button
-                      key={`trend-${item.id}`}
-                      onClick={() => {
-                        if (dest) router.push(`/destinations/${toSlug(dest.name)}`);
-                        else if (item.type === 'event') router.push(`/events/${item.id}`);
-                      }}
-                      className="shrink-0 snap-start w-[100px] rounded-2xl overflow-hidden bg-white/5 border border-white/8 text-left active:scale-95 transition-transform"
-                    >
-                      <div className="relative h-[72px]">
-                        {item.imageUrl
-                          ? <Image src={item.imageUrl} alt={item.headline} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />
-                          : <div className="w-full h-full bg-white/10" />
-                        }
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <span className="absolute bottom-1.5 left-2 text-white/50 text-[8px] font-mono">
-                          {item.location}
-                        </span>
-                      </div>
-                      <div className="p-2">
-                        <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{item.headline}</p>
-                        {item.rating > 0 && (
-                          <div className="flex items-center gap-0.5 mt-1">
-                            <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
-                            <span className="text-gold-400 text-[9px] font-bold">{item.rating.toFixed(1)}</span>
+            {/* Trending */}
+            {(trendingLoading || trendingItems.length > 0) && (
+              <div className="shrink-0">
+                <SectionHeader title="Sedang Trending" dark onSeeAll={() => router.push('/destinations')} />
+                <div className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
+                  {trendingLoading
+                    ? Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="shrink-0 snap-start w-[110px] rounded-2xl overflow-hidden bg-white/5 border border-white/10 animate-pulse">
+                          <div className="h-[70px] bg-white/10" />
+                          <div className="p-2 space-y-1.5">
+                            <div className="h-2 w-16 bg-white/10 rounded" />
+                            <div className="h-3 w-full bg-white/10 rounded" />
                           </div>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                        </div>
+                      ))
+                    : trendingItems.slice(0, 6).map((item, idx) => {
+                        const dest = item.type === 'destination' ? allDestinations.find(d => d.id === item.id) : null;
+                        return (
+                          <button
+                            key={`trend-${item.type}-${item.id}-${idx}`}
+                            onClick={() => {
+                              if (dest) router.push(`/destinations/${toSlug(dest.name)}`);
+                              else if (item.type === 'event') router.push(`/events/${item.id}`);
+                            }}
+                            className="shrink-0 snap-start w-[110px] rounded-2xl overflow-hidden bg-[#1c1a17]/60 border border-white/10 text-left active:scale-95 transition-transform"
+                          >
+                            <div className="relative h-[70px] w-full">
+                              {item.imageUrl
+                                ? <Image src={item.imageUrl} alt={item.headline} fill sizes="110px" className="object-cover" referrerPolicy="no-referrer" />
+                                : <div className="w-full h-full bg-white/10" />}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                            </div>
+                            <div className="p-2">
+                              <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{item.headline}</p>
+                              {item.rating > 0 && (
+                                <div className="flex items-center gap-0.5 mt-1">
+                                  <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
+                                  <span className="text-gold-400 text-[9px] font-extrabold">{item.rating.toFixed(1)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                </div>
               </div>
-            </div>
-          )}
-
+            )}
+          </div>
         </div>
       </div>
 
       {/* ═══ Rest of the page (no slideshow bg) ═══ */}
-      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-20 relative z-20 -mt-4">
+      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-32 relative z-20 -mt-4">
 
         {/* ── Category pills ── */}
         <div>
           <SectionHeader title="Jelajahi Kategori" />
-          {/* Main category pills row */}
-          <div className="grid grid-cols-5 gap-2 px-4">
-            {MOBILE_CATS.map(({ id, tKey, Icon }) => {
-              const active = id === '__more__' ? showMoreCats : selectedCat === id;
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 pb-1">
+            {ALL_CATEGORIES.map(({ id, tKey, Icon }) => {
+              const active = selectedCat === id;
               return (
                 <button
                   key={String(id)}
-                  onClick={() => {
-                    if (id === '__more__') { setShowMoreCats(v => !v); return; }
-                    setShowMoreCats(false);
-                    setSelectedCat(active ? null : (id as string | null));
-                  }}
-                  className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
+                  onClick={() => setSelectedCat(active ? null : id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 shrink-0 ${
                     active
-                      ? 'bg-gold-500 border-gold-500'
-                      : 'bg-royal-950/5 border-royal-950/10'
+                      ? 'bg-gold-500 border-gold-500 text-royal-950 shadow-md shadow-gold-500/20'
+                      : 'bg-white border-[#E8E0D5] text-[#1c1a17]'
                   }`}
                 >
-                  <Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-600'}`} />
-                    <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-royal-950/60'}`}>
-                      {t(tKey)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Expanded "Lainnya" row — same pill style, 5-col grid to match main row */}
-            {showMoreCats && (
-              <div className="grid grid-cols-5 gap-2 px-4 mt-2">
-                {MORE_CATS.map(cat => {
-                  const active = selectedCat === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setSelectedCat(active ? null : cat.id);
-                        setShowMoreCats(false);
-                      }}
-                      className={`flex flex-col items-center gap-1.5 py-2.5 rounded-2xl border transition-all duration-200 ${
-                        active ? 'bg-gold-500 border-gold-500' : 'bg-royal-950/5 border-royal-950/10'
-                      }`}
-                    >
-                      <cat.Icon className={`h-7 w-7 ${active ? 'text-royal-950' : 'text-gold-600'}`} />
-                      <span className={`text-[9px] font-bold text-center leading-tight px-0.5 ${active ? 'text-royal-950' : 'text-royal-950/60'}`}>
-                      {t(cat.tKey)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                  <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-royal-950' : 'text-gold-600'}`} />
+                  <span className="text-[11px] font-extrabold tracking-tight whitespace-nowrap">
+                    {t(tKey)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* ── Popular destinations ── */}
         <div>
           <SectionHeader title="Destinasi Populer" onSeeAll={() => router.push('/destinations')} />
-          <div className="grid grid-cols-2 gap-2.5 px-4">
+          <div className="grid grid-cols-2 gap-3 px-4">
             {popularDests.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse" style={{ aspectRatio: '1/1' }}>
-                    <div className="w-full h-full bg-royal-950/10" />
-                  </div>
+                  <div key={i} className="rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse aspect-[3/4]" />
                 ))
               : popularDests.slice(0, 6).map(dest => {
               const img = dest.images?.[0]?.url || dest.ogImageUrl || '';
@@ -644,24 +529,24 @@ export default function MobileDiscoverView({
                   role="button"
                   tabIndex={0}
                   onClick={() => router.push(`/destinations/${toSlug(dest.name)}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/destinations/${toSlug(dest.name)}`); }}
-                  className="relative rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 text-left cursor-pointer active:scale-[0.98] transition-transform"
-                  style={{ aspectRatio: '1/1' }}
+                  className="relative rounded-[20px] overflow-hidden bg-white border border-[#E8E0D5] text-left cursor-pointer active:scale-[0.98] transition-all duration-300 shadow-sm hover:shadow-md aspect-[3/4]"
                 >
-                  {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                  {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover transition-transform duration-500 hover:scale-105" referrerPolicy="no-referrer" />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 via-60% to-transparent" />
                   <button
                     onClick={(e) => handleToggleSave(e, dest)}
-                    className="absolute top-2.5 right-2.5 h-7 w-7 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10"
+                    className="absolute top-3 right-3 h-7 w-7 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
                   >
                     <Heart className={`h-3.5 w-3.5 ${isSaved(dest.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                   </button>
-                  <div className="absolute bottom-0 inset-x-0 p-2.5">
-                    <p className="text-white font-bold text-[12px] leading-tight line-clamp-2">{dest.name}</p>
-                    <p className="text-white/50 text-[9px] mt-0.5 truncate">{dest.subRegion || dest.location}</p>
+                  <div className="absolute bottom-0 inset-x-0 p-3">
+                    <p className="text-white font-extrabold text-[13px] leading-tight line-clamp-2">{dest.name}</p>
+                    <p className="text-white/60 text-[10px] mt-0.5 truncate flex items-center gap-0.5">
+                      <span>📍</span> {dest.subRegion || dest.location}
+                    </p>
                     <div className="flex items-center gap-0.5 mt-1">
-                      <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
-                      <span className="text-gold-400 text-[10px] font-bold">{dest.rating.toFixed(1)}</span>
+                      <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
+                      <span className="text-gold-400 text-[11px] font-extrabold">{dest.rating.toFixed(1)}</span>
                     </div>
                   </div>
                 </div>
@@ -674,16 +559,10 @@ export default function MobileDiscoverView({
         {(allEvents.length > 0 || trendingLoading) && (
           <div>
             <SectionHeader title="Event & Festival" onSeeAll={() => router.push('/events')} />
-            <div className="flex gap-2.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory">
+            <div className="flex gap-3.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
               {allEvents.length === 0
                 ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse">
-                      <div className="h-[80px] bg-royal-950/10" />
-                      <div className="p-2 space-y-1.5">
-                        <div className="h-2 w-14 bg-royal-950/10 rounded" />
-                        <div className="h-2 w-10 bg-royal-950/10 rounded" />
-                      </div>
-                    </div>
+                    <div key={i} className="shrink-0 snap-start w-[140px] rounded-2xl overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse aspect-[3/4]" />
                   ))
                 : allEvents.slice(0, 6).map(evt => {
                 const { day, month } = parseEventDate(evt.date);
@@ -691,23 +570,25 @@ export default function MobileDiscoverView({
                   <button
                     key={evt.id}
                     onClick={() => router.push(`/events/${evt.id}`)}
-                    className="shrink-0 snap-start w-[88px] rounded-2xl overflow-hidden bg-[#1a1814] border border-white/10 text-left active:scale-95 transition-transform"
+                    className="shrink-0 snap-start w-[140px] rounded-2xl overflow-hidden bg-white border border-[#E8E0D5] text-left active:scale-95 transition-transform shadow-sm flex flex-col aspect-[3/4] relative"
                   >
-                    <div className="relative h-[80px]">
+                    <div className="relative h-[65%] w-full bg-stone-100">
                       {evt.image
-                        ? <Image src={evt.image} alt={evt.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />
+                        ? <Image src={evt.image} alt={evt.name} fill sizes="140px" className="object-cover" referrerPolicy="no-referrer" />
                         : <div className="w-full h-full bg-white/10" />
                       }
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       {/* Date badge */}
-                      <div className="absolute top-2 left-2 bg-gold-500 text-royal-950 rounded-xl px-1.5 py-0.5 text-center min-w-[28px]">
-                        <p className="text-[11px] font-extrabold leading-none">{day}</p>
-                        <p className="text-[7px] font-bold leading-none mt-0.5">{month}</p>
+                      <div className="absolute top-2.5 left-2.5 bg-gold-400 text-royal-950 rounded-xl px-2 py-1 text-center min-w-[32px] shadow-md border border-gold-300/30">
+                        <p className="text-[12px] font-black leading-none text-[#1c1a17]">{day}</p>
+                        <p className="text-[8px] font-bold leading-none mt-0.5 text-[#1c1a17]">{month}</p>
                       </div>
                     </div>
-                    <div className="p-2">
-                      <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{evt.name}</p>
-                      <p className="text-white/50 text-[9px] mt-0.5 truncate">{evt.location}</p>
+                    <div className="p-2.5 flex-1 flex flex-col justify-between bg-[#1c1a17]">
+                      <p className="text-white text-[11px] font-extrabold leading-tight line-clamp-2">{evt.name}</p>
+                      <p className="text-white/60 text-[9px] truncate flex items-center gap-0.5 mt-1">
+                        <span>📍</span> {evt.location}
+                      </p>
                     </div>
                   </button>
                 );
@@ -720,12 +601,10 @@ export default function MobileDiscoverView({
         {(aiDestinations.length > 0 || trendingLoading) && (
           <div>
             <SectionHeader title="Pilihan AI Untukmu" onSeeAll={() => router.push('/ai')} />
-            <div className="grid grid-cols-2 gap-2.5 px-4">
+            <div className="flex gap-3.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
               {aiDestinations.length === 0
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse" style={{ aspectRatio: '1/1' }}>
-                      <div className="w-full h-full bg-royal-950/10" />
-                    </div>
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="shrink-0 snap-start w-[240px] rounded-2xl overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse aspect-[16/10]" />
                   ))
                 : aiDestinations.slice(0, 4).map(({ pick, dest }) => {
                 const img = (pick as any).imageUrl || dest.images?.[0]?.url || dest.ogImageUrl || '';
@@ -736,30 +615,42 @@ export default function MobileDiscoverView({
                     tabIndex={0}
                     onClick={() => router.push(`/destinations/${toSlug(dest.name)}`)}
                     onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/destinations/${toSlug(dest.name)}`); }}
-                    className="relative rounded-[18px] overflow-hidden bg-royal-950/5 border border-royal-950/10 text-left cursor-pointer active:scale-[0.98] transition-transform"
-                    style={{ aspectRatio: '1/1' }}
+                    className="relative shrink-0 snap-start w-[240px] rounded-[22px] overflow-hidden bg-[#1c1a17] border border-[#E8E0D5]/20 text-left cursor-pointer active:scale-[0.98] transition-transform aspect-[16/10]"
                   >
-                    {img && <Image src={img} alt={dest.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover" referrerPolicy="no-referrer" />}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                    <div className="absolute top-2.5 left-2.5 bg-amber-500/90 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                      {pick.badge}
+                    {img && <Image src={img} alt={dest.name} fill sizes="240px" className="object-cover" referrerPolicy="no-referrer" />}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+                    
+                    <div className="absolute top-3 left-3 bg-amber-500/90 text-white text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                      {pick.badge || 'PILIHAN AI'}
                     </div>
+                    
                     <button
                       onClick={(e) => handleToggleSave(e, dest)}
-                      className="absolute top-2.5 right-2.5 h-7 w-7 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10"
+                      className="absolute top-3 right-3 h-7 w-7 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
                     >
                       <Heart className={`h-3.5 w-3.5 ${isSaved(dest.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                     </button>
-                    <div className="absolute bottom-0 inset-x-0 p-2.5">
-                      <p className="text-white font-bold text-[12px] leading-tight line-clamp-1">{dest.name}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <div className="flex items-center gap-0.5">
-                          <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
-                          <span className="text-gold-400 text-[10px] font-bold">
+                    
+                    <div className="absolute bottom-0 inset-x-0 p-3.5 flex flex-col justify-end">
+                      <h4 className="text-white font-extrabold text-[14px] leading-tight truncate">{dest.name}</h4>
+                      <p className="text-white/70 text-[10px] line-clamp-1 mt-0.5 font-light">
+                        {dest.tagline || dest.description?.slice(0, 60)}
+                      </p>
+                      
+                      <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-white/10">
+                        <div className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-0.5 text-gold-400 text-[11px] font-bold">
+                            <Star className="h-3.5 w-3.5 fill-gold-400 text-gold-400" />
                             {(pick.rating || dest.rating || 0).toFixed(1)}
                           </span>
+                          <span className="text-white/40 text-[9px]">•</span>
+                          <span className="text-white/60 text-[9px] font-medium flex items-center gap-0.5">
+                            <span>📍</span> {dest.subRegion || dest.location}
+                          </span>
                         </div>
-                        <span className="text-white/40 text-[8px] font-mono">{pick.crowd}</span>
+                        <span className="text-gold-400 text-[9px] font-extrabold bg-gold-400/10 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {pick.crowd}
+                        </span>
                       </div>
                     </div>
                   </div>
