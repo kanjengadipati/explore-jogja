@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import I18nProvider from '@/contexts/I18nProvider';
@@ -12,10 +12,12 @@ import TripPlanner from '@/components/TripPlanner';
 import AuthModal from '@/components/AuthModal';
 import { destinations as destinationsApi, auth } from '@/lib/api';
 import { Destination } from '@/types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 
 function PlannerPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedDestinationId = searchParams.get('destination');
   const { isAuthenticated } = useAuth();
   const { t } = useLocale();
 
@@ -75,6 +77,17 @@ function PlannerPageContent() {
     } catch { /* ignore */ }
   }, [savedDestinations, hydrated]);
 
+  // Pre-select destination from query param (?destination=<id>)
+  useEffect(() => {
+    if (!hydrated || !preselectedDestinationId || allDestinations.length === 0) return;
+    const found = allDestinations.find(d => d.id === preselectedDestinationId);
+    if (!found) return;
+    setSavedDestinations(prev => {
+      if (prev.some(d => d.id === found.id)) return prev; // already in list
+      return [found, ...prev];
+    });
+  }, [hydrated, preselectedDestinationId, allDestinations]);
+
   const handleToggleSave = async (dest: Destination) => {
     if (!auth.isLoggedIn()) {
       setAuthModalOpen(true);
@@ -120,6 +133,19 @@ function PlannerPageContent() {
         zClass="z-40"
       />
 
+      {/* Banner jika datang dari halaman destinasi */}
+      {preselectedDestinationId && allDestinations.find(d => d.id === preselectedDestinationId) && (
+        <div className="max-w-4xl mx-auto px-4 pt-5">
+          <div className="flex items-center gap-3 bg-gold-50 border border-gold-200 rounded-2xl px-4 py-3">
+            <Sparkles className="h-4 w-4 text-gold-600 shrink-0" />
+            <p className="text-sm text-gold-800">
+              <span className="font-semibold">{allDestinations.find(d => d.id === preselectedDestinationId)?.name}</span>
+              {' '}sudah ditambahkan ke rencana perjalananmu.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="pb-24">
         <TripPlanner
           savedDestinations={savedDestinations}
@@ -142,7 +168,13 @@ export default function PlannerPage() {
     <AuthProvider>
       <LocationProvider>
         <I18nProvider>
-          <PlannerPageContent />
+          <Suspense fallback={
+            <div className="min-h-screen bg-[#F7F3EE] flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-gold-500 animate-spin" />
+            </div>
+          }>
+            <PlannerPageContent />
+          </Suspense>
         </I18nProvider>
       </LocationProvider>
     </AuthProvider>

@@ -379,8 +379,8 @@ export default function App() {
   return (
     <div id="explore-jogja-app-root" className="min-h-screen bg-[#F5F0E8] flex flex-col justify-between">
       
-      {/* Premium Header — desktop only (mobile has its own in MobileDiscoverView) */}
-      <div className="hidden md:block">
+      {/* Premium Header — desktop only (mobile + tablet has its own in MobileDiscoverView) */}
+      <div className="hidden xl:block">
       <Header 
         activeTab={activeTab} 
         setActiveTab={(tab) => {
@@ -421,10 +421,10 @@ export default function App() {
         savedCount={savedDestinations.length}
         onOpenAuth={openAuth}
       />
-      </div>{/* end hidden md:block header */}
+      </div>{/* end hidden xl:block header */}
 
       {/* Main Core Content container */}
-      <main id="main-content-layout" className="flex-1 pb-4 md:pb-16 bg-[#F5F0E8]">
+      <main id="main-content-layout" className="flex-1 pb-4 xl:pb-16 bg-[#F5F0E8]">
         
         <>
             {/* Active Tab: Discover (Homepage) */}
@@ -445,7 +445,7 @@ export default function App() {
                 />
 
                 {/* ── Desktop layout (unchanged) ── */}
-                <div className="hidden md:block">
+                <div className="hidden xl:block">
               <div className="space-y-4 animate-fade-in">
                 {/* Visual Fullscreen Hero Section */}
                 <Hero
@@ -805,7 +805,7 @@ export default function App() {
                   </section>
                 )}
               </div>
-                </div>{/* end hidden md:block desktop wrapper */}
+                </div>{/* end hidden xl:block desktop wrapper */}
               </>
             )}
 
@@ -939,7 +939,7 @@ export default function App() {
       <footer id="editorial-luxury-footer" className="bg-[#F5F0E8] md:bg-royal-950 text-white md:text-white border-t-0 md:border-t border-stone-200 md:border-royal-900">
 
         {/* Quote card — mobile only */}
-        <div className="md:hidden mx-4 mt-3 mb-0 bg-[#F5EDD8] rounded-3xl p-5 flex items-start gap-4 border border-[#E8D9B8]">
+        <div className="xl:hidden mx-4 mt-3 mb-0 bg-[#F5EDD8] rounded-3xl p-5 flex items-start gap-4 border border-[#E8D9B8]">
           <span className="text-gold-500 text-4xl font-serif leading-none mt-1">"</span>
           <div className="flex-1">
             <p className="text-royal-950 font-manrope font-semibold text-[13px] leading-relaxed">
@@ -953,7 +953,7 @@ export default function App() {
         </div>
 
         {/* Main footer body */}
-        <div className="bg-royal-950 mt-4 md:mt-0 rounded-t-3xl md:rounded-none px-5 pt-7 pb-[calc(90px+env(safe-area-inset-bottom,0px))] md:pb-12">
+        <div className="bg-royal-950 mt-4 xl:mt-0 rounded-t-3xl xl:rounded-none px-5 pt-7 pb-[calc(90px+env(safe-area-inset-bottom,0px))] xl:pb-12">
           <div className="mx-auto max-w-7xl">
 
             {/* Logo + tagline + social */}
@@ -1003,7 +1003,7 @@ export default function App() {
             </div>
 
             {/* Desktop copyright */}
-            <div className="hidden md:block mt-6 pt-4 border-t border-white/10">
+            <div className="hidden xl:block mt-6 pt-4 border-t border-white/10">
               <div className="text-[10px] font-mono text-gold-200/40 uppercase tracking-widest space-y-1">
                 <p>{t('footer.copyright')}</p>
                 <p>{t('footer.build_by')}</p>
@@ -1015,7 +1015,7 @@ export default function App() {
       </footer>
 
       {/* Mobile Sticky Bottom Tab Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pb-[calc(8px+env(safe-area-inset-bottom,0px))]">
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pb-[calc(8px+env(safe-area-inset-bottom,0px))]">
         <div className="bg-[#1c1a17]/95 backdrop-blur-xl border border-white/10 rounded-[28px] px-2 py-2 flex items-center justify-around shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
 
           {/* Beranda */}

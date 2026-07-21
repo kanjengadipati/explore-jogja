@@ -75,7 +75,7 @@ export default function SubNav({
                 <a
                   key={i}
                   href={link.href}
-                  className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full font-mono tracking-widest uppercase transition-all duration-200 ${
                     link.active
                       ? 'bg-white/15 text-gold-300 font-bold'
                       : 'text-white/60 hover:text-white/90'
@@ -87,7 +87,7 @@ export default function SubNav({
                 <button
                   key={i}
                   onClick={link.onClick}
-                  className={`px-4 py-1.5 rounded-full transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full font-mono tracking-widest uppercase transition-all duration-200 ${
                     link.active
                       ? 'bg-white/15 text-gold-300 font-bold'
                       : 'text-white/60 hover:text-white/90'

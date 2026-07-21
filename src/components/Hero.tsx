@@ -190,6 +190,8 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         onClick={() => {
           if (dest) {
             onExploreDestination(dest);
+          } else if (item.type === 'destination') {
+            router.push(`/destinations/${item.id}`);
           } else if (item.type === 'event') {
             router.push(`/events/${item.id}`);
           }

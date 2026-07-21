@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, ShieldCheck, Settings, HelpCircle, Bookmark, ChevronRight, Home, Languages } from 'lucide-react';
+import { Compass, Heart, Bell, Menu, X, Brain, CalendarDays, Map, LogIn, LogOut, ShieldCheck, Settings, HelpCircle, Bookmark, ChevronRight, Home, Languages, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
+import { useLocation } from '@/contexts/LocationContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthModal from './AuthModal';
 
@@ -23,6 +24,29 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const { isAuthenticated, user, logout } = useAuth();
+  const { coords, requestLocation } = useLocation();
+  const [locationName, setLocationName] = useState('Yogyakarta');
+
+  useEffect(() => {
+    if (!coords) return;
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json&accept-language=id`,
+      { headers: { 'User-Agent': 'jogjagem-app/1.0' } }
+    )
+      .then(r => r.json())
+      .then(data => {
+        const a = data?.address;
+        const name =
+          a?.county ||
+          a?.city ||
+          a?.town ||
+          a?.village ||
+          a?.state_district ||
+          'Yogyakarta';
+        setLocationName(name.replace(/^(Kabupaten|Kota)\s+/i, ''));
+      })
+      .catch(() => {});
+  }, [coords]);
 
   const navItems = [
     { id: 'discover', label: t('common.explore'), icon: Compass },
@@ -109,6 +133,14 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
 
           {/* Desktop Action Icons — lg and above */}
           <div className="hidden lg:flex items-center space-x-2 shrink-0">
+            <button
+              onClick={() => coords ? undefined : requestLocation()}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/70 hover:text-white text-xs font-medium"
+            >
+              <MapPin className="h-3.5 w-3.5 text-gold-500 shrink-0" />
+              <span className="max-w-[120px] truncate">{locationName}</span>
+            </button>
+
             <LanguageSwitcher />
 
             {isAuthenticated && (
@@ -215,12 +247,6 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                 >
                   <LogIn className="h-3.5 w-3.5" />
                   <span>{t('common.sign_in')}</span>
-                </button>
-                <button
-                  onClick={openRegister}
-                  className="px-3 py-1.5 rounded-full bg-gold-600 text-white hover:bg-gold-500 transition-colors text-xs font-semibold"
-                >
-                  {t('common.sign_up')}
                 </button>
               </div>
             )}
@@ -347,9 +373,6 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
             <div className="space-y-2 px-1 py-2">
               <button onClick={() => { openLogin(); setDrawerOpen(false); }} className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-2.5 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors">
                 <LogIn className="h-4 w-4" /><span>{t('common.sign_in')}</span>
-              </button>
-              <button onClick={() => { openRegister(); setDrawerOpen(false); }} className="w-full flex items-center justify-center gap-2 rounded-xl bg-gold-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gold-500 transition-colors">
-                {t('common.sign_up')}
               </button>
             </div>
           )}

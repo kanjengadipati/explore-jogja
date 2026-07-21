@@ -115,12 +115,12 @@ export const AIPickCard: React.FC<AIPickCardProps> = ({
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/10 to-black/85" />
       
-      <div className="relative z-10 flex flex-col h-full px-3 pt-3 pb-3">
+      <div className="relative z-10 flex flex-col h-full px-3 lg:px-4 pt-3 lg:pt-4 pb-3 lg:pb-4">
         {/* Top bar: Badge & Dismiss button */}
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-1">
-            <Sparkles className="h-3.5 w-3.5 text-gold-400 shrink-0" />
-            <span className="text-[8.5px] font-extrabold tracking-widest uppercase text-gold-400">
+            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gold-400 shrink-0" />
+            <span className="text-[8.5px] sm:text-[9.5px] lg:text-[10px] font-extrabold tracking-widest uppercase text-gold-400">
               JOGJAGEM'S PICK
             </span>
           </div>
@@ -139,23 +139,23 @@ export const AIPickCard: React.FC<AIPickCardProps> = ({
         </div>
 
         {/* Title */}
-        <h3 className="text-[12px] sm:text-[13px] font-extrabold text-white leading-tight mb-0.5 line-clamp-1 drop-shadow">
+        <h3 className="text-[12px] sm:text-[14px] lg:text-[17px] font-extrabold text-white leading-tight mb-0.5 line-clamp-1 drop-shadow">
           {dest.name}
         </h3>
 
         {/* Reason / tagline */}
-        <p className="text-[9px] text-white/75 leading-relaxed line-clamp-3 font-light drop-shadow">
+        <p className="text-[9px] sm:text-[10px] lg:text-[12px] text-white/75 leading-relaxed line-clamp-3 font-light drop-shadow">
           {reason || dest.tagline}
         </p>
 
         {/* Bottom meta: location + rating */}
-        <div className="flex items-center justify-between mt-auto text-[9px] mb-2">
-          <span className="flex items-center gap-0.5 text-white/60 truncate max-w-[100px]">
+        <div className="flex items-center justify-between mt-auto text-[9px] sm:text-[10px] lg:text-[12px] mb-2">
+          <span className="flex items-center gap-0.5 text-white/60 truncate max-w-[100px] sm:max-w-[140px]">
             <span>📍</span>
             <span className="truncate">{dest.subRegion || dest.location}</span>
           </span>
           <span className="flex items-center gap-0.5 font-bold text-gold-400 shrink-0">
-            <Star className="h-2.5 w-2.5 fill-gold-400" />
+            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-3.5 lg:w-3.5 fill-gold-400" />
             {dest.rating?.toFixed(1) ?? '4.9'}
           </span>
         </div>
@@ -168,10 +168,10 @@ export const AIPickCard: React.FC<AIPickCardProps> = ({
               e.stopPropagation();
               onToggleSave(dest);
             }}
-            className="h-7 w-7 flex items-center justify-center bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 rounded-xl transition-all shrink-0 cursor-pointer"
+            className="h-7 w-7 lg:h-9 lg:w-9 flex items-center justify-center bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 rounded-xl transition-all shrink-0 cursor-pointer"
             aria-label={saved ? 'Remove bookmark' : 'Bookmark destination'}
           >
-            <Bookmark className={`h-3.5 w-3.5 ${saved ? 'fill-gold-400 text-gold-400' : 'text-white/70 hover:text-white'}`} />
+            <Bookmark className={`h-3.5 w-3.5 lg:h-4 lg:w-4 ${saved ? 'fill-gold-400 text-gold-400' : 'text-white/70 hover:text-white'}`} />
           </button>
 
           {/* Explore Button */}
@@ -180,21 +180,21 @@ export const AIPickCard: React.FC<AIPickCardProps> = ({
               e.stopPropagation();
               onExplore(dest);
             }}
-            className="group/btn flex-1 h-7 bg-gold-500 hover:bg-gold-400 active:scale-95 font-bold text-[9.5px] text-white rounded-xl transition-all shadow-lg shadow-gold-500/40 cursor-pointer flex items-center justify-center gap-1 px-2.5 min-w-0 overflow-hidden"
+            className="group/btn flex-1 h-7 lg:h-9 bg-gold-500 hover:bg-gold-400 active:scale-95 font-bold text-[9.5px] lg:text-[11px] text-white rounded-xl transition-all shadow-lg shadow-gold-500/40 cursor-pointer flex items-center justify-center gap-1 px-2.5 min-w-0 overflow-hidden"
             title={fullCta}
           >
             {/* Desktop text (slightly transitions on hover) */}
-            <span className="hidden md:inline truncate transition-transform duration-300 md:group-hover/btn:-translate-x-0.5">
+            <span className="hidden xl:inline truncate transition-transform duration-300 xl:group-hover/btn:-translate-x-0.5">
               {fullCta}
             </span>
 
-            {/* Mobile text (shortened, no transition since mobile has no pointer hover) */}
-            <span className="inline md:hidden truncate">
+            {/* Mobile/tablet text (shortened) */}
+            <span className="inline xl:hidden truncate">
               {shortCta}
             </span>
 
-            {/* Arrow icon (slides right on hover only on desktop) */}
-            <ArrowRight className="h-3 w-3 shrink-0 transition-transform duration-300 md:group-hover/btn:translate-x-0.5" />
+            {/* Arrow icon */}
+            <ArrowRight className="h-3 w-3 shrink-0 transition-transform duration-300 xl:group-hover/btn:translate-x-0.5" />
           </button>
         </div>
       </div>

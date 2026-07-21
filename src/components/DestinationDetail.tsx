@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
   ArrowLeft, Heart, Share2, Star, Clock, Ticket, Sparkles, 
@@ -20,6 +21,7 @@ import { fetchLiveWeather, LiveWeather } from '@/lib/weather';
 import { useLocation } from '@/contexts/LocationContext';
 import { useLeafletMap } from '@/hooks/useLeafletMap';
 import AIFloatingAssistant from '@/components/AIFloatingAssistant';
+import MobileOverlayNav from '@/components/MobileOverlayNav';
 import SubNav from '@/components/SubNav';
 import { useLocale } from '@/contexts/LocaleContext';
 
@@ -40,11 +42,11 @@ export default function DestinationDetail({
   isSaved,
   onSelectPartnerOnMap
 }: DestinationDetailProps) {
+  const router = useRouter();
   const { t } = useLocale();
   const { user, isAuthenticated } = useAuth();
   const userInitials = user?.name ? user.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) : 'YG';
   // States
-  const [activeMediaTab, setActiveMediaTab] = useState<'photos' | 'video' | '360' | 'drone' | 'reels'>('photos');
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [storyExpanded, setStoryExpanded] = useState(false);
   const [selectedMapFilter, setSelectedMapFilter] = useState<'all' | 'partner' | 'parking' | 'hotel' | 'resto' | 'guide' | 'toilet' | 'hospital'>('all');
@@ -264,6 +266,7 @@ export default function DestinationDetail({
     return () => clearInterval(timer);
   }, []);
   const [copied, setCopied] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   
   // Reviews state — loaded from BE on mount
   const [communityReviews, setCommunityReviews] = useState<Review[]>([]);
@@ -404,6 +407,10 @@ export default function DestinationDetail({
   }, [destination.images.length, slideshowPaused]);
 
   const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -706,181 +713,247 @@ export default function DestinationDetail({
         liveCrowdLevel={liveCrowdLevel} 
       />
 
-      {/* 1. STICKY NAVIGATION BAR */}
-      <SubNav
-        onBack={onBack}
-        title={destination.name}
-        centerLinks={[
-          { label: t('destination_detail.nav_explore'), onClick: onBack },
-          { label: t('destination_detail.nav_journey'), href: '#suggested-journey-section' },
-          { label: t('destination_detail.nav_ecosystem'), href: '#ecosystem-section' },
-          { label: t('destination_detail.nav_route_map'), href: '#interactive-map-section' },
-          { label: t('destination_detail.nav_stories'), href: '#community-stories' },
-        ]}
-        isSaved={isSaved}
-        onToggleSave={() => onToggleSave(destination)}
-        onShare={handleShare}
-        copiedToast={copied}
-        userInitials={userInitials}
-      />
+      {/* 1. STICKY NAVIGATION BAR — desktop only */}
+      <div className="hidden lg:block">
+        <SubNav
+          onBack={onBack}
+          title={destination.name}
+          centerLinks={[
+            { label: t('destination_detail.nav_explore'), onClick: onBack },
+            { label: t('destination_detail.nav_journey'), href: '#suggested-journey-section' },
+            { label: t('destination_detail.nav_ecosystem'), href: '#ecosystem-section' },
+            { label: t('destination_detail.nav_route_map'), href: '#interactive-map-section' },
+            { label: t('destination_detail.nav_stories'), href: '#community-stories' },
+          ]}
+          isSaved={isSaved}
+          onToggleSave={() => onToggleSave(destination)}
+          onShare={handleShare}
+          copiedToast={copied}
+          userInitials={userInitials}
+        />
+      </div>
 
-      {/* 2. HERO GALLERY (80vh) */}
-      <section className="relative h-[72vh] md:h-[80vh] w-full bg-[#0f100c] overflow-hidden">
-        
-        {/* Parallax Main Image Slider */}
+      {/* 2. HERO — full-width dark, teks kiri, media grid kanan */}
+      <section className="relative bg-[#0f100c] text-white overflow-hidden">
+        {/* Mobile overlay nav */}
+        <MobileOverlayNav
+          onBack={onBack}
+          title={destination.name}
+          isSaved={isSaved}
+          onToggleSave={() => onToggleSave(destination)}
+          onShare={handleShare}
+          copiedToast={copied}
+        />
+
+        {/* Background image — visible, slight blur, gradient hanya di kiri untuk teks */}
         <div className="absolute inset-0">
-          <Image 
-            src={destination.images[activeImageIdx]?.url || ''} 
-            alt={destination.name} 
-            className="w-full h-full object-cover opacity-85 transition-all duration-700 transform scale-102 filter brightness-[0.78]"
-            referrerPolicy="no-referrer"
-            fill
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0f100c]/90 via-[#0f100c]/20 to-transparent" />
+          {destination.images[0]?.url && (
+            <Image
+              src={destination.images[0].url}
+              alt=""
+              fill
+              priority
+              className="object-cover opacity-90 scale-105"
+            />
+          )}
+          {/* Gradient kuat di kiri agar teks terbaca, tipis di kanan agar foto kelihatan */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f100c]/90 via-[#0f100c]/40 to-transparent" />
+          {/* Gradient bawah agar konten grid kanan tidak terlalu silau */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f100c]/60 via-transparent to-[#0f100c]/30" />
         </div>
 
-        {/* Floating Badges Stack & Overlay Description */}
-        <div className="absolute inset-0 flex flex-col justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 z-10 text-white">
-          
-          {/* Top Row: UNESCO and Local Zone badges */}
-          <div className="flex flex-wrap items-center gap-2.5 mt-2">
-            <span className="bg-gold-500/90 backdrop-blur-md border border-gold-400/20 text-white text-[9px] md:text-[10px] font-mono tracking-widest uppercase px-3.5 py-1 rounded-full font-bold shadow-lg flex items-center space-x-1.5">
-              <Award className="h-3 w-3 animate-pulse" />
-              <span>{destination.category === 'heritage' ? t('destination_detail.badge_unesco_heritage') : t('destination_detail.badge_curated_highlands')}</span>
-            </span>
-            <span className="bg-white/10 backdrop-blur-md border border-white/15 text-gold-200 text-[9px] md:text-[10px] font-mono tracking-widest uppercase px-3.5 py-1 rounded-full shadow-md">
-              {destination.category === 'heritage' ? t('destination_detail.zone_sultanate') : destination.category === 'beach' ? t('destination_detail.zone_southern') : destination.category === 'mountain' ? t('destination_detail.zone_highland') : destination.subRegion ? `${destination.subRegion} ${t('destination_detail.division_label')}` : t('destination_detail.zone_yogyakarta')}
-            </span>
-            <span className="bg-emerald-600/90 backdrop-blur-md text-white text-[9px] md:text-[10px] font-mono tracking-widest uppercase px-3.5 py-1 rounded-full font-bold">
-              {t('destination_detail.open_today')}
-            </span>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1.5 text-xs text-white/50 mb-5 font-mono">
+            <button onClick={onBack} className="hover:text-white/80 transition-colors">{t('destination_detail.nav_explore')}</button>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-white/50">Hidden Gems</span>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-white/90">{destination.name}</span>
           </div>
 
-          {/* Bottom Row: Immersive Meta info & CTA Panel */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end w-full">
-            
-            {/* Title, rating, location */}
-            <div className="lg:col-span-8 text-left space-y-3">
-              <div className="flex items-center space-x-2">
-                <span className="flex items-center text-amber-400 text-sm">
-                  {"★★★★★".split('').map((char, i) => (
-                    <Star key={i} className="h-4.5 w-4.5 fill-amber-400 text-amber-400" />
-                  ))}
-                </span>
-                <span className="text-sm font-semibold font-mono text-gold-200 mt-0.5">{destination.rating} ({destination.reviewCount} {t('destination_detail.reviews_label')})</span>
-              </div>
-              
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6.5xl tracking-tight leading-[1.05] text-white">
-                {destination.name}
-              </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-              <p className="font-sans text-sm md:text-base text-gold-100/95 italic font-medium tracking-wide max-w-2xl leading-relaxed">
-                "{destination.tagline}"
+            {/* ── LEFT: badges, rating, title, desc, stats, CTAs ── */}
+            <div className="lg:col-span-6 space-y-5">
+
+              {/* Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                {(destination.badges?.length ? destination.badges : [destination.badge || 'Hidden Gem']).map((b, i) => (
+                  <span key={i} className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${i === 0 ? 'bg-gold-500 text-white' : 'bg-amber-400/20 text-amber-300 border border-amber-400/30'}`}>
+                    {i === 0 && <Award className="h-3 w-3" />}
+                    {b}
+                  </span>
+                ))}
+              </div>
+
+              {/* Rating + Location */}
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  <span className="font-bold">{destination.rating.toFixed(1)}</span>
+                  <span className="text-white/60">({destination.reviewCount.toLocaleString()} {t('destination_detail.reviews_label')})</span>
+                </div>
+                <span className="text-white/30">•</span>
+                <div className="flex items-center gap-1 text-white/70">
+                  <MapPin className="h-3.5 w-3.5 text-gold-400" />
+                  <span>{destination.location}</span>
+                </div>
+              </div>
+
+              {/* Subtitle + Name */}
+              <div>
+                <p className="text-xs font-mono text-gold-400 uppercase tracking-widest mb-1.5">
+                  #1 {destination.category} {t('destination_detail.division_label')} Yogyakarta
+                </p>
+                <h1 className="font-display text-5xl md:text-6xl font-bold leading-[1.05] tracking-tight">
+                  {destination.name}
+                </h1>
+              </div>
+
+              {/* Description */}
+              <p className="text-sm text-white/75 leading-relaxed max-w-lg font-light">
+                {destination.description?.slice(0, 160)}
+                {(destination.description?.length || 0) > 160 && '…'}
               </p>
 
-              {/* Geographic Region Label */}
-              <div className="flex items-center space-x-2 text-white/80 text-xs md:text-sm font-mono pt-1">
-                <MapPin className="h-4 w-4 text-gold-400 shrink-0" />
-                <span>{destination.location} • {destination.subRegion} {t('destination_detail.division_label')}</span>
+              {/* Stats strip */}
+              <div className="flex flex-wrap gap-6 py-1">
+                {[
+                  { icon: Users,  value: '90%',                                        label: t('destination_detail.traveler_recommend') },
+                  { icon: Camera, value: `${destination.reviewCount.toLocaleString()}+`, label: t('destination_detail.sudah_berkunjung')      },
+                  { icon: Clock,  value: destination.bestTime || '09.00 – 11.00',        label: t('destination_detail.best_time_label')        },
+                ].map((stat, i) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-gold-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold leading-none">{stat.value}</p>
+                        <p className="text-[11px] text-white/50 mt-0.5">{stat.label}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
 
-            {/* Live traveler count badge (Right Column on Desktop) */}
-            <div className="lg:col-span-4 flex flex-col items-start lg:items-end space-y-4">
-              <div className="bg-black/45 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center space-x-3 text-left w-full sm:w-auto shadow-2xl">
-                <div className="flex -space-x-2.5">
-                  <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.name)}&backgroundColor=d6a147`} alt={`${destination.name} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" width={28} height={28} />
-                  <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.location)}&backgroundColor=4d3c1e`} alt={`${destination.location} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" width={28} height={28} />
-                  <Image src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(destination.subRegion || 'jogja')}&backgroundColor=1c1a17`} alt={`${destination.subRegion || 'Jogja'} avatar`} className="h-7 w-7 rounded-full border-2 border-royal-950 object-cover" width={28} height={28} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-gold-300 font-mono tracking-wider font-bold uppercase">{t('destination_detail.community_label')}</span>
-                  <span className="text-xs text-white/95 font-semibold">{destination.reviewCount.toLocaleString()} {t('destination_detail.travelers_reviewed')}</span>
-                </div>
-              </div>
-
-              {/* Action Trigger Buttons exactly like mockup */}
-              <div className="flex flex-wrap gap-2.5 w-full justify-start lg:justify-end">
-                <button 
+              {/* CTA buttons */}
+              <div className="flex flex-wrap gap-3 pt-1">
+                <a
+                  href={`/planner?destination=${encodeURIComponent(destination.id)}&name=${encodeURIComponent(destination.name)}`}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold text-sm rounded-xl transition-colors shadow-lg"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {t('destination_detail.plan_trip')}
+                </a>
+                <button
                   onClick={() => onToggleSave(destination)}
-                  className={`px-5 py-3 rounded-full text-xs uppercase tracking-widest transition-all backdrop-blur-md border flex items-center justify-center space-x-1.5 ${
-                    isSaved 
-                      ? 'bg-gold-400/25 border-gold-400 text-gold-300' 
+                  className={`flex items-center gap-2 px-5 py-2.5 border rounded-xl font-semibold text-sm transition-colors ${
+                    isSaved
+                      ? 'bg-gold-400/25 border-gold-400 text-gold-300'
                       : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                   }`}
                 >
-                  <Heart className="h-4 w-4" />
-                  <span>{isSaved ? t('destination_detail.bookmarked') : t('destination_detail.save')}</span>
+                  <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                  {isSaved ? t('destination_detail.bookmarked') : t('destination_detail.save')}
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 font-semibold text-sm rounded-xl transition-colors"
+                >
+                  <Share2 className="h-4 w-4" />
+                  {t('destination_detail.share')}
                 </button>
               </div>
             </div>
 
-          </div>
+            {/* ── RIGHT: video large + 2 small photos + "+N foto" row ── */}
+            {(() => {
+              // Resolve fallback URLs — never allow empty string
+              const imgs = destination.images;
+              const firstUrl = imgs.find(i => i?.url)?.url ?? null;
+              const getUrl = (idx: number): string | null => imgs[idx]?.url || firstUrl;
+              const activeUrl = getUrl(activeImageIdx);
 
-          {/* Bottom Tabs for Media Selector Panel */}
-          <div className="border-t border-white/10 pt-4 mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
-            <div className="flex overflow-x-auto scrollbar-none w-full sm:w-auto -mx-4 px-4 sm:mx-0 sm:px-0 space-x-1 sm:space-x-2.5">
-              {[
-                { id: 'photos', label: t('destination_detail.media_tab_photos'), icon: Camera },
-                { id: 'video', label: t('destination_detail.media_tab_cinematic'), icon: Video },
-                { id: '360', label: t('destination_detail.media_tab_360'), icon: Eye },
-                { id: 'drone', label: t('destination_detail.media_tab_drone'), icon: Compass },
-                { id: 'reels', label: t('destination_detail.media_tab_reels'), icon: Play }
-              ].map(tab => {
-                const Icon = tab.icon;
-                return (
+              return (
+                <div className="lg:col-span-6 grid grid-cols-2 grid-rows-3 gap-3 h-[420px]">
+
+                  {/* Video thumbnail — tall, spans 2 rows left side */}
+                  <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden bg-black/40 group cursor-pointer">
+                    {getUrl(1) && (
+                      <Image
+                        src={getUrl(1)!}
+                        alt="Video preview"
+                        fill
+                        className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-2">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                        <Play className="h-5 w-5 text-white fill-white ml-0.5" />
+                      </div>
+                      <span className="text-xs text-white/80 font-medium">{t('destination_detail.media_tab_cinematic')}</span>
+                    </div>
+                  </div>
+
+                  {/* Photo top-right */}
                   <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveMediaTab(tab.id as any);
-                      if (tab.id === 'photos') setActiveImageIdx(0);
-                    }}
-                    className={`flex-shrink-0 flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-mono tracking-widest uppercase transition-all ${
-                      activeMediaTab === tab.id
-                        ? 'bg-gold-400 text-royal-950 font-bold'
-                        : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/15'
-                    }`}
+                    className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden group bg-white/5"
+                    onClick={() => { setActiveImageIdx(2); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
                   >
-                    <Icon className="h-3.5 w-3.5 shrink-0" />
-                    <span>{tab.label}</span>
+                    {getUrl(2) && (
+                      <Image
+                        src={getUrl(2)!}
+                        alt={`${destination.name} foto 3`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
                   </button>
-                );
-              })}
-            </div>
 
-            {/* Photo Slide Indicators (Mini Carousel Strip) */}
-            <div className="hidden sm:flex items-center space-x-2.5">
-              {destination.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setActiveImageIdx(idx);
-                    setActiveMediaTab('photos');
-                    setSlideshowPaused(true);
-                    setTimeout(() => setSlideshowPaused(false), 8000);
-                  }}
-                  className={`relative h-11 w-16 overflow-hidden rounded-lg border transition-all ${
-                    idx === activeImageIdx && activeMediaTab === 'photos'
-                      ? 'border-gold-400 scale-105 shadow-md shadow-gold-500/20'
-                      : 'border-white/20 opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  <Image src={img?.url || ''} alt={`${destination.name} foto ${idx + 1}`} className="w-full h-full object-cover" fill />
-                </button>
-              ))}
-            </div>
+                  {/* Photo middle-right */}
+                  <button
+                    className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden group bg-white/5"
+                    onClick={() => { setActiveImageIdx(3); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
+                  >
+                    {getUrl(3) && (
+                      <Image
+                        src={getUrl(3)!}
+                        alt={`${destination.name} foto 4`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                  </button>
 
-            {/* Photo Credit */}
-            <div className="absolute bottom-3 right-4 z-10">
-              <span className="bg-black/50 backdrop-blur-sm text-white/70 text-[10px] font-mono px-2 py-0.5 rounded">
-                {t('common.photo')} {destination.images[activeImageIdx]?.credit || 'Unsplash'} / Unsplash
-              </span>
-            </div>
+                  {/* Bottom full-width: active image + "+N Foto Lainnya" */}
+                  <button
+                    className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group bg-white/5"
+                    onClick={() => { setActiveImageIdx(0); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
+                  >
+                    {activeUrl && (
+                      <Image
+                        src={activeUrl}
+                        alt={destination.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                    {imgs.length > 4 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2 group-hover:bg-black/40 transition-colors">
+                        <Camera className="h-5 w-5 text-white" />
+                        <span className="text-white font-bold text-sm">+{imgs.length - 4} {t('destination_detail.more_photos')}</span>
+                      </div>
+                    )}
+                  </button>
+
+                </div>
+              );
+            })()}
           </div>
-
         </div>
-
       </section>
 
       {/* BODY CONTENT - Elegant grid wrapper */}
@@ -1087,7 +1160,7 @@ export default function DestinationDetail({
               </div>
 
               {/* Leaflet Map Grid Container */}
-              <div className="relative rounded-3xl overflow-hidden border border-gold-200/50 shadow-lg aspect-16/10">
+              <div className="relative rounded-3xl overflow-hidden border border-gold-200/50 shadow-lg aspect-square sm:aspect-16/10">
                 {/* Leaflet DOM container */}
                 <div ref={detailMapContainerRef} id="detail-map-section" className="w-full h-full z-0 bg-stone-100" />
 
@@ -1116,34 +1189,33 @@ export default function DestinationDetail({
 
                 {/* Selected Partner Details Floating Card */}
                 {selectedMapPartner && (
-                  <div className="absolute bottom-4 left-4 right-4 z-20 bg-royal-950/95 backdrop-blur-md border border-white/10 text-white p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl animate-fade-in">
+                  <div className="absolute bottom-4 left-3 right-3 sm:left-[50%] sm:-translate-x-1/2 sm:w-[400px] z-20 bg-royal-950/95 backdrop-blur-md border border-white/10 text-white p-2 rounded-xl flex flex-row items-center justify-between gap-2 shadow-2xl animate-fade-in max-h-[70px] overflow-hidden">
                     <div
                       onClick={() => setSelectedPartner(selectedMapPartner)}
-                      className="flex items-center space-x-3 text-left w-full sm:w-auto cursor-pointer hover:opacity-90 transition-opacity"
+                      className="flex items-center space-x-2 text-left w-full cursor-pointer hover:opacity-90 transition-opacity min-w-0"
                       title={t('destination_detail.view_partner')}
                     >
-                      <Image src={selectedMapPartner.image} alt={selectedMapPartner.name} className="h-14 w-14 rounded-xl object-cover border border-white/10 shrink-0" width={56} height={56} />
-                      <div>
-                        <div className="flex items-center space-x-1.5">
-                          <span className="text-[8px] font-mono font-bold tracking-widest text-gold-300 uppercase">{selectedMapPartner.category}</span>
-                          <span className="text-[8px] font-mono text-emerald-400 font-semibold">• {t('destination_detail.verified_partner')}</span>
+                      <Image src={selectedMapPartner.image} alt={selectedMapPartner.name} className="h-10 w-10 rounded-lg object-cover border border-white/10 shrink-0" width={40} height={40} />
+                      <div className="min-w-0">
+                        <div className="flex items-center space-x-1">
+                          <span className="text-[7px] font-mono font-bold tracking-widest text-gold-300 uppercase truncate">{selectedMapPartner.category}</span>
+                          <span className="text-[7px] font-mono text-emerald-400 font-semibold truncate">• {t('destination_detail.verified_partner')}</span>
                         </div>
-                        <h4 className="font-manrope font-bold text-sm text-white">{selectedMapPartner.name}</h4>
-                        <p className="text-[10px] text-white/70 font-light leading-none mt-0.5">{selectedMapPartner.distance} • {selectedMapPartner.price}</p>
+                        <h4 className="font-manrope font-bold text-xs text-white truncate">{selectedMapPartner.name}</h4>
+                        <p className="text-[8px] text-white/70 font-light leading-none mt-0.5 truncate">{selectedMapPartner.distance} • {selectedMapPartner.price}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2.5 w-full sm:w-auto justify-end">
+                    <div className="flex items-center space-x-1 shrink-0">
                       <div className="text-right">
-                        <span className="block text-xs font-bold text-amber-400">★ {selectedMapPartner.rating.toFixed(1)}</span>
-                        <span className="block text-[8px] font-mono text-white/50">{selectedMapPartner.promotion || t('destination_detail.special_offer')}</span>
+                        <span className="block text-[9px] font-bold text-amber-400">★ {selectedMapPartner.rating.toFixed(1)}</span>
                       </div>
                       <a 
                         href={`tel:${selectedMapPartner.phone || '+62274'}`}
-                        className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all text-xs"
+                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all text-xs shrink-0"
                         title={t('destination_detail.call_partner')}
                       >
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-3.5 w-3.5" />
                       </a>
                     </div>
                   </div>
@@ -1210,42 +1282,28 @@ export default function DestinationDetail({
                 <span className="text-xs text-stone-500">{nearbyEvents.length > 0 ? t('destination_detail.events_nearby_count', { count: nearbyEvents.length }) : t('destination_detail.no_nearby_events')}</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex gap-4 overflow-x-auto scrollbar-none pb-4 snap-x snap-mandatory">
                 {nearbyEvents.map(event => {
-                  const start = new Date(event.start_date);
-                  const now = new Date();
-                  const diffDays = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                  const countdown = diffDays <= 0 ? t('destination_detail.happening_now') : diffDays === 1 ? t('destination_detail.tomorrow') : `${t('destination_detail.in_days')} ${diffDays} ${t('destination_detail.days')}`;
                   const badge = event.category?.charAt(0).toUpperCase() + event.category?.slice(1) || t('destination_detail.event_badge_fallback');
                   return (
-                    <div key={event.id} className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950">
+                    <button
+                      key={event.id}
+                      onClick={() => router.push(`/events/${event.id}`)}
+                      className="shrink-0 snap-start w-[240px] sm:w-[280px] group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950 text-left"
+                    >
                       <Image src={event.image_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" fill />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                       
-                      <div className="absolute top-3 left-3 bg-red-600 text-white text-[9px] font-mono uppercase tracking-widest font-bold px-2 py-0.5 rounded-full">
-                        {countdown}
+                      <div className="absolute bottom-0 inset-x-0 p-4">
+                        <span className="text-[9px] font-mono text-gold-300 tracking-widest uppercase font-bold">{badge}</span>
+                        <h4 className="font-manrope text-sm font-bold text-white leading-tight mt-0.5 group-hover:text-gold-200 transition-colors line-clamp-2">{event.title}</h4>
+                        <p className="text-[10px] text-white/70 font-light mt-1 line-clamp-1">{event.start_date} • {event.location}</p>
                       </div>
-
-                      <div className="absolute bottom-0 inset-x-0 p-4 text-left">
-                        <span className="text-[8px] font-mono text-gold-300 tracking-widest uppercase font-bold">{badge}</span>
-                        <h4 className="font-manrope text-sm font-bold text-white leading-tight mt-0.5 group-hover:text-gold-200 transition-colors">{event.title}</h4>
-                        <p className="text-[10px] text-white/70 font-light mt-1">{event.start_date} • {event.location} • {event.ticket_price}</p>
-                        
-                        <button 
-                          onClick={() => {
-                            setTicketCategory('domestic');
-                            setShowTicketModal(true);
-                          }}
-                          className="mt-3 w-full bg-white/10 hover:bg-gold-400 hover:text-royal-950 text-white font-mono text-[9px] uppercase tracking-widest py-1.5 rounded-lg border border-white/15 hover:border-transparent transition-all font-bold"
-                        >
-                          {t('destination_detail.book_event_ticket')}
-                        </button>
-                      </div>
-                    </div>
+                    </button>
                   );
                 })}
                 {nearbyEvents.length === 0 && (
-                  <div className="col-span-2 text-center py-8 text-stone-400 text-xs">
+                  <div className="text-center py-8 text-stone-400 text-xs w-full">
                     {t('destination_detail.no_events_yet')}
                   </div>
                 )}
@@ -1994,6 +2052,109 @@ export default function DestinationDetail({
                   <Map className="h-3.5 w-3.5" />
                   {t('destination_detail.get_directions')}
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SHARE MODAL ── */}
+      {showShareModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setShowShareModal(false)}
+        >
+          <div className="absolute inset-0 bg-royal-950/70 backdrop-blur-sm" />
+          <div
+            className="relative w-full sm:max-w-sm overflow-hidden shadow-2xl animate-fade-in rounded-t-3xl sm:rounded-3xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Dark header — sesuai tema */}
+            <div className="bg-royal-950 px-6 pt-6 pb-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[10px] font-mono tracking-[0.18em] uppercase text-gold-400 font-bold mb-1">Bagikan Destinasi</p>
+                  <h3 className="font-display text-xl text-white leading-tight">{destination.name}</h3>
+                  <p className="text-xs text-white/50 mt-1">{destination.location}</p>
+                </div>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="p-2 rounded-full hover:bg-white/10 transition-colors mt-0.5"
+                >
+                  <X className="h-4 w-4 text-white/60" />
+                </button>
+              </div>
+
+              {/* Share option icons row — compact */}
+              <div className="flex items-center gap-3 mt-5">
+                {[
+                  {
+                    label: 'WhatsApp',
+                    bg: 'bg-[#25D366]',
+                    href: `https://wa.me/?text=${encodeURIComponent(`Lihat destinasi keren ini: ${destination.name} di Yogyakarta! ${typeof window !== 'undefined' ? window.location.href : ''}`)}`,
+                    icon: (
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
+                    ),
+                  },
+                  {
+                    label: 'Instagram',
+                    bg: 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400',
+                    href: 'https://www.instagram.com/',
+                    icon: (
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                      </svg>
+                    ),
+                  },
+                  {
+                    label: 'X',
+                    bg: 'bg-black',
+                    href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Destinasi keren di Yogyakarta: ${destination.name} ✨`)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`,
+                    icon: (
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                    ),
+                  },
+                ].map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setShowShareModal(false)}
+                    className="flex flex-col items-center gap-2 flex-1"
+                  >
+                    <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-transform`}>
+                      {item.icon}
+                    </div>
+                    <span className="text-[10px] font-mono text-white/60">{item.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom: copy link — light panel */}
+            <div className="bg-[#F7F3EE] px-6 py-5">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-royal-700/50 mb-3">atau salin tautan</p>
+              <div className="flex items-center gap-3 bg-white border border-gold-200/60 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-mono text-stone-500 truncate">
+                    {typeof window !== 'undefined' ? window.location.href : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={handleCopyLink}
+                  className={`shrink-0 px-4 py-1.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+                    copied
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-royal-950 text-gold-300 hover:bg-gold-500 hover:text-royal-950'
+                  }`}
+                >
+                  {copied ? '✓ Tersalin' : 'Salin'}
+                </button>
               </div>
             </div>
           </div>

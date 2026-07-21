@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import DestinationDetail from '@/components/DestinationDetail';
 import { Destination } from '@/types';
-import { destinations } from '@/lib/api';
+import { destinations, auth } from '@/lib/api';
 import { AlertCircle } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
@@ -139,7 +139,7 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
       } else {
         newIds = [...prev, dest.id];
       }
-      // Update localStorage — read existing full objects and patch
+      // Update localStorage
       try {
         const saved = localStorage.getItem('explore_jogja_saved_v1');
         const existing: Destination[] = saved ? JSON.parse(saved) : [];
@@ -147,13 +147,18 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
           ? existing
           : [];
         if (exists) {
-          // Remove
           localStorage.setItem('explore_jogja_saved_v1', JSON.stringify(fullObjects.filter(d => d.id !== dest.id)));
         } else {
-          // Add full object
           localStorage.setItem('explore_jogja_saved_v1', JSON.stringify([...fullObjects.filter(d => d.id !== dest.id), dest]));
         }
       } catch {}
+
+      // Sync ke DB jika user sudah login (non-blocking, localStorage tetap jadi source of truth)
+      try {
+        const isSavedNow = !exists;
+        auth.updateDestinationStatus(dest.id, isSavedNow ? 'saved' : 'removed').catch(() => {});
+      } catch {}
+
       return newIds;
     });
   };
@@ -166,7 +171,9 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
       <AuthProvider>
       <LocationProvider>
         <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-          <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} onOpenAuth={() => {}} />
+          <div className="hidden lg:block">
+            <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} onOpenAuth={() => {}} />
+          </div>
           <div className="flex-1 px-4 py-6 max-w-3xl mx-auto w-full space-y-5">
             {/* Image skeleton */}
             <div className="w-full h-[260px] sm:h-[340px] rounded-2xl bg-stone-200 animate-pulse" />
@@ -206,7 +213,9 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
       <AuthProvider>
       <LocationProvider>
         <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-          <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} onOpenAuth={() => {}} />
+          <div className="hidden lg:block">
+            <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} onOpenAuth={() => {}} />
+          </div>
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-3" />
@@ -228,7 +237,9 @@ export default function DestinationDetailClient({ slug }: { slug: string[] }) {
     <AuthProvider>
     <LocationProvider>
       <div className="min-h-screen bg-[#faf9f6] flex flex-col">
-        <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
+        <div className="hidden lg:block">
+          <Header activeTab="discover" setActiveTab={() => router.push('/')} savedCount={savedDestinationIds.length} isOverHero={false} />
+        </div>
         <DestinationDetail
           destination={destination}
           allDestinations={allDestinations}

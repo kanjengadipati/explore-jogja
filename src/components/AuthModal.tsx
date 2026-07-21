@@ -79,7 +79,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 'l
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in">
       <div className="relative w-full max-w-md mx-4 bg-white rounded-3xl shadow-2xl border border-gold-100 overflow-hidden">
         {/* Gold top accent */}
         <div className="h-1.5 bg-gradient-to-r from-gold-400 via-gold-600 to-gold-400" />

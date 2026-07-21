@@ -334,7 +334,7 @@ export default function MobileDiscoverView({
     .filter((x): x is { pick: AIPick; dest: Destination } => x.dest !== undefined);
 
   return (
-    <div className="md:hidden min-h-screen bg-[#F5F0E8] text-white">
+    <div className="xl:hidden min-h-screen bg-[#F5F0E8] text-white">
 
       {/* ═══ Full-bleed hero section (slideshow bg behind header → hero → search → trending) ═══ */}
       <div className="relative bg-[#1a1814] h-svh flex flex-col overflow-hidden shrink-0">
@@ -373,46 +373,59 @@ export default function MobileDiscoverView({
         </div>
 
         {/* ── Hero body ── */}
-        <div className="relative z-10 flex-1 flex flex-col pt-4 pb-24 px-4 min-h-0">
+        <div className="relative z-10 flex-1 flex flex-col pt-4 pb-[calc(88px+env(safe-area-inset-bottom,0px))] px-4 sm:px-8 min-h-0">
 
-          {/* ── AI Card: absolute floating top-right ── */}
+          {/* ── AI Card: absolute top-right for ALL screen sizes ── */}
           {recommendation ? (
-            <div className="absolute top-2 right-4 w-[184px] z-20 animate-[float_4s_ease-in-out_infinite]">
+            <div className="absolute top-2 right-4 sm:right-6 bottom-auto w-[184px] sm:w-[220px] lg:w-[290px] z-20 animate-[float_4s_ease-in-out_infinite]">
               <AIPickCard
                 recommendation={recommendation}
                 isSaved={isSaved}
                 onToggleSave={(dest) => handleToggleSave(undefined, dest)}
                 onExplore={(dest) => router.push(`/destinations/${toSlug(dest.name)}`)}
                 className="relative w-full"
-                sizes="180px"
+                sizes="(min-width: 1024px) 290px, (min-width: 640px) 220px, 180px"
               />
             </div>
           ) : (
-            <div className="absolute top-2 right-4 w-[184px] aspect-[2/3] rounded-2xl border border-white/5 animate-pulse bg-white/5 z-20" />
+            <div className="absolute top-2 right-4 sm:right-6 w-[184px] sm:w-[220px] lg:w-[290px] aspect-[2/3] rounded-2xl border border-white/5 animate-pulse bg-white/5 z-20" />
           )}
 
-          {/* ── Center block: greeting text ── */}
-          <div className="flex-1 flex flex-col justify-center pr-[196px]">
-            <p className="text-gold-400 text-[13px] font-semibold uppercase tracking-widest mb-2.5">
+          {/* ── Content: single column on mobile, optimized for tablet ── */}
+          <div className="flex-1 flex flex-col justify-center min-w-0 pr-[196px] sm:pr-[236px] lg:pr-[310px]">
+            <p className="text-gold-400 text-[13px] sm:text-[14px] lg:text-[15px] font-semibold uppercase tracking-widest mb-2.5">
               {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
             </p>
-            <h1 className="font-manrope text-[32px] sm:text-[36px] font-extrabold leading-[1.15] text-white tracking-tight">
+            <h1 className="font-manrope text-[32px] sm:text-[42px] lg:text-[56px] font-extrabold leading-[1.08] text-white tracking-tight">
               Jelajahi<br />
               Yogyakarta<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 via-amber-400 to-gold-500">Lebih Dalam</span>
             </h1>
-            <p className="text-white/70 text-[13px] mt-3.5 leading-relaxed max-w-[220px]">
+            <p className="text-white/70 text-[13px] sm:text-[15px] lg:text-[16px] mt-3.5 leading-relaxed max-w-[220px] sm:max-w-md lg:max-w-lg">
               Destinasi terbaik, kuliner legendaris, dan pengalaman otentik Yogyakarta.
             </p>
+
+            {/* Quick stat chips — tablet only */}
+            <div className="hidden sm:flex items-center gap-3 mt-6">
+              <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 text-xs lg:text-sm text-white/70 backdrop-blur-sm">
+                <span className="text-gold-400 font-bold text-sm lg:text-base">{allDestinations.length || '90+'}</span> Destinasi
+              </div>
+              <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 text-xs lg:text-sm text-white/70 backdrop-blur-sm">
+                <span className="text-gold-400 font-bold text-sm lg:text-base">{allEvents.length || '50+'}</span> Event
+              </div>
+              <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 text-xs lg:text-sm text-white/70 backdrop-blur-sm">
+                <span className="text-gold-400">★</span> 4.8 Rating
+              </div>
+            </div>
           </div>
 
-          {/* ── Bottom: search + trending ── */}
+          {/* ── Bottom: slide info + search + trending ── */}
           <div className="shrink-0 flex flex-col gap-3">
             {/* Slide info + dots */}
             <div className="px-1 flex items-center justify-between text-[10px] text-white/50">
               <div className="flex items-center gap-1.5 min-w-0">
                 <span>📍</span>
-                <span className="font-semibold text-white/75 truncate max-w-[120px]">{heroSlides[currentSlide]?.name}</span>
+                <span className="font-semibold text-white/75 truncate max-w-[120px] sm:max-w-xs">{heroSlides[currentSlide]?.name}</span>
                 {coords && heroSlides[currentSlide]?.latitude && heroSlides[currentSlide]?.longitude && (
                   <span className="shrink-0">({Math.round(haversineKm(coords.lat, coords.lng, heroSlides[currentSlide].latitude, heroSlides[currentSlide].longitude))} km)</span>
                 )}
@@ -429,26 +442,27 @@ export default function MobileDiscoverView({
               </div>
             </div>
 
-            <form onSubmit={handleSearchSubmit} className="relative flex items-center rounded-full border border-white/20 bg-black/40 hover:bg-black/50 backdrop-blur-md p-1 shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/50 focus-within:border-gold-400 w-full">
+            {/* Search — full width, all sizes */}
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center rounded-full border border-white/20 bg-black/40 hover:bg-black/50 backdrop-blur-md p-1 shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-gold-500/50 focus-within:border-gold-400 w-full sm:max-w-lg">
               <Search className="ml-3.5 h-4 w-4 text-white/70 shrink-0" />
-              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('hero.search_placeholder')} className="flex-1 bg-transparent py-2.5 pl-2 pr-2 text-xs text-white placeholder-white/60 focus:outline-none font-sans min-w-0" />
+              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('hero.search_placeholder')} className="flex-1 bg-transparent py-2.5 sm:py-3 pl-2 pr-2 text-xs sm:text-sm text-white placeholder-white/60 focus:outline-none font-sans min-w-0" />
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
               <div className="flex items-center gap-0.5 shrink-0 mr-1">
-                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImage} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50" title={t('hero.search_by_image')}>
-                  {isUploadingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImage} className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-all disabled:opacity-50" title={t('hero.search_by_image')}>
+                  {isUploadingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                 </button>
-                <button type="button" onClick={handleVoiceSearch} className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`} title={t('hero.search_by_voice')}>
-                  {isListening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                <button type="button" onClick={handleVoiceSearch} className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-400 animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`} title={t('hero.search_by_voice')}>
+                  {isListening ? <MicOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                 </button>
-                <button type="submit" className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gold-400 to-amber-500 hover:from-gold-500 hover:to-amber-600 active:scale-95 text-white transition-all shadow-md">
-                  <Search className="h-3.5 w-3.5" />
+                <button type="submit" className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-r from-gold-400 to-amber-500 hover:from-gold-500 hover:to-amber-600 active:scale-95 text-white transition-all shadow-md">
+                  <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
               </div>
             </form>
 
             {/* Trending */}
             {(trendingLoading || trendingItems.length > 0) && (
-              <div className="shrink-0 mt-7">
+              <div className="shrink-0 mt-3">
                 <SectionHeader title="Sedang Trending" dark onSeeAll={() => router.push('/destinations')} />
                 <div className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
                   {trendingLoading
@@ -457,7 +471,7 @@ export default function MobileDiscoverView({
                           <TrendingCardSkeleton />
                         </div>
                       ))
-                    : trendingItems.slice(0, 6).map((item, idx) => {
+                    : trendingItems.slice(0, 8).map((item, idx) => {
                         const dest = item.type === 'destination' ? allDestinations.find(d => d.id === item.id) : null;
                         return (
                           <button
@@ -495,7 +509,7 @@ export default function MobileDiscoverView({
       </div>
 
       {/* ═══ Rest of the page (no slideshow bg) ═══ */}
-      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-6 relative z-20 -mt-4">
+      <div className="bg-[#F5F0E8] space-y-6 pt-6 pb-[calc(96px+env(safe-area-inset-bottom,0px))] relative z-20 -mt-4">
 
         {/* ── Category pills ── */}
         <div>
@@ -553,7 +567,7 @@ export default function MobileDiscoverView({
         {/* ── Popular destinations ── */}
         <div>
           <SectionHeader title="Destinasi Populer" onSeeAll={() => router.push('/destinations')} />
-          <div className="grid grid-cols-2 gap-3 px-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 px-4">
             {popularDests.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
                   <MobileDestinationCardSkeleton key={i} landscape={i % 7 === 0} />

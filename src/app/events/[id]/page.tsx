@@ -7,6 +7,7 @@ import {
   ExternalLink, CheckCircle, Share2, Heart,
   ShoppingBag, ChefHat, Music, UtensilsCrossed, Shield
 } from 'lucide-react';
+import MobileOverlayNav from '@/components/MobileOverlayNav';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import Header from '@/components/Header';
@@ -149,31 +150,44 @@ function EventDetailContent() {
 
   return (
     <div className="min-h-screen bg-[#F7F3EE]">
-      <Header
-        activeTab="events"
-        setActiveTab={(tab) => {
-          if (tab === 'map') router.push('/map');
-          else if (tab === 'planner') router.push('/planner');
-          else if (tab === 'saved') router.push('/saved');
-          else if (tab === 'ai-assistant') router.push('/ai');
-          else router.push(`/?tab=${tab}`);
-        }}
-        savedCount={0}
-      />
+      <div className="hidden lg:block">
+        <Header
+          activeTab="events"
+          setActiveTab={(tab) => {
+            if (tab === 'map') router.push('/map');
+            else if (tab === 'planner') router.push('/planner');
+            else if (tab === 'saved') router.push('/saved');
+            else if (tab === 'ai-assistant') router.push('/ai');
+            else router.push(`/?tab=${tab}`);
+          }}
+          savedCount={0}
+        />
+      </div>
 
-      {/* SubNav — keep it */}
-      <SubNav
-        onBack={() => router.push('/events')}
-        title="Kembali ke Festival"
-        zClass="z-40"
-        onToggleSave={() => setSaved((v) => !v)}
-        isSaved={saved}
-        onShare={handleShare}
-        copiedToast={copied}
-      />
+      {/* SubNav — desktop only */}
+      <div className="hidden lg:block">
+        <SubNav
+          onBack={() => router.back()}
+          title="Kembali ke Festival"
+          zClass="z-40"
+          onToggleSave={() => setSaved((v) => !v)}
+          isSaved={saved}
+          onShare={handleShare}
+          copiedToast={copied}
+        />
+      </div>
 
       {/* ── Hero ── */}
       <div className="relative h-[300px] sm:h-[380px] lg:h-[440px] w-full overflow-hidden bg-stone-900">
+        {/* Mobile overlay nav */}
+        <MobileOverlayNav
+          onBack={() => router.back()}
+          title={event.title}
+          isSaved={saved}
+          onToggleSave={() => setSaved((v) => !v)}
+          onShare={handleShare}
+          copiedToast={copied}
+        />
         {event.image_url ? (
           <img
             src={event.image_url}
