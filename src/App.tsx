@@ -594,6 +594,7 @@ export default function App() {
                                 src={fest.image} 
                                 alt={fest.name} 
                                 fill
+                                sizes="(max-width: 640px) 50vw, 25vw"
                                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-108" 
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
@@ -777,7 +778,7 @@ export default function App() {
                                 <span className="text-[9px] sm:text-[10px] text-stone-500 font-medium truncate mt-1 max-w-[85px] sm:max-w-[95px] leading-tight block">{dest.name}</span>
                               </div>
                               <div className="relative h-[80px] sm:h-[96px] w-[130px] sm:w-[155px] lg:w-[130px] xl:w-[160px] rounded-[16px] overflow-hidden flex-shrink-0 bg-stone-100">
-                                <Image src={dest.images[0]?.url || ''} fill className="object-cover" referrerPolicy="no-referrer" alt={dest.name} />
+                                <Image src={dest.images[0]?.url || ''} fill sizes="160px" className="object-cover" referrerPolicy="no-referrer" alt={dest.name} />
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 text-left">
                                   <span className="text-[9px] sm:text-[10px] font-bold text-white block truncate leading-none">{dest.name}</span>
                                 </div>
@@ -831,7 +832,7 @@ export default function App() {
                       <div key={evt.id} className="group rounded-3xl overflow-hidden bg-white border border-[#E8E0D5] shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer">
                         <div className="relative h-44 overflow-hidden bg-stone-100">
                           {evt.image ? (
-                            <Image src={evt.image} alt={evt.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
+                            <Image src={evt.image} alt={evt.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-50 to-amber-100">
                               <Calendar className="h-10 w-10 text-gold-400" />

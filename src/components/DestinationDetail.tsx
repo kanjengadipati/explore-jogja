@@ -1060,6 +1060,7 @@ export default function DestinationDetail({
                       alt={`${destination.name} detail foto`} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95"
                       fill
+                      sizes="(max-width: 768px) 100vw, 40vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-4 flex flex-col justify-end text-left">
                       <span className="text-[9px] font-mono text-gold-300 tracking-widest uppercase">{t('destination_detail.detail_relief')}</span>
@@ -1291,7 +1292,7 @@ export default function DestinationDetail({
                       onClick={() => router.push(`/events/${event.id}`)}
                       className="shrink-0 snap-start w-[240px] sm:w-[280px] group relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200/10 shadow-md bg-royal-950 text-left"
                     >
-                      <Image src={event.image_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" fill />
+                      <Image src={event.image_url} alt={event.title} sizes="280px" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-90" referrerPolicy="no-referrer" fill />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                       
                       <div className="absolute bottom-0 inset-x-0 p-4">
@@ -1796,7 +1797,7 @@ export default function DestinationDetail({
               <div key={story.id} className="bg-white border border-stone-200/40 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
                 {/* Visual image box */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-royal-950">
-                  <Image src={story.img} alt={t('destination_detail.story_image_alt', { name: story.user })} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" fill />
+                  <Image src={story.img} alt={t('destination_detail.story_image_alt', { name: story.user })} sizes="(max-width: 640px) 100vw, 33vw" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" fill />
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-full text-[8.5px] font-mono text-stone-700 font-semibold border">
                     {story.tag}
                   </div>
