@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from '@/i18n/navigation';
-import { Search, ChevronLeft, ChevronRight, Mic, MicOff, Camera, Loader2, Bookmark, X, Star, CalendarDays } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Mic, MicOff, Camera, Loader2, Bookmark, X, Star, CalendarDays, Heart, MapPin } from 'lucide-react';
 import { Destination } from '../types';
 import { ai } from '../lib/api';
 import NearbyMapCard from './NearbyMapCard';
@@ -77,6 +77,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   } | null>(null);
   const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
+  const [expandedCardKey, setExpandedCardKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (destinations.length === 0) return;
@@ -203,52 +204,135 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
     if (isListening) recognition.stop(); else recognition.start();
   };
 
-  // Reusable trending card renderer
+  // Reusable trending card renderer — tap to expand (mobile-first interactive)
   const renderTrendingCard = (item: TrendingItem, keyPrefix: string) => {
+    const cardKey = `${keyPrefix}-${item.type}-${item.id}`;
     const badgeColor = BADGE_COLOR[item.badge] ?? 'bg-gold-500';
     const dest = item.type === 'destination' ? destinations.find(d => d.id === item.id) : null;
+    const isExpanded = expandedCardKey === cardKey;
+    const isMobile = keyPrefix === 'mobile';
+
+    const handleCardClick = (e: React.MouseEvent) => {
+      // On mobile: first tap expands, second tap navigates
+      if (isMobile) {
+        if (!isExpanded) {
+          e.preventDefault();
+          setExpandedCardKey(cardKey);
+          return;
+        }
+        // Second tap — close (navigation happens via CTA button)
+        setExpandedCardKey(null);
+        return;
+      }
+      // Desktop: navigate directly
+      if (dest) onExploreDestination(dest);
+      else if (item.type === 'destination') router.push(`/destinations/${item.id}`);
+      else if (item.type === 'event') router.push(`/events/${item.id}`);
+    };
+
+    const handleCTA = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (dest) onExploreDestination(dest);
+      else if (item.type === 'destination') router.push(`/destinations/${item.id}`);
+      else if (item.type === 'event') router.push(`/events/${item.id}`);
+    };
+
+    const handleSave = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (dest) onToggleSave(dest);
+    };
+
     return (
-      <button
-        key={`${keyPrefix}-${item.type}-${item.id}`}
-        type="button"
-        onClick={() => {
-          if (dest) {
-            onExploreDestination(dest);
-          } else if (item.type === 'destination') {
-            router.push(`/destinations/${item.id}`);
-          } else if (item.type === 'event') {
-            router.push(`/events/${item.id}`);
+      <div
+        key={cardKey}
+        className={`shrink-0 snap-start relative rounded-xl overflow-hidden text-left cursor-pointer select-none
+          transition-all duration-300 ease-out
+          ${isMobile
+            ? isExpanded
+              ? 'w-[200px] h-[220px] border border-gold-500/40'
+              : 'w-[100px] h-[130px] border border-white/10 hover:border-gold-500/30'
+            : 'w-[140px] h-[120px] border border-white/10 hover:border-gold-500/30'
           }
-        }}
-        className="shrink-0 w-[100px] lg:w-[140px] snap-start bg-stone-950/60 border border-white/10 rounded-xl overflow-hidden text-left active:scale-95 transition-transform cursor-pointer hover:border-gold-500/30"
+        `}
+        onClick={handleCardClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(e as any); }}
+        aria-expanded={isMobile ? isExpanded : undefined}
       >
-        <div className="relative h-[60px] lg:h-[80px]">
+        {/* Image — full card */}
+        <div className="absolute inset-0">
           {item.imageUrl
-            ? <Image src={item.imageUrl} alt={item.headline} fill sizes="140px" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            : <div className="w-full h-full bg-white/5 flex items-center justify-center"><CalendarDays className="h-8 w-8 text-white/20" /></div>
+            ? <Image src={item.imageUrl} alt={item.headline} fill sizes="200px" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            : <div className="w-full h-full bg-stone-900 flex items-center justify-center"><CalendarDays className="h-8 w-8 text-white/20" /></div>
           }
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <span className={`absolute top-2 left-2 ${badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none`}>
-            {item.badge}
-          </span>
-          {item.type === 'event' && (
-            <span className="absolute top-2 right-2 bg-black/50 text-white/80 text-[8px] px-1 py-0.5 rounded-full leading-none flex items-center gap-0.5">
-              <CalendarDays className="h-2 w-2" />{t('hero.event')}
-            </span>
-          )}
         </div>
-        <div className="p-2 lg:p-2.5">
-          <p className="text-[10px] lg:text-[11px] font-bold text-white leading-tight line-clamp-2 mb-1">{item.headline}</p>
+
+        {/* Gradient scrim */}
+        <div className={`absolute inset-0 bg-gradient-to-t ${isExpanded && isMobile ? 'from-black/90 via-black/40 to-black/10' : 'from-black/75 via-black/10 to-transparent'}`} />
+
+        {/* Badge top-left */}
+        <span className={`absolute top-2 left-2 ${badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none`}>
+          {item.badge}
+        </span>
+
+        {/* Event chip top-right */}
+        {item.type === 'event' && !isExpanded && (
+          <span className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white/80 text-[8px] px-1 py-0.5 rounded-full leading-none flex items-center gap-0.5">
+            <CalendarDays className="h-2 w-2" />{t('hero.event')}
+          </span>
+        )}
+
+        {/* Save button — expanded mobile destinations */}
+        {isExpanded && isMobile && dest && (
+          <button
+            onClick={handleSave}
+            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
+          >
+            <Heart className={`h-3 w-3 transition-all ${isSaved(dest.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+          </button>
+        )}
+
+        {/* Info overlay — bottom */}
+        <div className={`absolute bottom-0 left-0 right-0 flex flex-col transition-all duration-300 ${isExpanded && isMobile ? 'p-2.5' : 'px-2 pb-2 lg:px-2.5 lg:pb-2.5'}`}>
+          <p className={`font-bold text-white leading-tight drop-shadow-sm transition-all duration-300 ${isExpanded && isMobile ? 'text-[11px] line-clamp-2 mb-1.5' : 'text-[10px] lg:text-[11px] line-clamp-2 mb-1'}`}>
+            {item.headline}
+          </p>
+
           <div className="flex items-center gap-1">
             {item.type === 'destination' && item.rating > 0 && (
               <span className="flex items-center gap-0.5 text-[10px] text-gold-400 font-semibold">
                 <Star className="h-2.5 w-2.5 fill-gold-400" />{item.rating.toFixed(1)}
               </span>
             )}
-            {item.location && <span className="text-[9px] text-white/50 truncate">{item.location}</span>}
+            {item.location && isExpanded && isMobile && (
+              <span className="text-[9px] text-white/60 truncate flex items-center gap-0.5">
+                <MapPin className="h-2.5 w-2.5 shrink-0" />
+                {item.location}
+              </span>
+            )}
           </div>
+
+          {/* Expanded panel — mobile only */}
+          {isExpanded && isMobile && (
+            <div className="mt-2 space-y-2">
+              {/* AI reason */}
+              {item.reason && (
+                <p className="text-[9px] text-white/65 leading-relaxed line-clamp-3">{item.reason}</p>
+              )}
+
+              {/* CTA */}
+              <button
+                onClick={handleCTA}
+                className="w-full flex items-center justify-center gap-1 bg-gold-500 active:bg-gold-600 active:scale-[0.97] text-royal-950 font-bold text-[10px] py-1.5 rounded-lg transition-all"
+              >
+                {item.type === 'event' ? t('hero.event_cta') || 'Lihat Event' : t('hero.explore_cta') || 'Explore'}
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
-      </button>
+      </div>
     );
   };
 
@@ -370,7 +454,10 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                 <span className="text-[11px] font-bold text-white tracking-wide">{t('hero.trending')}</span>
                 <span className="text-gold-400 text-xs">✦</span>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory">
+              <div
+                className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory"
+                onScroll={() => { if (expandedCardKey) setExpandedCardKey(null); }}
+              >
                 {trendingLoading
                   ? Array.from({ length: 4 }).map((_, i) => (
                       <div key={i} className="shrink-0 w-[100px] snap-start bg-white/5 border border-white/10 rounded-xl overflow-hidden animate-pulse">

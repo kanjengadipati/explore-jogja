@@ -40,7 +40,7 @@ export default function App() {
   }>>([]);
   const [trendingItems, setTrendingItems] = useState<Array<{
     type: 'destination' | 'event'; id: string; badge: string;
-    headline: string; imageUrl: string; rating: number; location: string;
+    headline: string; reason: string; imageUrl: string; rating: number; location: string;
   }>>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [isFilterLoading, setIsFilterLoading] = useState(false);

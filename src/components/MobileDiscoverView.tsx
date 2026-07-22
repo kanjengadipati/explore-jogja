@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/navigation';
 import {
   Search, MapPin, Bell, Star, Heart, ChevronRight,
   Grid2x2, Compass, Utensils, Calendar, MoreHorizontal, Bookmark,
-  Mic, MicOff, Camera, Loader2, Sparkles,
+  Mic, MicOff, Camera, Loader2, Sparkles, CalendarDays,
 } from 'lucide-react';
 import { Destination, Festival } from '../types';
 import { auth, ai } from '../lib/api';
@@ -35,6 +35,7 @@ interface TrendingItem {
   id: string;
   badge: string;
   headline: string;
+  reason: string;
   imageUrl: string;
   rating: number;
   location: string;
@@ -176,6 +177,7 @@ export default function MobileDiscoverView({
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [expandedTrendingKey, setExpandedTrendingKey] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const heroSlides = allDestinations.length > 0
@@ -476,7 +478,10 @@ export default function MobileDiscoverView({
             {(trendingLoading || trendingItems.length > 0) && (
               <div className="shrink-0 mt-3">
                 <SectionHeader title={t('hero.trending')} dark onSeeAll={() => router.push('/destinations')} />
-                <div className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
+                <div
+                  className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1"
+                  onScroll={() => { if (expandedTrendingKey) setExpandedTrendingKey(null); }}
+                >
                   {trendingLoading
                     ? Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="snap-start shrink-0">
@@ -484,33 +489,109 @@ export default function MobileDiscoverView({
                         </div>
                       ))
                     : trendingItems.slice(0, 8).map((item, idx) => {
+                        const cardKey = `trend-${item.type}-${item.id}-${idx}`;
+                        const isExpanded = expandedTrendingKey === cardKey;
                         const dest = item.type === 'destination' ? allDestinations.find(d => d.id === item.id) : null;
+
+                        const handleCardClick = () => {
+                          if (!isExpanded) {
+                            setExpandedTrendingKey(cardKey);
+                            return;
+                          }
+                          setExpandedTrendingKey(null);
+                        };
+
+                        const handleCTA = (e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          if (dest) router.push(`/destinations/${toSlug(dest.name)}`);
+                          else if (item.type === 'destination') router.push(`/destinations/${item.id}`);
+                          else if (item.type === 'event') router.push(`/events/${item.id}`);
+                        };
+
+                        const handleSave = (e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          if (dest) onToggleSave(dest);
+                        };
+
                         return (
-                          <button
-                            key={`trend-${item.type}-${item.id}-${idx}`}
-                            onClick={() => {
-                              if (dest) router.push(`/destinations/${toSlug(dest.name)}`);
-                              else if (item.type === 'destination') router.push(`/destinations/${item.id}`);
-                              else if (item.type === 'event') router.push(`/events/${item.id}`);
-                            }}
-                            className="shrink-0 snap-start w-[126px] h-[166px] flex flex-col rounded-2xl overflow-hidden bg-[#1c1a17]/60 border border-white/10 text-left active:scale-95 transition-transform"
+                          <div
+                            key={cardKey}
+                            onClick={handleCardClick}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
+                            aria-expanded={isExpanded}
+                            className={`shrink-0 snap-start relative rounded-2xl overflow-hidden border text-left cursor-pointer select-none
+                              transition-all duration-300 ease-out
+                              ${isExpanded
+                                ? 'w-[200px] h-[240px] border-gold-500/40'
+                                : 'w-[126px] h-[166px] border-white/10 active:scale-95'}
+                            `}
                           >
-                            <div className="relative h-[98px] w-full shrink-0">
+                            {/* Image — full card */}
+                            <div className="absolute inset-0">
                               {item.imageUrl
-                                ? <Image src={item.imageUrl} alt={item.headline} fill sizes="126px" className="object-cover" referrerPolicy="no-referrer" />
-                                : <div className="w-full h-full bg-white/10" />}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                ? <Image src={item.imageUrl} alt={item.headline} fill sizes="200px" className="object-cover" referrerPolicy="no-referrer" />
+                                : <div className="w-full h-full bg-[#1c1a17] flex items-center justify-center"><CalendarDays className="h-8 w-8 text-white/20" /></div>}
                             </div>
-                            <div className="p-2 flex-1 flex flex-col justify-between">
-                              <p className="text-white text-[10px] font-bold leading-tight line-clamp-2">{item.headline}</p>
-                              {item.rating > 0 && (
-                                <div className="flex items-center gap-0.5 mt-1">
-                                  <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
-                                  <span className="text-gold-400 text-[9px] font-extrabold">{item.rating.toFixed(1)}</span>
+
+                            {/* Gradient scrim */}
+                            <div className={`absolute inset-0 bg-gradient-to-t ${isExpanded ? 'from-black/90 via-black/40 to-black/10' : 'from-black/80 via-black/20 to-transparent'}`} />
+
+                            {/* Event badge top-right */}
+                            {item.type === 'event' && (
+                              <span className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white/90 text-[8px] px-1.5 py-0.5 rounded-full leading-none flex items-center gap-0.5 border border-white/10">
+                                <CalendarDays className="h-2 w-2" />{t('hero.event')}
+                              </span>
+                            )}
+
+                            {/* Save button — expanded destinations only */}
+                            {isExpanded && dest && (
+                              <button
+                                onClick={handleSave}
+                                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/10 active:scale-90 transition-transform"
+                              >
+                                <Heart className={`h-3 w-3 transition-all ${isSaved(dest.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                              </button>
+                            )}
+
+                            {/* Info overlay — bottom */}
+                            <div className={`absolute bottom-0 left-0 right-0 flex flex-col transition-all duration-300 ${isExpanded ? 'p-2.5' : 'px-2 pb-2.5 pt-0'}`}>
+                              <p className={`text-white font-bold leading-tight drop-shadow-sm ${isExpanded ? 'text-[11px] line-clamp-2 mb-1.5' : 'text-[10px] line-clamp-2 mb-1'}`}>
+                                {item.headline}
+                              </p>
+
+                              <div className="flex items-center gap-1">
+                                {item.rating > 0 && (
+                                  <div className="flex items-center gap-0.5">
+                                    <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
+                                    <span className="text-gold-400 text-[9px] font-extrabold">{item.rating.toFixed(1)}</span>
+                                  </div>
+                                )}
+                                {item.location && isExpanded && (
+                                  <span className="text-[9px] text-white/60 truncate flex items-center gap-0.5">
+                                    <MapPin className="h-2.5 w-2.5 shrink-0" />{item.location}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Expanded panel */}
+                              {isExpanded && (
+                                <div className="mt-2 space-y-2">
+                                  {item.reason && (
+                                    <p className="text-[9px] text-white/65 leading-relaxed line-clamp-3">{item.reason}</p>
+                                  )}
+                                  <button
+                                    onClick={handleCTA}
+                                    className="w-full flex items-center justify-center gap-1 bg-gold-500 active:bg-gold-600 active:scale-[0.97] text-royal-950 font-bold text-[10px] py-1.5 rounded-lg transition-all"
+                                  >
+                                    {item.type === 'event' ? (t('hero.event_cta') || 'Lihat Event') : (t('hero.explore_cta') || 'Explore')}
+                                    <ChevronRight className="h-3 w-3" />
+                                  </button>
                                 </div>
                               )}
                             </div>
-                          </button>
+                          </div>
                         );
                       })}
                 </div>
@@ -605,38 +686,85 @@ export default function MobileDiscoverView({
         {(allEvents.length > 0 || trendingLoading) && (
           <div>
             <SectionHeader title={t('home.upcoming_events')} onSeeAll={() => router.push('/events')} />
-            <div className="flex gap-3.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
+            <div
+              className="flex gap-3.5 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1"
+              onScroll={() => { if (expandedTrendingKey?.startsWith('evt-')) setExpandedTrendingKey(null); }}
+            >
               {allEvents.length === 0
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="shrink-0 snap-start w-[140px] rounded-2xl overflow-hidden bg-royal-950/5 border border-royal-950/10 animate-pulse aspect-[3/4]" />
                   ))
                 : allEvents.slice(0, 6).map(evt => {
                 const { day, month } = parseEventDate(evt.date);
+                const evtKey = `evt-${evt.id}`;
+                const isExpanded = expandedTrendingKey === evtKey;
+
+                const handleEvtClick = () => {
+                  if (!isExpanded) { setExpandedTrendingKey(evtKey); return; }
+                  setExpandedTrendingKey(null);
+                };
+                const handleEvtCTA = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  router.push(`/events/${evt.id}`);
+                };
+
                 return (
-                  <button
+                  <div
                     key={evt.id}
-                    onClick={() => router.push(`/events/${evt.id}`)}
-                    className="shrink-0 snap-start w-[140px] rounded-2xl overflow-hidden bg-white border border-[#E8E0D5] text-left active:scale-95 transition-transform shadow-sm flex flex-col aspect-[3/4] relative"
+                    onClick={handleEvtClick}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleEvtClick(); }}
+                    aria-expanded={isExpanded}
+                    className={`shrink-0 snap-start relative rounded-2xl overflow-hidden border text-left cursor-pointer select-none transition-all duration-300 ease-out
+                      ${isExpanded
+                        ? 'w-[200px] h-[260px] border-gold-500/40'
+                        : 'w-[140px] h-[186px] border-white/10 active:scale-95'}
+                    `}
                   >
-                    <div className="relative h-[65%] w-full bg-stone-100">
+                    {/* Image — full card */}
+                    <div className="absolute inset-0 bg-[#1c1a17]">
                       {evt.image
-                        ? <Image src={evt.image} alt={evt.name} fill sizes="140px" className="object-cover" referrerPolicy="no-referrer" />
-                        : <div className="w-full h-full bg-white/10" />
+                        ? <Image src={evt.image} alt={evt.name} fill sizes="200px" className="object-cover" referrerPolicy="no-referrer" />
+                        : <div className="w-full h-full bg-[#2a2724]" />
                       }
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      {/* Date badge */}
-                      <div className="absolute top-2.5 left-2.5 bg-gold-400 text-royal-950 rounded-xl px-2 py-1 text-center min-w-[32px] shadow-md border border-gold-300/30">
-                        <p className="text-[12px] font-black leading-none text-[#1c1a17]">{day}</p>
-                        <p className="text-[8px] font-bold leading-none mt-0.5 text-[#1c1a17]">{month}</p>
-                      </div>
                     </div>
-                    <div className="p-2.5 flex-1 flex flex-col justify-between bg-[#1c1a17]">
-                      <p className="text-white text-[11px] font-extrabold leading-tight line-clamp-2">{evt.name}</p>
-                      <p className="text-white/60 text-[9px] truncate flex items-center gap-0.5 mt-1">
-                        <span>📍</span> {evt.location}
+
+                    {/* Gradient scrim */}
+                    <div className={`absolute inset-0 bg-gradient-to-t ${isExpanded ? 'from-black/90 via-black/50 to-black/10' : 'from-black/80 via-black/20 to-transparent'}`} />
+
+                    {/* Date badge — top-left */}
+                    <div className="absolute top-2.5 left-2.5 bg-gold-400 text-royal-950 rounded-xl px-2 py-1 text-center min-w-[32px] shadow-md border border-gold-300/30">
+                      <p className="text-[12px] font-black leading-none text-[#1c1a17]">{day}</p>
+                      <p className="text-[8px] font-bold leading-none mt-0.5 text-[#1c1a17]">{month}</p>
+                    </div>
+
+                    {/* Info overlay — bottom */}
+                    <div className={`absolute bottom-0 left-0 right-0 flex flex-col transition-all duration-300 ${isExpanded ? 'p-2.5' : 'px-2.5 pb-2.5 pt-0'}`}>
+                      <p className={`text-white font-extrabold leading-tight drop-shadow-sm ${isExpanded ? 'text-[11px] line-clamp-2 mb-1' : 'text-[11px] line-clamp-2 mb-0.5'}`}>
+                        {evt.name}
                       </p>
+                      <p className="text-white/60 text-[9px] truncate flex items-center gap-0.5">
+                        <MapPin className="h-2.5 w-2.5 shrink-0" />{evt.location}
+                      </p>
+
+                      {/* Expanded panel */}
+                      {isExpanded && (
+                        <div className="mt-2 space-y-2">
+                          {evt.description && (
+                            <p className="text-[9px] text-white/65 leading-relaxed line-clamp-3">{evt.description}</p>
+                          )}
+                          <button
+                            onClick={handleEvtCTA}
+                            className="w-full flex items-center justify-center gap-1 bg-gold-500 active:bg-gold-600 active:scale-[0.97] text-royal-950 font-bold text-[10px] py-1.5 rounded-lg transition-all"
+                          >
+                            {t('hero.event_cta') || 'Lihat Event'}
+                            <ChevronRight className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

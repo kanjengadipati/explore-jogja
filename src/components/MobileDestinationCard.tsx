@@ -255,7 +255,7 @@ export default memo(function MobileDestinationCard({
 
       {/* ── Card (slides left on swipe) ── */}
       <div
-        className="relative bg-[#1a1814] rounded-[20px] overflow-hidden cursor-pointer select-none"
+        className="relative rounded-[20px] overflow-hidden cursor-pointer select-none"
         style={{
           transform: `translateX(${swipeX}px)`,
           transition: isSwiping ? 'none' : 'transform 0.25s ease',
@@ -265,8 +265,8 @@ export default memo(function MobileDestinationCard({
         onTouchEnd={onTouchEnd}
         onClick={handleExpand}
       >
-        {/* Image */}
-        <div className="relative w-full h-[180px] overflow-hidden bg-stone-800">
+        {/* Image — full card height */}
+        <div className={`relative w-full overflow-hidden bg-stone-800 transition-all duration-300 ${expanded ? 'h-[320px]' : 'h-[220px]'}`}>
           {img
             ? <Image
                 src={img}
@@ -278,7 +278,7 @@ export default memo(function MobileDestinationCard({
               />
             : <div className="w-full h-full bg-[#2a2724] animate-pulse" />
           }
-          <div className={`absolute inset-0 bg-gradient-to-t ${expanded ? 'from-[#1a1814] via-black/40 to-transparent' : 'from-black/80 via-black/20 to-transparent'}`} />
+          <div className={`absolute inset-0 bg-gradient-to-t ${expanded ? 'from-black/95 via-black/50 to-black/10' : 'from-black/85 via-black/30 to-transparent'}`} />
 
           {/* Badge top-left */}
           <div className={`absolute top-2.5 left-2.5 flex items-center gap-1 ${badge.color} px-2 py-0.5 rounded-full`}>
@@ -303,81 +303,81 @@ export default memo(function MobileDestinationCard({
               <X className="h-3 w-3 text-white/60" />
             </button>
           )}
-        </div>
 
-        {/* ── Default info ── */}
-        <div className="px-3 pt-2.5 pb-3">
-          <h3 className="font-manrope font-bold text-[13px] text-white leading-tight">{destination.name}</h3>
+          {/* ── Info overlay — bottom ── */}
+          <div className="absolute bottom-0 left-0 right-0 px-3 pt-0 pb-3">
+            <h3 className="font-manrope font-bold text-[13px] text-white leading-tight drop-shadow-sm">{destination.name}</h3>
 
-          <div className="flex items-center gap-1 mt-0.5">
-            <MapPin className="h-2.5 w-2.5 text-gold-400 shrink-0" />
-            <span className="text-[10px] text-white/50">{destination.subRegion || destination.location}</span>
-          </div>
-
-          {/* Stats row */}
-          <div className="flex items-center gap-2.5 mt-2">
-            <div className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
-              <span className="text-[11px] font-bold text-gold-400">{destination.rating.toFixed(1)}</span>
-              {expanded && destination.reviewCount > 0 && (
-                <span className="text-[9px] text-white/40">({destination.reviewCount})</span>
-              )}
+            <div className="flex items-center gap-1 mt-0.5">
+              <MapPin className="h-2.5 w-2.5 text-gold-400 shrink-0" />
+              <span className="text-[10px] text-white/60">{destination.subRegion || destination.location}</span>
             </div>
-            {walkMinutes && (
-              <div className="flex items-center gap-1 text-white/50">
-                <Footprints className="h-3 w-3" />
-                <span className="text-[10px]">{walkMinutes} min</span>
+
+            {/* Stats row */}
+            <div className="flex items-center gap-2.5 mt-1.5">
+              <div className="flex items-center gap-1">
+                <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
+                <span className="text-[11px] font-bold text-gold-400">{destination.rating.toFixed(1)}</span>
+                {expanded && destination.reviewCount > 0 && (
+                  <span className="text-[9px] text-white/40">({destination.reviewCount})</span>
+                )}
               </div>
-            )}
-            <div className="flex items-center gap-1 text-white/50">
-              <Thermometer className="h-3 w-3" />
-              <span className="text-[10px]">{temp}</span>
-            </div>
-          </div>
-
-          {/* AI reason chip */}
-          {aiReason && !expanded && (
-            <div className="mt-2 flex items-center gap-1 bg-gold-500/10 border border-gold-500/20 rounded-full px-2.5 py-1 w-fit">
-              <Sparkles className="h-2.5 w-2.5 text-gold-400 shrink-0" />
-              <span className="text-[9px] text-gold-400 font-medium truncate max-w-[140px]">{aiReason}</span>
-            </div>
-          )}
-
-          {/* ── Expanded state extra info ── */}
-          {expanded && (
-            <div className="mt-2.5 space-y-2.5">
-              {/* Description */}
-              {destination.tagline && (
-                <p className="text-[11px] text-white/60 leading-relaxed line-clamp-3">{destination.tagline}</p>
-              )}
-
-              {/* Opening hours pill */}
-              {destination.openingHours && (
-                <div className="flex items-center gap-2 bg-white/6 rounded-xl px-3 py-2">
-                  <div className={`h-2 w-2 rounded-full ${isOpen ? 'bg-green-400' : 'bg-red-400'}`} />
-                  <span className="text-[10px] text-white/70 font-medium">
-                    {isOpen ? 'Buka' : 'Tutup'} · {destination.openingHours}
-                  </span>
+              {walkMinutes && (
+                <div className="flex items-center gap-1 text-white/50">
+                  <Footprints className="h-3 w-3" />
+                  <span className="text-[10px]">{walkMinutes} min</span>
                 </div>
               )}
-
-              {/* CTA row */}
-              <div className="flex items-center gap-2 pt-0.5">
-                <button
-                  onClick={handleExplore}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-600 active:scale-[0.98] text-royal-950 font-bold text-[12px] py-2.5 rounded-xl transition-all"
-                >
-                  Explore <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  onClick={handleBookmark}
-                  className="h-10 w-10 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
-                >
-                  <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-gold-400 text-gold-400' : 'text-white/60'}`} />
-                </button>
+              <div className="flex items-center gap-1 text-white/50">
+                <Thermometer className="h-3 w-3" />
+                <span className="text-[10px]">{temp}</span>
               </div>
             </div>
-          )}
+
+            {/* AI reason chip */}
+            {aiReason && !expanded && (
+              <div className="mt-2 flex items-center gap-1 bg-gold-500/10 border border-gold-500/20 rounded-full px-2.5 py-1 w-fit">
+                <Sparkles className="h-2.5 w-2.5 text-gold-400 shrink-0" />
+                <span className="text-[9px] text-gold-400 font-medium truncate max-w-[140px]">{aiReason}</span>
+              </div>
+            )}
+
+            {/* ── Expanded state extra info ── */}
+            {expanded && (
+              <div className="mt-2.5 space-y-2.5">
+                {/* Description */}
+                {destination.tagline && (
+                  <p className="text-[11px] text-white/70 leading-relaxed line-clamp-3">{destination.tagline}</p>
+                )}
+
+                {/* Opening hours pill */}
+                {destination.openingHours && (
+                  <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2">
+                    <div className={`h-2 w-2 rounded-full ${isOpen ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <span className="text-[10px] text-white/70 font-medium">
+                      {isOpen ? 'Buka' : 'Tutup'} · {destination.openingHours}
+                    </span>
+                  </div>
+                )}
+
+                {/* CTA row */}
+                <div className="flex items-center gap-2 pt-0.5">
+                  <button
+                    onClick={handleExplore}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-600 active:scale-[0.98] text-royal-950 font-bold text-[12px] py-2.5 rounded-xl transition-all"
+                  >
+                    Explore <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={handleBookmark}
+                    className="h-10 w-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center active:scale-90 transition-transform"
+                  >
+                    <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-gold-400 text-gold-400' : 'text-white/60'}`} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
