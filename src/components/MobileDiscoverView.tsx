@@ -51,6 +51,9 @@ interface AIPick {
 
 interface MobileDiscoverViewProps {
   allDestinations: Destination[];
+  /** Unfiltered full destination list — used for AI picks lookup so picks
+   *  remain independent of the active category filter. */
+  baseDestinations: Destination[];
   allEvents: Festival[];
   trendingItems: TrendingItem[];
   trendingLoading: boolean;
@@ -151,6 +154,7 @@ function SectionHeader({
 
 export default function MobileDiscoverView({
   allDestinations,
+  baseDestinations,
   allEvents,
   trendingItems,
   trendingLoading,
@@ -316,11 +320,13 @@ export default function MobileDiscoverView({
     onToggleSave(dest);
   };
 
-  // AI pick destinations
+  // AI pick destinations — use baseDestinations (unfiltered) so picks are
+  // always resolvable regardless of the active category filter.
+  const pickLookup = baseDestinations.length > 0 ? baseDestinations : allDestinations;
   const aiDestinations = (
     aiPicks.length > 0
       ? aiPicks.slice(0, 4)
-      : allDestinations.slice(0, 4).map(d => ({
+      : pickLookup.slice(0, 4).map(d => ({
           destinationId: d.id,
           badge: 'AI Pick',
           crowd: 'Sepi',
@@ -329,7 +335,7 @@ export default function MobileDiscoverView({
   )
     .map(p => ({
       pick: p,
-      dest: allDestinations.find(d => d.id === p.destinationId),
+      dest: pickLookup.find(d => d.id === p.destinationId),
     }))
     .filter((x): x is { pick: AIPick; dest: Destination } => x.dest !== undefined);
 

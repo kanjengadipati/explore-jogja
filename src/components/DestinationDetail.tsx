@@ -24,6 +24,9 @@ import AIFloatingAssistant from '@/components/AIFloatingAssistant';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import MobileOverlayNav from '@/components/MobileOverlayNav';
 import SubNav from '@/components/SubNav';
+import DestinationGallery from '@/components/DestinationGallery';
+import DestinationReviews from '@/components/DestinationReviews';
+import DestinationInfoPanel from '@/components/DestinationInfoPanel';
 import { useLocale } from '@/contexts/LocaleContext';
 
 interface DestinationDetailProps {
@@ -902,97 +905,15 @@ export default function DestinationDetail({
             </div>
 
             {/* ── RIGHT: video large + 2 small photos + "+N foto" row ── */}
-            {(() => {
-              // Resolve fallback URLs — never allow empty string
-              const imgs = destination.images;
-              const firstUrl = imgs.find(i => i?.url)?.url ?? null;
-              const getUrl = (idx: number): string | null => imgs[idx]?.url || firstUrl;
-              const activeUrl = getUrl(activeImageIdx);
-
-              return (
-                <div className="lg:col-span-6 grid grid-cols-2 grid-rows-3 gap-3 h-[420px]">
-
-                  {/* Video — tall, spans 2 rows left side */}
-                  <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden bg-black/40">
-                    {destination.videoUrl ? (
-                      <YouTubePlayer
-                        videoUrl={destination.videoUrl}
-                        thumbnailUrl={getUrl(1) || undefined}
-                        title={destination.name}
-                        label={t('destination_detail.media_tab_cinematic')}
-                        className="rounded-2xl"
-                      />
-                    ) : getUrl(1) ? (
-                      <button
-                        onClick={() => { setActiveImageIdx(1); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
-                        className="relative w-full h-full group"
-                      >
-                        <Image
-                          src={getUrl(1)!}
-                          alt="foto 2"
-                          fill
-                          className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </button>
-                    ) : (
-                      <div className="w-full h-full bg-royal-900" />
-                    )}
-                  </div>
-
-                  {/* Photo top-right */}
-                  <button
-                    className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden group bg-white/5"
-                    onClick={() => { setActiveImageIdx(2); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
-                  >
-                    {getUrl(2) && (
-                      <Image
-                        src={getUrl(2)!}
-                        alt={`${destination.name} foto 3`}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                  </button>
-
-                  {/* Photo middle-right */}
-                  <button
-                    className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden group bg-white/5"
-                    onClick={() => { setActiveImageIdx(3); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
-                  >
-                    {getUrl(3) && (
-                      <Image
-                        src={getUrl(3)!}
-                        alt={`${destination.name} foto 4`}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                  </button>
-
-                  {/* Bottom full-width: active image + "+N Foto Lainnya" */}
-                  <button
-                    className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden group bg-white/5"
-                    onClick={() => { setActiveImageIdx(0); setSlideshowPaused(true); setTimeout(() => setSlideshowPaused(false), 8000); }}
-                  >
-                    {activeUrl && (
-                      <Image
-                        src={activeUrl}
-                        alt={destination.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                    {imgs.length > 4 && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2 group-hover:bg-black/40 transition-colors">
-                        <Camera className="h-5 w-5 text-white" />
-                        <span className="text-white font-bold text-sm">+{imgs.length - 4} {t('destination_detail.more_photos')}</span>
-                      </div>
-                    )}
-                  </button>
-
-                </div>
-              );
-            })()}
+            <DestinationGallery
+              destination={destination}
+              activeImageIdx={activeImageIdx}
+              onSelectImage={(idx) => {
+                setActiveImageIdx(idx);
+                setSlideshowPaused(true);
+                setTimeout(() => setSlideshowPaused(false), 8000);
+              }}
+            />
           </div>
         </div>
       </section>
@@ -1357,472 +1278,58 @@ export default function DestinationDetail({
             </div>
 
             {/* 9. REVIEWS & COMMUNITY EXPERIENCE FEED */}
-            <div id="community-stories" className="space-y-6 scroll-mt-20">
-
-              {/* ── Top: Rating Summary + AI Panel ── */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-
-                {/* Left: numeric rating + star bars */}
-                <div className="bg-white border border-stone-100 rounded-2xl p-5 flex gap-5 items-center shadow-sm">
-                  <div className="text-center shrink-0">
-                    <p className="text-5xl font-manrope font-extrabold text-[#1c1a17]">{destination.rating.toFixed(1)}</p>
-                    <div className="flex items-center gap-0.5 justify-center mt-1">
-                      {[1,2,3,4,5].map(s => (
-                        <Star key={s} className={`h-3.5 w-3.5 ${s <= Math.round(destination.rating) ? 'fill-amber-400 text-amber-400' : 'text-stone-200'}`} />
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-stone-400 mt-1 font-mono">{communityReviews.length.toLocaleString()} {t('destination_detail.reviews')}</p>
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    {[5,4,3,2,1].map(star => {
-                      const count = communityReviews.filter(r => Math.round(r.rating) === star).length;
-                      const pct = communityReviews.length > 0 ? (count / communityReviews.length) * 100 : 0;
-                      return (
-                        <div key={star} className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono text-stone-500 w-2 shrink-0">{star}</span>
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
-                          <div className="flex-1 h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-amber-400 rounded-full transition-all duration-700"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <span className="text-[10px] text-stone-400 font-mono w-7 text-right shrink-0">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Right: AI review summary */}
-                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 bg-amber-400 rounded-lg flex items-center justify-center">
-                      <Sparkles className="h-3.5 w-3.5 text-white" />
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-amber-800 uppercase tracking-widest">{t('destination_detail.ai_review_summary')}</span>
-                  </div>
-                  <p className="text-[12px] font-semibold text-amber-900 mb-3">
-                    {communityReviews.length > 0
-                        ? `${Math.round((communityReviews.filter(r => r.rating >= 4).length / communityReviews.length) * 100)}% ${t('destination_detail.travelers_recommend')}`
-                        : t('destination_detail.be_first_review')}
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-[9px] font-mono font-bold text-emerald-700 uppercase tracking-widest mb-1.5">{t('destination_detail.most_loved')}</p>
-                      <ul className="space-y-1">
-                        {(destination as any).aiPros?.slice(0,3).map((pro: string, i: number) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-700">
-                            <span className="text-emerald-500 mt-0.5 shrink-0">●</span>{pro}
-                          </li>
-                        )) || (destination.travelTips.length > 0
-                          ? destination.travelTips.slice(0, 3)
-                          : [destination.description?.slice(0, 50) || t('destination_detail.pro_unique'), t('destination_detail.pro_scenery'), t('destination_detail.pro_heritage')]
-                        ).map((tip: string, i: number) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-700">
-                            <span className="text-emerald-500 mt-0.5 shrink-0">●</span>{tip}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-mono font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('destination_detail.could_be_better')}</p>
-                      <ul className="space-y-1">
-                        {(destination as any).aiCons?.slice(0,2).map((con: string, i: number) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-500">
-                            <span className="text-stone-400 mt-0.5 shrink-0">●</span>{con}
-                          </li>
-                        )) || (() => {
-                          const reviewText = communityReviews.map(r => r.comment?.toLowerCase() || ' ').join(' ');
-                          const cons: string[] = [];
-                          if (reviewText.includes('crowd') || reviewText.includes('busy')) cons.push(t('destination_detail.con_crowded'));
-                          if (reviewText.includes('parking') || reviewText.includes('walk')) cons.push(t('destination_detail.con_walking'));
-                          if (reviewText.includes('hot') || reviewText.includes('sun')) cons.push(t('destination_detail.con_sun'));
-                          if (cons.length === 0) cons.push(t('destination_detail.con_peak'));
-                          if (cons.length < 2) cons.push(t('destination_detail.con_hours'));
-                          return cons.slice(0, 2);
-                        })().map((con: string, i: number) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[11px] text-stone-500">
-                            <span className="text-stone-400 mt-0.5 shrink-0">●</span>{con}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Filter chips with counts ── */}
-              <div className="flex overflow-x-auto scrollbar-none gap-2 pb-1">
-                {[
-                  { key: 'all', label: t('destination_detail.filter_all_reviews', { count: communityReviews.length }) },
-                  { key: 'Solo', label: t('destination_detail.filter_solo_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Solo' || (r as any).traveler_type === 'Solo').length }) },
-                  { key: 'Couple', label: t('destination_detail.filter_couple_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Couple' || (r as any).traveler_type === 'Couple').length }) },
-                  { key: 'Family', label: t('destination_detail.filter_family_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Family' || (r as any).traveler_type === 'Family').length }) },
-                  { key: 'Friends', label: t('destination_detail.filter_friends_reviews', { count: communityReviews.filter(r => (r as any).travelerType === 'Friends' || (r as any).traveler_type === 'Friends').length }) },
-                ].map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => { setReviewFilter(key as any); setVisibleReviews(6); }}
-                    className={`whitespace-nowrap text-[11px] font-semibold px-4 py-1.5 rounded-full border transition-all ${
-                      reviewFilter === key
-                        ? 'bg-[#1c1a17] text-white border-[#1c1a17]'
-                        : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* ── Write a Review form ── */}
-              <div className="relative overflow-hidden rounded-2xl border border-stone-200 bg-gradient-to-br from-[#FAF8F5] to-white shadow-sm">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gold-400 via-amber-300 to-gold-500" />
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-7 h-7 bg-gradient-to-br from-gold-400 to-amber-500 rounded-lg flex items-center justify-center shadow-sm">
-                      <Pencil className="h-3.5 w-3.5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-manrope font-bold text-[#1c1a17]">{t('destination_detail.write_a_review')}</p>
-                      <p className="text-[10px] text-stone-400">{t('destination_detail.share_experience')}</p>
-                    </div>
-                  </div>
-
-                  {!isAuthenticated ? (
-                    <div className="flex items-center gap-4 bg-stone-50 border border-stone-100 rounded-xl p-4">
-                      <span className="text-3xl">✍️</span>
-                      <div className="flex-1">
-                        <p className="text-[13px] font-semibold text-[#1c1a17]">{t('destination_detail.sign_in_review')}</p>
-                        <p className="text-[11px] text-stone-400">{t('destination_detail.help_travelers')}</p>
-                      </div>
-                      <a href="/login" className="shrink-0 px-4 py-1.5 bg-[#1c1a17] text-white text-[10px] font-mono font-bold uppercase tracking-widest rounded-full hover:bg-gold-600 transition-colors">
-                        {t('destination_detail.login')}
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Stars + traveler type row */}
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          {[1,2,3,4,5].map(star => (
-                            <button key={star} onClick={() => setNewReviewRating(star)} className="focus:outline-none transition-transform hover:scale-110">
-                              <Star className={`h-6 w-6 transition-colors ${star <= newReviewRating ? 'fill-amber-400 text-amber-400' : 'text-stone-200 hover:text-amber-200'}`} />
-                            </button>
-                          ))}
-                          <span className="text-[12px] font-semibold text-stone-500 ml-1">{newReviewRating}/5</span>
-                        </div>
-                        <div className="flex gap-1.5">
-                          {(['Solo','Couple','Family','Friends'] as const).map(type => (
-                            <button
-                              key={type}
-                              onClick={() => setNewReviewTravelerType(type)}
-                              className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border-2 transition-all ${
-                                newReviewTravelerType === type ? 'bg-amber-50 border-amber-400 text-amber-800' : 'bg-white border-stone-200 text-stone-500'
-                              }`}
-                            >{t(`destination_detail.traveler_${type.toLowerCase()}`)}</button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="relative">
-                        <textarea
-                          placeholder={t('destination_detail.review_placeholder')}
-                          value={newReviewText}
-                          onChange={(e) => setNewReviewText(e.target.value)}
-                          rows={3}
-                          maxLength={500}
-                          className="w-full bg-stone-50 border border-stone-200 text-[12px] px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none text-stone-700 placeholder:text-stone-300 leading-relaxed"
-                        />
-                        <span className="absolute bottom-3 right-4 text-[9px] text-stone-300 font-mono">{newReviewText.length}/500</span>
-                      </div>
-                      {reviewError && (<div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2"><span className="text-red-500 text-sm">⚠️</span><p className="text-[11px] text-red-600">{reviewError}</p></div>)}
-                      {reviewSubmitted && (<div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2"><span className="text-green-500 text-sm">✅</span><p className="text-[11px] text-green-700">{t('destination_detail.review_published')}</p></div>)}
-                      <button
-                        onClick={handleSubmitReview}
-                        disabled={!newReviewText.trim() || submittingReview}
-                        className="w-full py-2.5 bg-[#1c1a17] text-white text-[11px] font-mono font-bold uppercase tracking-widest rounded-xl hover:bg-gold-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {submittingReview ? `✦ ${t('destination_detail.publishing')}` : `✦ ${t('destination_detail.publish_review')}`}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* ── Review Cards grid ── */}
-              {filteredReviews.length === 0 ? (
-                <div className="text-center py-12 text-stone-400">
-                  <p className="text-2xl mb-2">🔍</p>
-                  <p className="text-sm font-medium">{t('destination_detail.no_reviews_yet')}</p>
-                  <p className="text-[11px] mt-1">{t('destination_detail.be_first_experience')}</p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredReviews.slice(0, visibleReviews).map((review, idx) => {
-                      const isLiked = likedReviewIds.has(review.id);
-                      const tType = (review as any).travelerType || (review as any).traveler_type || null;
-                      const baseLikeHash = (Number(review.id.replace(/[^0-9]/g, '')) || 0) || (review.userName.charCodeAt(0) + (review.userName.charCodeAt(review.userName.length - 1) || 0));
-                      const likeCount = reviewHelpfulCounts[review.id] ?? (10 + (baseLikeHash % 15));
-                      return (
-                        <div
-                          key={review.id}
-                          className="bg-white border border-stone-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col text-left"
-                        >
-                          {/* User row */}
-                          <div className="flex items-center gap-3 mb-3">
-                            <img
-                              src={review.userAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(review.userName)}`}
-                              className="h-10 w-10 rounded-full object-cover bg-stone-100 border-2 border-white shadow-sm shrink-0"
-                              onError={(e) => { (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${review.userName}`; }}
-                            />
-                            <div className="min-w-0">
-                              <p className="text-[13px] font-bold text-[#1c1a17] truncate">{review.userName}</p>
-                              <div className="flex items-center gap-1.5">
-                                <div className="flex items-center gap-0.5">
-                                  {[1,2,3,4,5].map(s => (
-                                    <Star key={s} className={`h-3 w-3 ${s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-stone-200'}`} />
-                                  ))}
-                                </div>
-                                {tType && (
-                                  <span className="text-[9px] bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded-full font-mono">{tType}</span>
-                                )}
-                              </div>
-                              <p className="text-[10px] text-stone-400 font-mono">{review.date}</p>
-                            </div>
-                          </div>
-
-                          {/* Comment */}
-                          <p className="text-[12px] text-stone-600 leading-relaxed flex-1 line-clamp-4">
-                            {review.comment}
-                          </p>
-
-                          {/* Footer */}
-                          <div className="mt-3 pt-3 border-t border-stone-50 flex items-center">
-                            <button
-                              onClick={() => toggleLikeReview(review.id)}
-                              className={`flex items-center gap-1.5 text-[11px] font-medium transition-all rounded-full px-2.5 py-1 ${
-                                isLiked ? 'text-red-500 bg-red-50' : 'text-stone-400 hover:text-red-400 hover:bg-red-50'
-                              }`}
-                            >
-                              <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-red-500' : ''}`} />
-                              <span>{t('destination_detail.helpful')} ({likeCount})</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Load More */}
-                  {visibleReviews < filteredReviews.length && (
-                    <div className="flex justify-center pt-2">
-                      <button
-                        onClick={() => setVisibleReviews(v => v + 6)}
-                        className="px-8 py-2.5 border border-stone-300 text-[12px] font-semibold text-stone-600 rounded-full hover:bg-stone-50 hover:border-stone-400 transition-all"
-                      >
-                        {t('destination_detail.load_more_reviews_btn')} ({filteredReviews.length - visibleReviews} {t('destination_detail.remaining')})
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            <DestinationReviews
+              destination={destination}
+              communityReviews={communityReviews}
+              reviewsLoading={reviewsLoading}
+              reviewFilter={reviewFilter}
+              onFilterChange={(filter) => {
+                setReviewFilter(filter);
+                setVisibleReviews(6);
+              }}
+              filteredReviews={filteredReviews}
+              visibleReviews={visibleReviews}
+              onLoadMore={() => setVisibleReviews(v => v + 6)}
+              likedReviewIds={likedReviewIds}
+              reviewHelpfulCounts={reviewHelpfulCounts}
+              onToggleLike={toggleLikeReview}
+              newReviewText={newReviewText}
+              onReviewTextChange={setNewReviewText}
+              newReviewRating={newReviewRating}
+              onReviewRatingChange={setNewReviewRating}
+              newReviewTravelerType={newReviewTravelerType}
+              onTravelerTypeChange={setNewReviewTravelerType}
+              submittingReview={submittingReview}
+              reviewSubmitted={reviewSubmitted}
+              reviewError={reviewError}
+              onSubmitReview={handleSubmitReview}
+            />
 
           </div>
 
           {/* RIGHT 4-COLUMN AUXILIARY STICKY PANEL */}
-          <div className="lg:col-span-4 space-y-6">
-            
-            {/* 16. AI LIVE JOURNEY MODE (Signature travel companion) */}
-            <div className="sticky top-22 z-20 bg-royal-950 text-white rounded-3xl p-5 border border-white/10 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 rounded-full bg-gold-400 animate-ping" />
-                  <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-gold-300 font-bold">{t('destination_detail.journey_assistant')}</span>
-                </div>
-                <span className="text-[9px] font-mono bg-white/10 px-2.5 py-0.5 rounded-full text-gold-200 font-bold">{t('destination_detail.live_journey')}</span>
-              </div>
-
-              <div className="space-y-1 text-left">
-                <span className="text-[9px] text-white/50 font-mono tracking-wider">{t('destination_detail.exploring_now')}</span>
-                <h4 className="font-display text-xl text-white tracking-tight">{destination.name}</h4>
-              </div>
-
-              {/* Live Context metrics strip */}
-              <div className="grid grid-cols-3 gap-2 py-1">
-                <div className="bg-white/5 p-2 rounded-xl text-center">
-                  <span className="block text-[8px] font-mono text-white/40 uppercase">{t('destination_detail.time')}</span>
-                  <span className="text-xs font-bold text-gold-300 font-mono mt-0.5 block">{currentAssistantTime}</span>
-                </div>
-                <div className="bg-white/5 p-2 rounded-xl text-center">
-                  <span className="block text-[8px] font-mono text-white/40 uppercase">{t('destination_detail.weather')}</span>
-                  <span className="text-xs font-bold text-gold-300 font-mono mt-0.5 block">{destination.weather.temp} ☀</span>
-                </div>
-                <div className="bg-white/5 p-2 rounded-xl text-center">
-                  <span className="block text-[8px] font-mono text-white/40 uppercase">{t('destination_detail.crowd')}</span>
-                  <span className={`text-xs font-bold font-mono mt-0.5 block ${liveCrowdLevel === 'High' ? 'text-red-400' : 'text-emerald-400'}`}>
-                    {liveCrowdLevel === 'High' ? t('destination_detail.crowd_high') : liveCrowdLevel === 'Moderate' ? t('destination_detail.crowd_moderate') : t('destination_detail.crowd_low')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Dynamic recommendation list */}
-              <div className="space-y-2.5 text-left pt-1">
-                <span className="text-[9px] font-mono text-gold-400/90 tracking-widest uppercase font-bold block">{t('destination_detail.live_recommendations')}</span>
-                {getAIRecommendations().map((rec, i) => (
-                  <div 
-                    key={i}
-                    onClick={() => setSelectedJourneyActionIdx(i === selectedJourneyActionIdx ? null : i)}
-                    className={`p-3 rounded-xl cursor-pointer border text-xs transition-all flex justify-between items-start gap-3 text-left ${
-                      selectedJourneyActionIdx === i 
-                        ? 'bg-gold-400/20 border-gold-400 text-white' 
-                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="space-y-0.5">
-                      <p className="font-medium">{rec.text}</p>
-                      <span className="text-[9px] font-mono text-white/40">{t('destination_detail.expected_completion')} {rec.time}</span>
-                    </div>
-                    <ChevronRight className={`h-4 w-4 text-gold-400 shrink-0 transform transition-transform ${selectedJourneyActionIdx === i ? 'rotate-90' : ''}`} />
-                  </div>
-                ))}
-              </div>
-
-              {/* <button 
-                onClick={() => setShowTicketModal(true)}
-                className="w-full py-2.5 bg-gold-400 hover:bg-gold-500 text-royal-950 text-xs font-mono font-bold uppercase tracking-widest rounded-xl transition-colors shadow-md hidden"
-              >
-                BOOK LIVE COMPANION SESSION
-              </button> */}
-            </div>
-
-            {/* 11. TOURISM ECOSYSTEM INTENT RAILS */}
-            <div id="ecosystem-section" className="bg-white border border-stone-200/50 rounded-3xl p-5 shadow-sm space-y-4 text-left scroll-mt-20">
-              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-                <div className="flex items-center space-x-1.5">
-                  <Award className="h-4 w-4 text-gold-600" />
-                  <span className="text-xs font-manrope font-bold text-stone-900">{t('destination_detail.ecosystem_intent_rail')}</span>
-                </div>
-                <span className="text-[9px] font-mono bg-gold-50 text-gold-700 px-2 py-0.5 rounded-full font-bold">{t('destination_detail.monetized_partners')}</span>
-              </div>
-
-              {/* Horiz intent slider */}
-              <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-2 border-b border-stone-100">
-                {[
-                  { id: 'stay', label: t('destination_detail.tab_stay') },
-                  { id: 'eat', label: t('destination_detail.tab_culinary') },
-                  { id: 'experience', label: t('destination_detail.tab_vibe') },
-                  { id: 'shop', label: t('destination_detail.tab_shop') },
-                  { id: 'guide', label: t('destination_detail.tab_guide') }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveEcosystemTab(item.id as any);
-                      ecosystemPausedUntilRef.current = Date.now() + 8000;
-                    }}
-                    className={`relative text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 rounded-full shrink-0 transition-all overflow-hidden ${
-                      activeEcosystemTab === item.id 
-                        ? 'bg-royal-950 text-white font-bold' 
-                        : 'bg-stone-50 text-stone-500 hover:bg-stone-100 border border-stone-200/10'
-                    }`}
-                  >
-                    {activeEcosystemTab === item.id && (
-                      <span
-                        key={item.id + '-bar'}
-                        className="absolute inset-x-0 bottom-0 h-[2px] bg-gold-400 origin-left"
-                        style={{ animation: 'ecosystem-progress 3s linear forwards' }}
-                      />
-                    )}
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Slideshow progress dots */}
-              <div className="flex justify-center gap-1.5 pt-2 pb-1">
-                {(['stay','eat','experience','shop','guide'] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => {
-                      setActiveEcosystemTab(tab);
-                      ecosystemPausedUntilRef.current = Date.now() + 8000;
-                    }}
-                    className={`h-1 rounded-full transition-all duration-300 ${
-                      activeEcosystemTab === tab ? 'w-4 bg-royal-950' : 'w-1.5 bg-stone-300 hover:bg-stone-400'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Partner Card list */}
-              <div className="space-y-3 pt-1">
-                {activeEcosystemPartners.length === 0 ? (
-                  <p className="text-xs text-stone-500 italic py-4 text-center">{t('destination_detail.no_partner_found')}</p>
-                ) : (
-                  activeEcosystemPartners.map(partner => (
-                    <div
-                      key={partner.id}
-                      onClick={() => setSelectedPartner(partner)}
-                      className="group border border-stone-100 p-2.5 rounded-xl flex space-x-3 hover:border-gold-300 hover:bg-stone-50/50 transition-all duration-300 text-left cursor-pointer"
-                    >
-                      <Image src={partner.image} alt={partner.name} className="h-14 w-14 rounded-lg object-cover border shrink-0 bg-stone-100" width={56} height={56} />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[8px] font-mono font-bold tracking-widest text-gold-700 uppercase leading-none">{partner.category}</span>
-                            <span className="text-[9px] font-bold text-amber-500 font-mono">★ {partner.rating}</span>
-                          </div>
-                          <h4 className="font-manrope text-xs font-bold text-stone-900 group-hover:text-gold-700 transition-all truncate mt-0.5">{partner.name}</h4>
-                          <p className="text-[9px] text-stone-500 font-light truncate">{partner.description}</p>
-                        </div>
-                        <div className="flex items-center justify-between border-t border-stone-100/60 pt-1 mt-1 text-[9px] font-mono text-stone-500">
-                          <span className="font-bold text-stone-800">{partner.price}</span>
-                          <div className="flex items-center gap-2">
-                            <span>{partner.distance}</span>
-                            <MapPin className="h-2.5 w-2.5 text-stone-400 group-hover:text-gold-500 transition-colors" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-
-
-            {/* 13. SIMILAR DESTINATIONS */}
-            <div className="bg-white border border-stone-200/50 rounded-3xl p-5 shadow-sm text-left space-y-4">
-              <span className="text-[9px] font-mono font-bold tracking-widest text-gold-700 uppercase block leading-none">{t('destination_detail.people_also_explored')}</span>
-              
-              <div className="space-y-3.5">
-                {similarDestinations.map(similar => (
-                  <div 
-                    key={similar.id} 
-                    onClick={() => {
-                      onBack();
-                      // Timeout to simulate navigating
-                      setTimeout(() => {
-                        const card = document.getElementById(`destination-card-${similar.id}`);
-                        if (card) card.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
-                    }}
-                    className="group flex items-center space-x-3 cursor-pointer text-left"
-                  >
-                    <Image src={similar.images[0]?.url || ''} alt={similar.name} className="h-12 w-16 rounded-xl object-cover shrink-0 bg-stone-100" width={64} height={48} />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-manrope text-xs font-bold text-stone-900 group-hover:text-gold-600 transition-all truncate leading-tight">{similar.name}</h4>
-                      <p className="text-[9px] text-stone-500 font-light truncate mt-0.5">{similar.tagline}</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-stone-400 shrink-0 group-hover:text-gold-600 transition-all" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
+          <DestinationInfoPanel
+            destination={destination}
+            currentAssistantTime={currentAssistantTime}
+            liveCrowdLevel={liveCrowdLevel}
+            aiRecommendations={getAIRecommendations()}
+            selectedJourneyActionIdx={selectedJourneyActionIdx}
+            onSelectJourneyAction={setSelectedJourneyActionIdx}
+            activeEcosystemTab={activeEcosystemTab}
+            onSelectEcosystemTab={setActiveEcosystemTab}
+            ecosystemPausedUntilRef={ecosystemPausedUntilRef}
+            activeEcosystemPartners={activeEcosystemPartners}
+            onSelectPartner={setSelectedPartner}
+            travelerIntent={travelerIntent}
+            similarDestinations={similarDestinations}
+            onNavigateToSimilar={(similar) => {
+              onBack();
+              setTimeout(() => {
+                const card = document.getElementById(`destination-card-${similar.id}`);
+                if (card) card.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
+          />
 
         </div>
       </div>

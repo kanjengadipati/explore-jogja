@@ -22,6 +22,9 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
    const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
+  // baseDestinations: unfiltered full list, never replaced by category filter.
+  // Used for AI picks lookup so they stay independent of the active filter.
+  const [baseDestinations, setBaseDestinations] = useState<Destination[]>([]);
   const [allEvents, setAllEvents] = useState<Festival[]>([]);
   const [allQuotes, setAllQuotes] = useState<{ text: string; author: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,6 +68,7 @@ export default function App() {
           ogImageUrl: raw.og_image_url || raw.OgImageUrl || raw.ogImageUrl || '',
         }));
         setAllDestinations(mapped as Destination[]);
+        setBaseDestinations(mapped as Destination[]); // keep unfiltered copy for AI picks
         // Save pagination meta
         const meta = (destRes as any).meta;
         if (meta) {
@@ -433,6 +437,7 @@ export default function App() {
                 {/* ── Mobile-only dark redesign ── */}
                 <MobileDiscoverView
                   allDestinations={allDestinations}
+                  baseDestinations={baseDestinations}
                   allEvents={allEvents}
                   trendingItems={trendingItems}
                   trendingLoading={trendingLoading}

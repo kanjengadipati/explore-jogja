@@ -73,7 +73,7 @@
     "events_desc": "Festival, pertunjukan budaya, dan sorotan musiman di Yogyakarta.",
     "no_events_title": "Tidak Ada Acara Ditemukan",
     "no_events_desc": "Periksa kembali segera untuk festival dan acara mendatang.",
-    "experiences_desc": "Petualangan, alam, dan permata tersembunyi di seluruh Yogyakarta.",
+    "experiences_desc": "Petualangan, alam, dan hidden gem di seluruh Yogyakarta.",
     "ai_picks_title": "Pilihan AI Khusus Untukmu",
     "ai_picks_subtitle": "Disesuaikan dengan suasana hari ini",
     "ai_pick_badge": "Pilihan AI Hari Ini",
@@ -550,7 +550,7 @@
     "quick_prompt_sunset_label": "Sunset",
     "quick_prompt_sunset_subtitle": "Pantai & bukit",
     "loading_phrase_1": "Menyiapkan saran...",
-    "loading_phrase_2": "Mencari permata tersembunyi...",
+    "loading_phrase_2": "Mencari hidden gem...",
     "loading_phrase_3": "Menghubungkan ke pengetahuan lokal...",
     "loading_phrase_4": "Menyiapkan rekomendasi..."
   },

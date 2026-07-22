@@ -168,14 +168,14 @@ async function request<T>(
       return request<T>(path, options);
     }
     setAccessToken(null);
-    return { status: 'error', message: 'Unauthorized' } as any;
+    return { status: 'error', message: 'Unauthorized' } satisfies APIResponse<T>;
   }
 
   let json: APIResponse<T>;
   try {
     json = await res.json();
   } catch {
-    json = { status: 'error', message: `Server returned status ${res.status}` } as any;
+    json = { status: 'error', message: `Server returned status ${res.status}` } satisfies APIResponse<T>;
   }
 
   return json;
@@ -215,7 +215,8 @@ export const auth = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    const json: APIResponse<AuthResponse> = await res.json().catch(() => ({ status: 'error', message: 'Network error' }) as any);
+    const fallback: APIResponse<AuthResponse> = { status: 'error', message: 'Network error' };
+    const json: APIResponse<AuthResponse> = await res.json().catch(() => fallback);
     if (json.status === 'success' && json.data) {
       setAccessToken(json.data.access_token);
     }
@@ -328,7 +329,8 @@ export const auth = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ provider, token }),
     });
-    const json: APIResponse<AuthResponse> = await res.json().catch(() => ({ status: 'error', message: 'Network error' }) as any);
+    const fallback: APIResponse<AuthResponse> = { status: 'error', message: 'Network error' };
+    const json: APIResponse<AuthResponse> = await res.json().catch(() => fallback);
     if (json.status === 'success' && json.data) {
       setAccessToken(json.data.access_token);
     }

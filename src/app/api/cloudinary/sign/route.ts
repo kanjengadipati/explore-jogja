@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'wdsepioa';
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '738718397121653';
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || '82aR0CVjurkjAm-bVi6bgXFe9jo';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  throw new Error(
+    'Missing required Cloudinary environment variables: ' +
+    'CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET'
+  );
+}
+
 
 export async function POST(req: NextRequest) {
   try {

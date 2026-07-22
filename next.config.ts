@@ -27,8 +27,6 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'www.prambanan.co.id' },
       { protocol: 'https', hostname: 'encrypted-tbn0.gstatic.com' },
       { protocol: 'https', hostname: 'assets.yogyakarta.go.id' },
-      { protocol: 'https', hostname: '**' },
-      { protocol: 'http', hostname: '**' },
     ],
   },
 };
