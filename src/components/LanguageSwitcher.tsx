@@ -29,7 +29,7 @@ export default function LanguageSwitcher() {
       {/* Trigger */}
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 border border-white/0 hover:border-white/15"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 border border-white/0 hover:border-white/15 cursor-pointer"
       >
         <span className="text-sm leading-none">{locale === "id" ? "🇮🇩" : "🇬🇧"}</span>
         <span className="uppercase tracking-wide">{locale === "id" ? "ID" : "EN"}</span>
@@ -46,9 +46,8 @@ export default function LanguageSwitcher() {
         <div className="absolute right-0 top-full mt-2 w-36 py-1.5 bg-royal-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 z-50">
           <button
             onClick={() => select("id")}
-            className={`w-full text-left px-4 py-2 text-xs font-semibold flex items-center gap-2.5 transition-colors ${
-              locale === "id" ? "text-gold-400 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"
-            }`}
+            className={`w-full text-left px-4 py-2 text-xs font-semibold flex items-center gap-2.5 transition-colors ${locale === "id" ? "text-gold-400 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"
+              }`}
           >
             <span className="text-base leading-none">🇮🇩</span>
             Indonesia
@@ -56,9 +55,8 @@ export default function LanguageSwitcher() {
           </button>
           <button
             onClick={() => select("en")}
-            className={`w-full text-left px-4 py-2 text-xs font-semibold flex items-center gap-2.5 transition-colors ${
-              locale === "en" ? "text-gold-400 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"
-            }`}
+            className={`w-full text-left px-4 py-2 text-xs font-semibold flex items-center gap-2.5 transition-colors ${locale === "en" ? "text-gold-400 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"
+              }`}
           >
             <span className="text-base leading-none">🇬🇧</span>
             English
