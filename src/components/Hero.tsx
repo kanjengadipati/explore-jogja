@@ -203,7 +203,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
       >
         <div className="relative h-[60px] lg:h-[80px]">
           {item.imageUrl
-            ? <Image src={item.imageUrl} alt={item.headline} fill priority sizes="140px" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ? <Image src={item.imageUrl} alt={item.headline} fill sizes="140px" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             : <div className="w-full h-full bg-white/5 flex items-center justify-center"><CalendarDays className="h-8 w-8 text-white/20" /></div>
           }
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

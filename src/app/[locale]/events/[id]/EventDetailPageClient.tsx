@@ -249,7 +249,8 @@ function EventDetailContent({ initialEvent, id }: { initialEvent: EventDetail | 
         {event.image_url ? (
           <Image src={event.image_url} alt={event.title} fill
             sizes="100vw" className="object-cover brightness-75"
-            referrerPolicy="no-referrer" priority />
+            referrerPolicy="no-referrer" priority
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-royal-900 to-royal-950" />
         )}
@@ -340,15 +341,18 @@ function EventDetailContent({ initialEvent, id }: { initialEvent: EventDetail | 
                   <div className="grid grid-cols-3 gap-2 mt-4">
                     <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden aspect-[4/3]">
                       <Image src={event.image_url} alt={event.title} fill sizes="(max-width: 640px) 60vw, 400px"
-                        className="object-cover" referrerPolicy="no-referrer" />
+                        className="object-cover" referrerPolicy="no-referrer"
+                        onError={(e) => { (e.target as HTMLImageElement).closest('.grid')?.classList.add('hidden'); }} />
                     </div>
                     <div className="relative rounded-2xl overflow-hidden aspect-square bg-stone-100">
                       <Image src={event.image_url} alt={event.title} fill sizes="150px"
-                        className="object-cover brightness-90" referrerPolicy="no-referrer" />
+                        className="object-cover brightness-90" referrerPolicy="no-referrer"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     </div>
                     <div className="relative rounded-2xl overflow-hidden aspect-square bg-stone-100">
                       <Image src={event.image_url} alt={event.title} fill sizes="150px"
-                        className="object-cover brightness-75" referrerPolicy="no-referrer" />
+                        className="object-cover brightness-75" referrerPolicy="no-referrer"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     </div>
                   </div>
                 )}

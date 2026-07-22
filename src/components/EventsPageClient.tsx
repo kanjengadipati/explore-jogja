@@ -82,6 +82,7 @@ function EventCard({ evt, className = '' }: { evt: EventItem; className?: string
     : null;
 
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <Link
@@ -89,14 +90,14 @@ function EventCard({ evt, className = '' }: { evt: EventItem; className?: string
       className={`group relative rounded-[24px] overflow-hidden bg-stone-900 border border-stone-200/40 hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 cursor-pointer block h-[280px] sm:h-[320px] ${className}`}
     >
       {/* Shimmer placeholder */}
-      {!imgLoaded && evt.image_url && (
+      {!imgLoaded && !imgError && evt.image_url && (
         <div className="absolute inset-0 bg-stone-800 animate-pulse">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_1.4s_infinite] -translate-x-full" />
         </div>
       )}
 
       {/* Image */}
-      {evt.image_url ? (
+      {evt.image_url && !imgError ? (
         <Image
           src={evt.image_url}
           alt={evt.title}
@@ -105,6 +106,7 @@ function EventCard({ evt, className = '' }: { evt: EventItem; className?: string
           className={`object-cover transition-all duration-700 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
           referrerPolicy="no-referrer"
           onLoad={() => setImgLoaded(true)}
+          onError={() => setImgError(true)}
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-royal-900 to-royal-950 flex items-center justify-center">
