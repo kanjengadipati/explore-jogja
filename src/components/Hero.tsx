@@ -59,12 +59,15 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [heroConfig] = useState({
-    title: 'Jelajahi Yogyakarta',
-    titleAccent: 'Lebih Dalam',
-    subtitle: 'Temukan hidden gems, kekayaan budaya, cita rasa lokal, dan pengalaman autentik yang membuat setiap perjalanan lebih bermakna.',
-    ctaText: 'Mulai Jelajahi',
-  });
+  const heroTitleWords = t('home.hero_title').split(' ');
+  const heroTitleMain = heroTitleWords.slice(0, -1).join(' ');
+  const heroTitleAccent = heroTitleWords[heroTitleWords.length - 1];
+  const heroConfig = {
+    title: heroTitleMain,
+    titleAccent: heroTitleAccent,
+    subtitle: t('home.hero_subtitle'),
+    ctaText: t('hero.fallback_cta'),
+  };
   const [isRecommendationDismissed, setIsRecommendationDismissed] = useState(false);
   const [recommendation, setRecommendation] = useState<{
     headline: string; reason: string; dest: Destination; image: string;

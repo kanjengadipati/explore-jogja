@@ -405,21 +405,19 @@ export default function MobileDiscoverView({
               {t('hero.good_morning', { name: isAuthenticated && user?.name ? user.name : 'Traveler' })}
             </p>
             <h1 className="font-manrope text-[32px] sm:text-[42px] lg:text-[56px] font-extrabold leading-[1.08] text-white tracking-tight">
-              Jelajahi<br />
-              Yogyakarta<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 via-amber-400 to-gold-500">Lebih Dalam</span>
+              {(() => { const w = t('home.hero_title').split(' '); const main = w.slice(0, -1).join(' '); const accent = w[w.length - 1]; return <>{main}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 via-amber-400 to-gold-500">{accent}</span></>; })()}
             </h1>
             <p className="text-white/70 text-[13px] sm:text-[15px] lg:text-[16px] mt-3.5 leading-relaxed max-w-[220px] sm:max-w-md lg:max-w-lg">
-              Destinasi terbaik, kuliner legendaris, dan pengalaman otentik Yogyakarta.
+              {t('home.hero_subtitle')}
             </p>
 
             {/* Quick stat chips — tablet only */}
             <div className="hidden sm:flex items-center gap-3 mt-6">
               <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 text-xs lg:text-sm text-white/70 backdrop-blur-sm">
-                <span className="text-gold-400 font-bold text-sm lg:text-base">{allDestinations.length || '90+'}</span> Destinasi
+                <span className="text-gold-400 font-bold text-sm lg:text-base">{allDestinations.length || '90+'}</span> {t('common.explore')}
               </div>
               <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 text-xs lg:text-sm text-white/70 backdrop-blur-sm">
-                <span className="text-gold-400 font-bold text-sm lg:text-base">{allEvents.length || '50+'}</span> Event
+                <span className="text-gold-400 font-bold text-sm lg:text-base">{allEvents.length || '50+'}</span> {t('common.event')}
               </div>
               <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 text-xs lg:text-sm text-white/70 backdrop-blur-sm">
                 <span className="text-gold-400">★</span> 4.8 Rating
