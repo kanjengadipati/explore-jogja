@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ArrowLeft, Loader2, AlertCircle, Settings, User,
   Lock, ChevronRight, Eye, EyeOff,
@@ -9,7 +10,6 @@ import {
 import { auth, reviews as reviewsApi, type ProfileResponse, type BeReview } from '@/lib/api';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import AuthModal from '@/components/AuthModal';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import ReviewsSection from '@/components/profile/ReviewsSection';
@@ -26,6 +26,7 @@ type Tab = 'overview' | 'settings';
 function ProfilePageContent() {
   const router = useRouter();
   const { t } = useLocale();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
   const [userDestinations, setUserDestinations] = useState<{ destination_slug: string; status: string }[]>([]);
   const [userReviews, setUserReviews] = useState<BeReview[]>([]);
@@ -51,14 +52,16 @@ function ProfilePageContent() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   useEffect(() => {
-    if (!auth.isLoggedIn()) {
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
       setAuthModalOpen(true);
       setLoading(false);
       return;
     }
     loadProfile();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   const loadProfile = async () => {
     try {
@@ -68,7 +71,7 @@ function ProfilePageContent() {
       ]);
 
       if (profileRes.status !== 'success' || !profileRes.data) {
-        if (!auth.isLoggedIn() || profileRes.message === 'Unauthorized') {
+        if (!isAuthenticated || profileRes.message === 'Unauthorized') {
           setAuthModalOpen(true);
           setLoading(false);
           return;
@@ -95,7 +98,7 @@ function ProfilePageContent() {
         // silently fail
       }
     } catch {
-      if (!auth.isLoggedIn()) {
+      if (!isAuthenticated) {
         setAuthModalOpen(true);
         setLoading(false);
         return;
@@ -117,11 +120,11 @@ function ProfilePageContent() {
         setProfileSuccess(t('profile.profile_updated'));
         await loadProfile();
       } else {
-        if (!auth.isLoggedIn()) { setAuthModalOpen(true); return; }
+        if (!isAuthenticated) { setAuthModalOpen(true); return; }
         setProfileError(res.message || t('profile.profile_update_failed'));
       }
     } catch {
-      if (!auth.isLoggedIn()) { setAuthModalOpen(true); return; }
+      if (!isAuthenticated) { setAuthModalOpen(true); return; }
       setProfileError('Network error');
     } finally {
       setProfileSaving(false);
@@ -151,16 +154,17 @@ function ProfilePageContent() {
         setNewPassword('');
         setConfirmPassword('');
       } else {
-        if (!auth.isLoggedIn()) { setAuthModalOpen(true); return; }
+        if (!isAuthenticated) { setAuthModalOpen(true); return; }
         setPasswordError(res.message || t('profile.password_change_failed'));
       }
     } catch {
-      if (!auth.isLoggedIn()) { setAuthModalOpen(true); return; }
+      if (!isAuthenticated) { setAuthModalOpen(true); return; }
       setPasswordError('Network error');
     } finally {
       setPasswordSaving(false);
     }
   };
+
 
   const savedCount   = userDestinations.filter((d) => d.status === 'saved' || d.status === 'wishlist').length;
   const visitedCount = userDestinations.filter((d) => d.status === 'visited').length;
@@ -176,7 +180,7 @@ function ProfilePageContent() {
 
   const handleAuthModalClose = () => {
     setAuthModalOpen(false);
-    if (auth.isLoggedIn()) { setLoading(true); loadProfile(); }
+    if (isAuthenticated) { setLoading(true); loadProfile(); }
     else router.push('/');
   };
 
