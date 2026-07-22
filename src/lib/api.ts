@@ -156,11 +156,17 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+  } catch (err) {
+    console.warn(`API request failed: ${path}`, err);
+    return { status: 'error', message: 'Server unreachable' } satisfies APIResponse<T>;
+  }
 
   if ((res.status === 401 || res.status === 403) && path !== '/auth/refresh') {
     const refreshed = await tryRefresh();
