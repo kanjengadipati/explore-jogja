@@ -670,43 +670,45 @@ export default function App() {
                           <div
                             key={slot.label}
                             onClick={() => handleExploreDestination(dest)}
-                            className="group relative rounded-[20px] overflow-hidden cursor-pointer border border-stone-200/60 hover:border-gold-300 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 bg-white"
+                            className="group relative rounded-[20px] overflow-hidden cursor-pointer border border-stone-200/60 hover:border-gold-300 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 aspect-[3/4]"
                           >
-                            {/* Top: image */}
-                            <div className="relative h-[140px] overflow-hidden bg-stone-100">
-                              <Image
-                                src={dest.images[0]?.url || ''}
-                                fill
-                                sizes="(max-width: 640px) 50vw, 25vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                referrerPolicy="no-referrer"
-                                alt={dest.name}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                              {/* Time chip top-left */}
-                              <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10">
-                                <Icon className="h-3 w-3" style={{ color: slot.color }} />
-                                <span className="text-[10px] font-bold text-white">{slot.time}</span>
-                              </div>
-                              {/* Step number top-right */}
-                              <div className="absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                                <span className="text-[9px] font-bold text-white">{idx + 1}</span>
-                              </div>
+                            {/* Image — full card */}
+                            <Image
+                              src={dest.images[0]?.url || ''}
+                              fill
+                              sizes="(max-width: 640px) 50vw, 25vw"
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              referrerPolicy="no-referrer"
+                              alt={dest.name}
+                            />
+
+                            {/* Gradient scrim */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+
+                            {/* Time chip top-left */}
+                            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/10">
+                              <Icon className="h-3 w-3" style={{ color: slot.color }} />
+                              <span className="text-[10px] font-bold text-white">{slot.time}</span>
                             </div>
 
-                            {/* Bottom: info */}
-                            <div className="p-3" style={{ backgroundColor: slot.bgColor }}>
+                            {/* Step number top-right */}
+                            <div className="absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                              <span className="text-[9px] font-bold text-white">{idx + 1}</span>
+                            </div>
+
+                            {/* Info overlay — bottom */}
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
                               <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: slot.color }}>
                                 {slot.label}
                               </p>
-                              <h4 className="font-manrope text-sm font-bold text-royal-950 leading-tight line-clamp-1 group-hover:text-gold-700 transition-colors">
+                              <h4 className="font-manrope text-sm font-bold text-white leading-tight line-clamp-1 group-hover:text-gold-300 transition-colors drop-shadow-sm">
                                 {dest.name}
                               </h4>
-                              <div className="flex items-center justify-between mt-2">
-                                <div className="flex items-center gap-1 text-[10px] text-stone-500">
+                              <div className="flex items-center justify-between mt-1.5">
+                                <div className="flex items-center gap-1 text-[10px]">
                                   <Star className="h-3 w-3 fill-gold-400 text-gold-400" />
-                                  <span className="font-bold text-gold-600">{dest.rating.toFixed(1)}</span>
-                                  <span className="text-stone-400">· {dest.subRegion || dest.location}</span>
+                                  <span className="font-bold text-gold-400">{dest.rating.toFixed(1)}</span>
+                                  <span className="text-white/50">· {dest.subRegion || dest.location}</span>
                                 </div>
                                 <div className="h-6 w-6 rounded-full bg-gold-400 text-royal-950 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0">
                                   <svg className="h-3 w-3 stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3">
