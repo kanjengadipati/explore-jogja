@@ -40,6 +40,8 @@ interface HeroProps {
   onExploreDestination: (dest: Destination) => void;
   onToggleSave: (dest: Destination) => void;
   isSaved: (id: string) => boolean;
+  /** Optional pre-fetched AI pick from parent — prevents a duplicate recommendMulti call */
+  initialAiPick?: { destinationId: string; headline: string; reason: string; crowd: string; };
 }
 
 const HERO_SLIDES = [
@@ -50,7 +52,7 @@ const HERO_SLIDES = [
   { id: 'goajomblang', name: 'Goa Jomblang Cave', tagline: 'Descend into a vertical primeval forest to catch the blinding column of heavenly light.', image: 'https://images.unsplash.com/photo-1628047563315-d1e8b8d222b9?auto=format&fit=crop&w=1600&q=80', credit: 'Unsplash' },
 ];
 
-export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit, onExploreDestination, onToggleSave, isSaved }: HeroProps) {
+export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit, onExploreDestination, onToggleSave, isSaved, initialAiPick }: HeroProps) {
   const { t } = useLocale();
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
@@ -92,9 +94,28 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         distance: '18 min', crowd: t('hero.fallback_crowd'),
       });
     }
+
+    // If parent already fetched a pick (e.g. from App.tsx aiPicks), use it directly
+    // to avoid a duplicate recommendMulti API call.
+    if (initialAiPick) {
+      const dest = destinations.find(d => d.id?.toLowerCase() === initialAiPick.destinationId?.toLowerCase());
+      if (dest) {
+        setRecommendation({
+          headline: initialAiPick.headline,
+          reason: initialAiPick.reason,
+          dest,
+          crowd: initialAiPick.crowd,
+          image: dest.images?.[0]?.url ?? '',
+          temp: dest.weather?.temp || '26°C',
+          condition: dest.weather?.condition || 'Sunny',
+          distance: '18 min',
+        });
+        return; // skip independent fetch
+      }
+    }
+
     const fetchAIRecommendation = async () => {
       try {
-        // Use /multi endpoint (singular /recommend returns 502)
         const res = await ai.recommendMulti(timeOfDay);
         if (res.status === 'success' && res.data?.items?.length) {
           const { destinationId, headline, reason, crowd } = res.data.items[0];
@@ -102,7 +123,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
           if (recommendedDest) {
             setRecommendation({
               headline, reason, dest: recommendedDest, crowd,
-              image: recommendedDest.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1556375403-b96342fc0ee2?auto=format&fit=crop&w=400&q=80',
+              image: recommendedDest.images?.[0]?.url ?? '',
               temp: recommendedDest.weather?.temp || '26°C',
               condition: recommendedDest.weather?.condition || 'Sunny',
               distance: '18 min',

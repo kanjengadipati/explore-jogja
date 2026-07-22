@@ -462,6 +462,7 @@ export default function App() {
                   onExploreDestination={handleExploreDestination}
                   onToggleSave={handleToggleSave}
                   isSaved={isSaved}
+                  initialAiPick={aiPicks[0]}
                 />
 
                 {/* Categories Row */}
