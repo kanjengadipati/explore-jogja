@@ -45,6 +45,7 @@ export function LocaleProvider({ children, locale }: LocaleProviderProps) {
     setApiLocale(newLocale);
     try {
       localStorage.setItem('locale', newLocale);
+      document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
     } catch { /* ignore */ }
 
     let targetPath: string;
@@ -66,6 +67,7 @@ export function LocaleProvider({ children, locale }: LocaleProviderProps) {
     }
 
     router.push(targetPath);
+    router.refresh();
   }, [router, pathname]);
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {

@@ -254,7 +254,9 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
           </div>
 
           {/* Mobile/tablet top action menu — below lg */}
-          <div className="flex lg:hidden items-center space-x-3">
+          <div className="flex lg:hidden items-center space-x-2">
+            <LanguageSwitcher />
+
             {isAuthenticated && (
               <button
                 onClick={() => router.push('/saved')}
