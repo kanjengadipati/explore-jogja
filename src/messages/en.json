@@ -549,10 +549,21 @@
     "quick_prompt_sunset": "Best sunset spots",
     "quick_prompt_sunset_label": "Sunset",
     "quick_prompt_sunset_subtitle": "Beaches & hills",
+    "quick_prompt_beach_sunset_label": "Sunset",
+    "quick_prompt_beach_sunset_subtitle": "Ocean views & beach",
+    "quick_prompt_hidden_gems_label": "Hidden Gems",
+    "quick_prompt_hidden_gems_subtitle": "Secret caves & light columns",
+    "quick_prompt_culinary_label": "Culinary",
+    "quick_prompt_culinary_subtitle": "Gudeg, bakpia, angkringan",
+    "quick_prompt_volcano_label": "Adventure",
+    "quick_prompt_volcano_subtitle": "Volcano treks & mountain views",
+    "quick_prompt_royal_label": "Culture",
+    "quick_prompt_royal_subtitle": "Royal palaces & heritage",
     "loading_phrase_1": "Preparing suggestions...",
     "loading_phrase_2": "Searching for hidden gems...",
     "loading_phrase_3": "Connecting to local knowledge...",
-    "loading_phrase_4": "Preparing recommendations..."
+    "loading_phrase_4": "Preparing recommendations...",
+    "loading_phrase_5": "Almost there, finding the best spots..."
   },
   "ai_floating": {
     "loading": "Loading...",

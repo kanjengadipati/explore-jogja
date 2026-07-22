@@ -549,10 +549,21 @@
     "quick_prompt_sunset": "Spot sunset terbaik",
     "quick_prompt_sunset_label": "Sunset",
     "quick_prompt_sunset_subtitle": "Pantai & bukit",
+    "quick_prompt_beach_sunset_label": "Sunset",
+    "quick_prompt_beach_sunset_subtitle": "Pemandangan laut & pantai",
+    "quick_prompt_hidden_gems_label": "Hidden Gems",
+    "quick_prompt_hidden_gems_subtitle": "Gua rahasia & cahaya surga",
+    "quick_prompt_culinary_label": "Kuliner",
+    "quick_prompt_culinary_subtitle": "Gudeg, bakpia, angkringan",
+    "quick_prompt_volcano_label": "Petualangan",
+    "quick_prompt_volcano_subtitle": "Pendakian gunung berapi & panorama",
+    "quick_prompt_royal_label": "Budaya",
+    "quick_prompt_royal_subtitle": "Keraton & warisan kerajaan",
     "loading_phrase_1": "Menyiapkan saran...",
     "loading_phrase_2": "Mencari hidden gem...",
     "loading_phrase_3": "Menghubungkan ke pengetahuan lokal...",
-    "loading_phrase_4": "Menyiapkan rekomendasi..."
+    "loading_phrase_4": "Menyiapkan rekomendasi...",
+    "loading_phrase_5": "Sebentar lagi, sedang menemukan spot terbaik..."
   },
   "ai_floating": {
     "loading": "Memuat...",

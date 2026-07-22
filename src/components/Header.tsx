@@ -92,8 +92,8 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
           </div>
 
           {/* Desktop Navigation — lg and above only */}
-          <nav id="desktop-navbar" className="hidden lg:flex items-center whitespace-nowrap space-x-3 xl:space-x-8">
-            {navItems.filter(item => item.id !== 'map' && (item.id !== 'saved' || isAuthenticated)).map((item) => {
+          <nav id="desktop-navbar" className="hidden lg:flex items-center whitespace-nowrap space-x-1 xl:space-x-3">
+            {navItems.filter(item => item.id !== 'saved' || isAuthenticated).map((item) => {
               const isActive = activeTab === item.id || 
                 (item.id === 'events' && activeTab === 'discover-events') || 
                 (item.id === 'experiences' && activeTab === 'discover-experiences');
@@ -104,8 +104,9 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                   id={`nav-link-${item.id}`}
                   onClick={() => {
                     if (item.id === 'planner') { router.push('/planner'); }
-                    else if (item.id === 'saved') { setDrawerOpen(false); router.push('/saved'); }
-                    else if (item.id === 'ai-assistant') router.push('/ai');
+                    else if (item.id === 'saved') { router.push('/saved'); }
+                    else if (item.id === 'ai-assistant') { router.push('/ai'); }
+                    else if (item.id === 'map') { router.push('/map'); }
                     else setActiveTab(item.id);
                   }}
                   className={`text-sm font-medium tracking-wide transition-all duration-300 border-b-2 py-1 ${
@@ -118,17 +119,6 @@ export default function Header({ activeTab, setActiveTab, savedCount, isOverHero
                 </button>
               );
             })}
-            
-            <button
-              onClick={() => setActiveTab('map')}
-              className={`text-sm font-medium tracking-wide transition-all duration-300 border-b-2 py-1 ${
-                activeTab === 'map'
-                  ? 'border-gold-400 text-gold-300 font-semibold'
-                  : 'border-transparent text-white/80 hover:text-white hover:border-white/30'
-              }`}
-            >
-              {t('common.map')}
-            </button>
           </nav>
 
           {/* Desktop Action Icons — lg and above */}
