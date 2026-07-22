@@ -872,25 +872,13 @@ export default function App() {
       {/* Footer */}
       <footer id="editorial-luxury-footer" className="bg-[#F5F0E8] md:bg-royal-950 text-white md:text-white border-t-0 md:border-t border-stone-200 md:border-royal-900">
 
-        {/* Quote card — mobile only */}
-        <div className="xl:hidden mx-4 mt-3 mb-0 bg-[#F5EDD8] rounded-3xl p-5 flex items-start gap-4 border border-[#E8D9B8]">
-          <span className="text-gold-500 text-4xl font-serif leading-none mt-1">"</span>
-          <div className="flex-1">
-            <p className="text-royal-950 font-manrope font-semibold text-[13px] leading-relaxed">
-              Jogja bukan sekadar tempat, tapi rasa yang selalu ingin kembali.
-            </p>
-            <p className="text-gold-600 text-[11px] font-semibold mt-2">— Jogjagem</p>
-          </div>
-          <div className="shrink-0 opacity-30">
-            <Image src="/logo-gold-new.png" alt="" width={48} height={48} className="h-12 w-auto" />
-          </div>
-        </div>
+        {/* Quote card — mobile only — hidden, now in MobileFooter (layout) */}
 
-        {/* Main footer body */}
-        <div className="bg-royal-950 mt-4 xl:mt-0 rounded-t-3xl xl:rounded-none px-5 pt-7 pb-[calc(90px+env(safe-area-inset-bottom,0px))] xl:pb-12">
+        {/* Main footer body — desktop only */}
+        <div className="hidden xl:block bg-royal-950 px-5 pt-7 pb-12">
           <div className="mx-auto max-w-7xl">
 
-            {/* Logo + tagline + social */}
+            {/* Logo + tagline */}
             <div className="flex items-start justify-between mb-6">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -903,11 +891,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* Social icons */}
+            {/* Social icons — desktop */}
             <div className="flex items-center gap-4 mb-7">
               {[
-                { icon: 'IG', href: 'https://instagram.com' },
-                { icon: 'TK', href: 'https://tiktok.com' },
+                { icon: 'IG', href: 'https://instagram.com/jogjagem' },
+                { icon: 'TK', href: 'https://tiktok.com/@jogjagem' },
                 { icon: 'YT', href: 'https://youtube.com' },
                 { icon: 'FB', href: 'https://facebook.com' },
               ].map(s => (
@@ -923,21 +911,8 @@ export default function App() {
               ))}
             </div>
 
-            {/* Nav links */}
-            <div className="border-t border-white/10 divide-y divide-white/8">
-              {['Tentang Kami', 'Bantuan', 'Syarat & Ketentuan', 'Kebijakan Privasi'].map(link => (
-                <button
-                  key={link}
-                  className="w-full flex items-center justify-between py-3.5 text-left"
-                >
-                  <span className="text-white/80 text-[13px] font-medium">{link}</span>
-                  <ChevronRight className="h-4 w-4 text-white/30" />
-                </button>
-              ))}
-            </div>
-
             {/* Desktop copyright */}
-            <div className="hidden xl:block mt-6 pt-4 border-t border-white/10">
+            <div className="mt-6 pt-4 border-t border-white/10">
               <div className="text-[10px] font-mono text-gold-200/40 uppercase tracking-widest space-y-1">
                 <p>{t('footer.copyright')}</p>
                 <p>{t('footer.build_by')}</p>

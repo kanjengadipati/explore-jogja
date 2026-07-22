@@ -4,6 +4,7 @@ import '../globals.css';
 import { WebsiteJsonLd } from '@/components/JsonLd';
 import I18nProvider from '@/contexts/I18nProvider';
 import { Analytics } from '@vercel/analytics/next';
+import MobileFooter from '@/components/MobileFooter';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -164,7 +165,10 @@ export default async function RootLayout({
         <WebsiteJsonLd />
       </head>
       <body>
-        <I18nProvider locale={locale as 'id' | 'en'}>{children}</I18nProvider>
+        <I18nProvider locale={locale as 'id' | 'en'}>
+          {children}
+          <MobileFooter />
+        </I18nProvider>
         <Analytics />
       </body>
     </html>

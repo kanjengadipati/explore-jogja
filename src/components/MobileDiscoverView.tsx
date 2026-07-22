@@ -7,6 +7,7 @@ import {
   Search, MapPin, Bell, Star, Heart, ChevronRight,
   Grid2x2, Compass, Utensils, Calendar, MoreHorizontal, Bookmark,
   Mic, MicOff, Camera, Loader2, Sparkles, CalendarDays,
+  Sun, Leaf, Sunset,
 } from 'lucide-react';
 import { Destination, Festival } from '../types';
 import { auth, ai } from '../lib/api';
@@ -833,6 +834,95 @@ export default function MobileDiscoverView({
             </div>
           </div>
         )}
+
+        {/* ── AI Suggested Journey ── */}
+        {allDestinations.length > 0 && (() => {
+          const journeySlots = [
+            { label: t('home.morning'),   time: '07.00 AM', Icon: Sun,      color: '#B18A5E', categories: ['heritage', 'adventure'] },
+            { label: t('home.lunch'),     time: '12.00 PM', Icon: Utensils, color: '#5F713D', categories: ['culinary'] },
+            { label: t('home.afternoon'), time: '02.30 PM', Icon: Leaf,     color: '#4F6F52', categories: ['nature', 'heritage', 'hidden-gem'] },
+            { label: t('home.sunset'),    time: '05.30 PM', Icon: Sunset,   color: '#BC6C25', categories: ['beach', 'nature'] },
+          ];
+          const slots = journeySlots
+            .map((slot, idx) => ({
+              ...slot,
+              idx,
+              dest: allDestinations
+                .filter(d => slot.categories.includes(d.category) && d.images?.length > 0)
+                .sort((a, b) => b.rating - a.rating)[0],
+            }))
+            .filter(s => s.dest);
+          if (slots.length === 0) return null;
+          return (
+            <div>
+              <div className="flex items-end justify-between px-4 mb-3">
+                <div>
+                  <h2 className="font-manrope text-[17px] font-bold tracking-tight text-royal-950">
+                    {t('home.ai_suggested_journey')}
+                  </h2>
+                  <p className="text-[11px] text-stone-500/80 mt-0.5">{t('home.one_perfect_day')}</p>
+                </div>
+                <button
+                  onClick={() => router.push('/planner')}
+                  className="text-[11px] font-semibold text-gold-700 flex items-center gap-0.5 shrink-0"
+                >
+                  {t('home.customize_ai')} →
+                </button>
+              </div>
+              <div className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1">
+                {slots.map(({ label, time, Icon, color, dest, idx }) => (
+                  <div
+                    key={label}
+                    onClick={() => router.push(`/destinations/${toSlug(dest!.name)}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter') router.push(`/destinations/${toSlug(dest!.name)}`); }}
+                    className="shrink-0 snap-start relative w-[148px] h-[196px] rounded-[20px] overflow-hidden border border-white/10 cursor-pointer active:scale-95 transition-transform"
+                  >
+                    {/* Image */}
+                    <Image
+                      src={dest!.images[0]?.url || ''}
+                      alt={dest!.name}
+                      fill
+                      sizes="148px"
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+
+                    {/* Gradient scrim */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/20 to-transparent" />
+
+                    {/* Time chip top-left */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-white/10">
+                      <Icon className="h-2.5 w-2.5" style={{ color }} />
+                      <span className="text-[9px] font-bold text-white">{time}</span>
+                    </div>
+
+                    {/* Step number top-right */}
+                    <div className="absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-white">{idx + 1}</span>
+                    </div>
+
+                    {/* Info overlay bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                      <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color }}>
+                        {label}
+                      </p>
+                      <h4 className="text-white font-extrabold text-[12px] leading-tight line-clamp-2">
+                        {dest!.name}
+                      </h4>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="h-2.5 w-2.5 fill-gold-400 text-gold-400" />
+                        <span className="text-gold-400 text-[10px] font-bold">{dest!.rating.toFixed(1)}</span>
+                        <span className="text-white/50 text-[9px]">· {dest!.subRegion || dest!.location}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
       </div>
     </div>
