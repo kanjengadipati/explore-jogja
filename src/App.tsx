@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
 import Header from './components/Header';
@@ -325,9 +325,11 @@ export default function App() {
     }
   };
 
-  // Fetch AI multi-picks when destinations are ready
+  // Fetch AI multi-picks once when destinations first load — not on every page append
+  const aiPicksFetchedRef = useRef(false);
   useEffect(() => {
-    if (allDestinations.length === 0) return;
+    if (allDestinations.length === 0 || aiPicksFetchedRef.current) return;
+    aiPicksFetchedRef.current = true;
     const hour = new Date().getHours();
     const timeOfDay = hour < 11 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
     ai.recommendMulti(timeOfDay)
