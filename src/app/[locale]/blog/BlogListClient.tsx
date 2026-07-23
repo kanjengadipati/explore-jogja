@@ -345,15 +345,17 @@ export default function BlogListClient({
                 ← Jogjagem
               </Link>
               <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight tracking-tight font-display">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight font-display">
                   {isEn ? (
-                    <>Stories & Guides<br /><span className="text-gold-400">from Jogja</span></>
+                    <>Stories & Guides<br />from <span className="text-gold-400">Jogja</span></>
                   ) : (
-                    <>Cerita & Panduan<br /><span className="text-gold-400">dari Jogja</span></>
+                    <>Cerita & Panduan<br />dari <span className="text-gold-400">Jogja</span></>
                   )}
                 </h1>
-                <p className="mt-3 text-sm text-white/50 leading-relaxed max-w-sm">
-                  {messages.subtitle}
+                <p className="mt-4 text-sm text-white/50 leading-relaxed max-w-sm">
+                  {isEn
+                    ? 'Discover places few tourists know, flavors worth trying, and how to enjoy Yogyakarta like a local.'
+                    : 'Temukan tempat yang belum banyak diketahui, rasa yang layak dicoba, dan cara menikmati Yogyakarta seperti orang lokal.'}
                 </p>
               </div>
 
@@ -363,7 +365,7 @@ export default function BlogListClient({
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder={messages.search_placeholder}
+                  placeholder={isEn ? 'Explore places, food, itinerary, or stories...' : 'Mau menjelajah apa hari ini? Cari tempat, kuliner, itinerary, atau cerita...'}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 focus:border-gold-400 outline-none text-sm font-medium bg-white/5 focus:bg-white/10 text-white placeholder-white/30 transition"
                 />
               </div>
@@ -394,17 +396,22 @@ export default function BlogListClient({
               )}
             </div>
 
-            {/* Right: hero image */}
-            <div className="hidden md:block relative h-64 rounded-2xl overflow-hidden">
-              <Image
-                src="/bg-blog.jpg"
-                alt="Yogyakarta"
-                fill
-                className="object-cover"
-                sizes="50vw"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-royal-900/30" />
+            {/* Right: hero image — clipped shape like mockup */}
+            <div className="hidden md:block relative h-72">
+              <div
+                className="relative w-full h-full overflow-hidden"
+                style={{ clipPath: 'polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%)' }}
+              >
+                <Image
+                  src="/bg-blog.jpg"
+                  alt="Yogyakarta"
+                  fill
+                  className="object-cover"
+                  sizes="50vw"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-royal-900/30" />
+              </div>
             </div>
           </div>
         </div>
