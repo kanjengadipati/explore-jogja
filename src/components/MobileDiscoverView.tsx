@@ -179,6 +179,7 @@ export default function MobileDiscoverView({
   const [isListening, setIsListening] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [expandedTrendingKey, setExpandedTrendingKey] = useState<string | null>(null);
+  const expandingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const heroSlides = allDestinations.length > 0
@@ -481,7 +482,7 @@ export default function MobileDiscoverView({
                 <SectionHeader title={t('hero.trending')} dark onSeeAll={() => router.push('/destinations')} />
                 <div
                   className="flex gap-3 overflow-x-auto scrollbar-none px-4 snap-x snap-mandatory pb-1"
-                  onScroll={() => { if (expandedTrendingKey) setExpandedTrendingKey(null); }}
+                  onScroll={() => { if (!expandingRef.current && expandedTrendingKey) setExpandedTrendingKey(null); }}
                 >
                   {trendingLoading
                     ? Array.from({ length: 4 }).map((_, i) => (
@@ -496,10 +497,14 @@ export default function MobileDiscoverView({
 
                         const handleCardClick = () => {
                           if (!isExpanded) {
+                            expandingRef.current = true;
                             setExpandedTrendingKey(cardKey);
+                            setTimeout(() => { expandingRef.current = false; }, 350);
                             return;
                           }
+                          expandingRef.current = true;
                           setExpandedTrendingKey(null);
+                          setTimeout(() => { expandingRef.current = false; }, 350);
                         };
 
                         const handleCTA = (e: React.MouseEvent) => {

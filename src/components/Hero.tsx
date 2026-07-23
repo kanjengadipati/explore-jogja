@@ -78,6 +78,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [expandedCardKey, setExpandedCardKey] = useState<string | null>(null);
+  const expandingRef = useRef(false);
 
   useEffect(() => {
     if (destinations.length === 0) return;
@@ -217,11 +218,15 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
       if (isMobile) {
         if (!isExpanded) {
           e.preventDefault();
+          expandingRef.current = true;
           setExpandedCardKey(cardKey);
+          setTimeout(() => { expandingRef.current = false; }, 350);
           return;
         }
         // Second tap — close (navigation happens via CTA button)
+        expandingRef.current = true;
         setExpandedCardKey(null);
+        setTimeout(() => { expandingRef.current = false; }, 350);
         return;
       }
       // Desktop: navigate directly
@@ -456,7 +461,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
               </div>
               <div
                 className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory"
-                onScroll={() => { if (expandedCardKey) setExpandedCardKey(null); }}
+                onScroll={() => { if (!expandingRef.current && expandedCardKey) setExpandedCardKey(null); }}
               >
                 {trendingLoading
                   ? Array.from({ length: 4 }).map((_, i) => (
