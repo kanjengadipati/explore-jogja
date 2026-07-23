@@ -11,7 +11,7 @@ async function fetchArticle(slug: string, locale: string): Promise<Article | nul
   try {
     const res = await fetch(`${API_BASE}/articles/slug/${slug}`, {
       headers: { 'Accept-Language': locale },
-      next: { revalidate: 300 },
+      cache: 'no-store',
     });
     if (!res.ok) return null;
     const json = await res.json();
