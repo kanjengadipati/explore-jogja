@@ -206,7 +206,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
   };
 
   // Reusable trending card renderer — tap to expand (mobile-first interactive)
-  const renderTrendingCard = (item: TrendingItem, keyPrefix: string) => {
+  const renderTrendingCard = (item: TrendingItem, keyPrefix: string, rank: number) => {
     const cardKey = `${keyPrefix}-${item.type}-${item.id}`;
     const badgeColor = BADGE_COLOR[item.badge] ?? 'bg-gold-500';
     const dest = item.type === 'destination' ? destinations.find(d => d.id === item.id) : null;
@@ -276,8 +276,13 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
         {/* Gradient scrim */}
         <div className={`absolute inset-0 bg-gradient-to-t ${isExpanded && isMobile ? 'from-black/90 via-black/40 to-black/10' : 'from-black/75 via-black/10 to-transparent'}`} />
 
+        {/* Rank number top-left */}
+        <span className="absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-gold-500 text-royal-950 text-[9px] font-black leading-none shadow-lg">
+          {rank}
+        </span>
+
         {/* Badge top-left */}
-        <span className={`absolute top-2 left-2 ${badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none`}>
+        <span className={`absolute top-2 left-8 ${badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none`}>
           {item.badge}
         </span>
 
@@ -469,7 +474,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                         <div className="h-[60px] bg-white/10" /><div className="p-2 space-y-1"><div className="h-2 w-16 bg-white/10 rounded" /><div className="h-3 w-full bg-white/10 rounded" /></div>
                       </div>
                     ))
-                  : trendingItems.map(item => renderTrendingCard(item, 'mobile'))
+                  : trendingItems.map((item, idx) => renderTrendingCard(item, 'mobile', idx + 1))
                 }
               </div>
             </div>
@@ -492,7 +497,7 @@ export default function Hero({ destinations, onSearchSubmit, onImageSearchSubmit
                         <div className="h-[80px] bg-white/10" /><div className="p-2.5 space-y-1.5"><div className="h-2 w-16 bg-white/10 rounded" /><div className="h-3 w-full bg-white/10 rounded" /><div className="h-2 w-10 bg-white/10 rounded" /></div>
                       </div>
                     ))
-                  : trendingItems.map(item => renderTrendingCard(item, 'desktop'))
+                  : trendingItems.map((item, idx) => renderTrendingCard(item, 'desktop', idx + 1))
                 }
               </div>
             </div>

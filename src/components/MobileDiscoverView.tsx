@@ -544,6 +544,11 @@ export default function MobileDiscoverView({
                             {/* Gradient scrim */}
                             <div className={`absolute inset-0 bg-gradient-to-t ${isExpanded ? 'from-black/90 via-black/40 to-black/10' : 'from-black/80 via-black/20 to-transparent'}`} />
 
+                            {/* Rank number top-left */}
+                            <span className="absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-gold-500 text-royal-950 text-[9px] font-black leading-none shadow-lg">
+                              {idx + 1}
+                            </span>
+
                             {/* Event badge top-right */}
                             {item.type === 'event' && (
                               <span className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white/90 text-[8px] px-1.5 py-0.5 rounded-full leading-none flex items-center gap-0.5 border border-white/10">
