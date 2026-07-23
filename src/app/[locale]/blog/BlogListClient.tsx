@@ -46,36 +46,42 @@ const CATEGORY_META: Record<string, {
   bg: string;
   descId: string;
   descEn: string;
+  fallbackImage: string;
 }> = {
   panduan: {
     icon: <MapPin className="w-5 h-5" />,
     bg: 'bg-amber-50 text-amber-700',
     descId: 'Tempat yang belum banyak diketahui wisatawan.',
     descEn: "Places most tourists haven't discovered yet.",
+    fallbackImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Prambanan_temple_compound%2C_2014-06-18.jpg/1280px-Prambanan_temple_compound%2C_2014-06-18.jpg',
   },
   kuliner: {
     icon: <UtensilsCrossed className="w-5 h-5" />,
     bg: 'bg-orange-50 text-orange-700',
     descId: 'Rasa lokal yang wajib kamu coba saat di Jogja.',
     descEn: 'Local flavors you must try in Jogja.',
+    fallbackImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Gudeg_Jogja.jpg/1280px-Gudeg_Jogja.jpg',
   },
   budaya: {
     icon: <Landmark className="w-5 h-5" />,
     bg: 'bg-blue-50 text-blue-700',
     descId: 'Cerita, tradisi, dan warisan budaya Yogyakarta.',
     descEn: "Stories, traditions, and Yogyakarta's cultural heritage.",
+    fallbackImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Yogyakarta_kraton_2.jpg/1280px-Yogyakarta_kraton_2.jpg',
   },
   itinerary: {
     icon: <Calendar className="w-5 h-5" />,
     bg: 'bg-green-50 text-green-700',
     descId: 'Rencana perjalanan siap pakai untuk semua tipe traveler.',
     descEn: 'Ready-to-use itineraries for every type of traveler.',
+    fallbackImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Borobudur-Nothwest-Bird%27s-eye-view.jpg/1280px-Borobudur-Nothwest-Bird%27s-eye-view.jpg',
   },
   alam: {
     icon: <Star className="w-5 h-5" />,
     bg: 'bg-emerald-50 text-emerald-700',
     descId: 'Alam, perbukitan, dan suasana tenang untuk melepas penat.',
     descEn: 'Nature, hills, and peaceful scenery to unwind.',
+    fallbackImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Merapi_from_Merbabu.jpg/1280px-Merapi_from_Merbabu.jpg',
   },
 };
 
@@ -101,14 +107,17 @@ function FeaturedArticle({ article, locale, messages }: {
   locale: string;
   messages: BlogMessages;
 }) {
+  const catMeta = article.category ? CATEGORY_META[article.category] : undefined;
+  const imgSrc = article.cover_image || catMeta?.fallbackImage || null;
+
   return (
     <Link
       href={`/${locale}/blog/${article.slug}`}
       className="group relative flex flex-col justify-end overflow-hidden rounded-2xl min-h-72 md:min-h-96 bg-royal-900"
     >
-      {article.cover_image && (
+      {imgSrc && (
         <Image
-          src={article.cover_image}
+          src={imgSrc}
           alt={article.title}
           fill
           className="object-cover opacity-70 group-hover:opacity-80 transition-opacity duration-500 group-hover:scale-105 transition-transform"
@@ -157,15 +166,18 @@ function ArticleCard({ article, locale, messages }: {
   locale: string;
   messages: BlogMessages;
 }) {
+  const catMeta = article.category ? CATEGORY_META[article.category] : undefined;
+  const imgSrc = article.cover_image || catMeta?.fallbackImage || null;
+
   return (
     <Link
       href={`/${locale}/blog/${article.slug}`}
       className="group flex flex-col overflow-hidden rounded-xl bg-white hover:shadow-md transition-all border border-gold-100/60"
     >
       <div className="relative aspect-[16/10] bg-gold-50 overflow-hidden">
-        {article.cover_image ? (
+        {imgSrc ? (
           <Image
-            src={article.cover_image}
+            src={imgSrc}
             alt={article.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -385,8 +397,8 @@ export default function BlogListClient({
             {/* Right: hero image */}
             <div className="hidden md:block relative h-64 rounded-2xl overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1604999333679-b86d54738315?w=800&q=80"
-                alt="Yogyakarta"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Prambanan_temple_compound%2C_2014-06-18.jpg/1280px-Prambanan_temple_compound%2C_2014-06-18.jpg"
+                alt="Candi Prambanan, Yogyakarta"
                 fill
                 className="object-cover"
                 sizes="50vw"
