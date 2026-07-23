@@ -349,7 +349,7 @@ export default function BlogListClient({
         {/* Gradient overlay — left dark, right transparent */}
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(to right, rgba(27,28,22,0.92) 0%, rgba(27,28,22,0.75) 45%, rgba(27,28,22,0.2) 100%)' }}
+          style={{ background: 'linear-gradient(to right, rgba(27,28,22,0.97) 0%, rgba(27,28,22,0.92) 40%, rgba(27,28,22,0.4) 70%, rgba(27,28,22,0.1) 100%)' }}
         />
 
         {/* Content */}
