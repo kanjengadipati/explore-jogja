@@ -49,7 +49,7 @@ const CATEGORY_META: Record<string, {
   fallbackImage: string;
 }> = {
   panduan: {
-    icon: <MapPin className="w-5 h-5" />,
+    icon: <MapPin className="w-3.5 h-3.5" />,
     bg: 'bg-amber-50 text-amber-700',
     descId: 'Tempat yang belum banyak diketahui wisatawan.',
     descEn: "Places most tourists haven't discovered yet.",
@@ -57,7 +57,7 @@ const CATEGORY_META: Record<string, {
     fallbackImage: 'https://images.unsplash.com/photo-1596402184320-417e7178b2cd?w=800&q=80',
   },
   kuliner: {
-    icon: <UtensilsCrossed className="w-5 h-5" />,
+    icon: <UtensilsCrossed className="w-3.5 h-3.5" />,
     bg: 'bg-orange-50 text-orange-700',
     descId: 'Rasa lokal yang wajib kamu coba saat di Jogja.',
     descEn: 'Local flavors you must try in Jogja.',
@@ -65,7 +65,7 @@ const CATEGORY_META: Record<string, {
     fallbackImage: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=800&q=80',
   },
   budaya: {
-    icon: <Landmark className="w-5 h-5" />,
+    icon: <Landmark className="w-3.5 h-3.5" />,
     bg: 'bg-blue-50 text-blue-700',
     descId: 'Cerita, tradisi, dan warisan budaya Yogyakarta.',
     descEn: "Stories, traditions, and Yogyakarta's cultural heritage.",
@@ -73,7 +73,7 @@ const CATEGORY_META: Record<string, {
     fallbackImage: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&q=80',
   },
   itinerary: {
-    icon: <Calendar className="w-5 h-5" />,
+    icon: <Calendar className="w-3.5 h-3.5" />,
     bg: 'bg-green-50 text-green-700',
     descId: 'Rencana perjalanan siap pakai untuk semua tipe traveler.',
     descEn: 'Ready-to-use itineraries for every type of traveler.',
@@ -81,7 +81,7 @@ const CATEGORY_META: Record<string, {
     fallbackImage: 'https://images.unsplash.com/photo-1620360289473-5f8e2b9d3a8a?w=800&q=80',
   },
   alam: {
-    icon: <Star className="w-5 h-5" />,
+    icon: <Star className="w-3.5 h-3.5" />,
     bg: 'bg-emerald-50 text-emerald-700',
     descId: 'Alam, perbukitan, dan suasana tenang untuk melepas penat.',
     descEn: 'Nature, hills, and peaceful scenery to unwind.',
@@ -239,8 +239,8 @@ function CategoryCard({ cat, label, locale, meta, count, onSelect }: {
       onClick={() => onSelect(cat)}
       className="group flex items-start gap-3 p-4 rounded-xl bg-white border border-gold-100/60 hover:border-gold-400 hover:shadow-sm transition-all text-left cursor-pointer"
     >
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${meta?.bg ?? 'bg-gold-50 text-gold-700'}`}>
-        {meta?.icon ?? <BookOpen className="w-5 h-5" />}
+      <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${meta?.bg ?? 'bg-gold-50 text-gold-700'}`}>
+        {meta?.icon ?? <BookOpen className="w-3.5 h-3.5" />}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
@@ -389,9 +389,9 @@ export default function BlogListClient({
                         }`}
                       >
                         {CATEGORY_META[cat]?.icon && (
-                          <span className="w-3 h-3">{CATEGORY_META[cat].icon}</span>
+                          <span className="w-3.5 h-3.5 flex items-center justify-center flex-shrink-0">{CATEGORY_META[cat].icon}</span>
                         )}
-                        {messages[key]}
+                        <span>{messages[key]}</span>
                       </button>
                     );
                   })}
