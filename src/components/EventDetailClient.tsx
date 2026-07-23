@@ -3,13 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useParams } from 'next/navigation';
-import { Calendar, MapPin, Users, Ticket, ExternalLink, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, Ticket, ExternalLink, CheckCircle, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import Header from '@/components/Header';
 import SubNav from '@/components/SubNav';
 import { events as eventsApi } from '@/lib/api';
 import Image from 'next/image';
+
+/** Normalise images field (array of objects, plain strings, or single image_url fallback) */
+function resolveImages(event: EventDetail): string[] {
+  if (Array.isArray(event.images) && event.images.length > 0) {
+    return event.images.map((img) => {
+      if (typeof img === 'string') return img;
+      if (img && typeof img === 'object' && 'url' in img) return (img as { url: string }).url;
+      return '';
+    }).filter(Boolean);
+  }
+  if (event.image_url) return [event.image_url];
+  return [];
+}
 
 interface EventDetail {
   id: string;
@@ -19,6 +32,7 @@ interface EventDetail {
   start_date: string;
   end_date: string;
   image_url: string;
+  images?: { url: string; credit?: string }[] | string[];
   category: string;
   status: string;
   latitude: number;
@@ -27,6 +41,7 @@ interface EventDetail {
   ticket_price: string;
   organizer: string;
   highlights: string[];
+  video_url?: string;
 }
 
 function EventDetailContent() {
@@ -37,6 +52,7 @@ function EventDetailContent() {
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -97,6 +113,9 @@ function EventDetailContent() {
     );
   }
 
+  const imgs = resolveImages(event);
+  const coverUrl = imgs[activeImg] ?? imgs[0] ?? null;
+
   const mapsUrl = event.latitude && event.longitude
     ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location || event.title)}`;
@@ -117,15 +136,17 @@ function EventDetailContent() {
 
       <SubNav onBack={() => router.push('/events')} title={event.title} zClass="z-40" />
 
+      {/* Hero image with gallery navigation */}
       <div className="relative h-64 sm:h-80 lg:h-96 w-full overflow-hidden bg-stone-200">
-        {event.image_url ? (
+        {coverUrl ? (
           <Image
-                    src={event.image_url}
-                    alt={event.title}
-                    fill
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+            src={coverUrl}
+            alt={event.title}
+            fill
+            className="object-cover transition-opacity duration-300"
+            referrerPolicy="no-referrer"
+            unoptimized
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold-50 to-amber-100">
             <Calendar className="h-16 w-16 text-gold-300" />
@@ -133,13 +154,49 @@ function EventDetailContent() {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
+        {/* Prev / Next arrows — only when multiple images */}
+        {imgs.length > 1 && (
+          <>
+            <button
+              onClick={() => setActiveImg((i) => (i - 1 + imgs.length) % imgs.length)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white transition backdrop-blur-sm"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setActiveImg((i) => (i + 1) % imgs.length)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white transition backdrop-blur-sm"
+              aria-label="Next image"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            {/* Dot indicators */}
+            <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-1.5">
+              {imgs.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImg(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeImg ? 'bg-white w-4' : 'bg-white/50'}`}
+                  aria-label={`Image ${i + 1}`}
+                />
+              ))}
+            </div>
+            {/* Photo count badge */}
+            <div className="absolute top-5 right-5 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+              <Camera className="h-3 w-3" />
+              {activeImg + 1} / {imgs.length}
+            </div>
+          </>
+        )}
+
         {event.category && (
           <span className="absolute top-5 left-5 bg-white/90 backdrop-blur-sm text-royal-950 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/50">
             {event.category}
           </span>
         )}
 
-        {event.status && event.status !== 'active' && (
+        {event.status && event.status !== 'active' && imgs.length <= 1 && (
           <span className="absolute top-5 right-5 bg-gold-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full capitalize">
             {event.status}
           </span>
@@ -151,6 +208,23 @@ function EventDetailContent() {
           </h1>
         </div>
       </div>
+
+      {/* Thumbnail strip — only when more than 1 image */}
+      {imgs.length > 1 && (
+        <div className="bg-stone-900 px-4 py-2 flex gap-2 overflow-x-auto scrollbar-hide">
+          {imgs.map((src, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveImg(i)}
+              className={`relative w-14 h-10 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${
+                i === activeImg ? 'border-gold-400 opacity-100' : 'border-transparent opacity-50 hover:opacity-80'
+              }`}
+            >
+              <Image src={src} alt={`thumbnail ${i + 1}`} fill className="object-cover" unoptimized sizes="56px" />
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 space-y-6 pb-24">
         <div className="bg-white rounded-3xl border border-stone-200/60 shadow-sm p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
