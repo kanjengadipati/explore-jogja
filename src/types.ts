@@ -81,7 +81,6 @@ export interface Festival {
 }
 
 export interface TripDay {
-export interface TripDay {
   dayNumber: number;
   destinations: Destination[];
   notes?: string;
