@@ -65,12 +65,18 @@ export default React.memo(function DestinationCard({
     'hidden_gem': 'bg-teal-600/90 border border-teal-500/30 text-white',
     'best_for_healing': 'bg-green-700/90 border border-green-600/30 text-white',
     'sunset_spot': 'bg-orange-500/90 border border-orange-400/30 text-white',
+    'sunrise_spot': 'bg-amber-400/90 border border-amber-300/30 text-white',
     'perfect_morning': 'bg-amber-500/90 border border-amber-400/30 text-white',
     'night_vibes': 'bg-indigo-600/90 border border-indigo-500/30 text-white',
+    'night_spot': 'bg-indigo-600/90 border border-indigo-500/30 text-white',
     'cultural': 'bg-amber-700/90 border border-amber-600/30 text-white',
     'adventure': 'bg-red-600/90 border border-red-500/30 text-white',
     'instagramable': 'bg-pink-600/90 border border-pink-500/30 text-white',
     'unesco': 'bg-blue-700/90 border border-blue-600/30 text-white',
+    'camping_spot': 'bg-lime-700/90 border border-lime-600/30 text-white',
+    'budget_friendly': 'bg-emerald-600/90 border border-emerald-500/30 text-white',
+    'waterfall': 'bg-cyan-600/90 border border-cyan-500/30 text-white',
+    'photographer_pick': 'bg-fuchsia-600/90 border border-fuchsia-500/30 text-white',
   };
 
   const badgeBgClass = BADGE_STYLES[badgeKey] || 'bg-black/40 backdrop-blur-md border border-white/10 text-white';

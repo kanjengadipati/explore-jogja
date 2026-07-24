@@ -48,6 +48,13 @@ const BADGE_COLOR: Record<string, string> = {
   Nature:           'bg-green-700',
   Beach:            'bg-sky-600',
   Heritage:         'bg-amber-700',
+  'Sunrise Spot':   'bg-amber-400',
+  'Sunset Spot':    'bg-orange-500',
+  'Camping Spot':   'bg-lime-700',
+  'Budget Friendly': 'bg-emerald-600',
+  Waterfall:        'bg-cyan-600',
+  'Night Spot':     'bg-indigo-600',
+  "Photographer's Pick": 'bg-fuchsia-600',
 };
 
 function mapApiToDestination(raw: Record<string, unknown>): Destination {

@@ -19,6 +19,13 @@ const BADGE_COLOR: Record<string, string> = {
   'Ikon Dunia': 'bg-rose-500',
   'Akan Datang': 'bg-indigo-500',
   'Hidden Gem': 'bg-emerald-600',
+  'Sunrise Spot': 'bg-amber-400',
+  'Sunset Spot': 'bg-orange-500',
+  'Camping Spot': 'bg-lime-700',
+  'Budget Friendly': 'bg-emerald-600',
+  'Waterfall': 'bg-cyan-600',
+  'Night Spot': 'bg-indigo-600',
+  "Photographer's Pick": 'bg-fuchsia-600',
 };
 
 type TrendingItem = {

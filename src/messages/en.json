@@ -122,6 +122,12 @@
     "badge_ikon_dunia": "World Icon",
     "badge_akan_datang": "Coming Soon",
     "badge_hidden_gem": "Hidden Gem",
+    "badge_sunrise_spot": "Sunrise Spot",
+    "badge_camping_spot": "Camping Spot",
+    "badge_budget_friendly": "Budget Friendly",
+    "badge_waterfall": "Waterfall",
+    "badge_night_spot": "Night Spot",
+    "badge_photographer_pick": "Photographer's Pick",
     "fallback_title": "Jogja",
     "fallback_title_accent": "Is Calling You",
     "fallback_subtitle": "Discover unforgettable places, authentic experiences, and warm Javanese hospitality.",
@@ -157,7 +163,11 @@
     "family": "Family Friendly",
     "family_desc": "Amusements and cultural experiences",
     "weekend": "Weekend Ideas",
-    "weekend_desc": "Short-trip custom curated escapes"
+    "weekend_desc": "Short-trip custom curated escapes",
+    "camping": "Camping Grounds",
+    "camping_desc": "Under the stars overnight experiences",
+    "sunset": "Sunset Spots",
+    "sunset_desc": "Golden hour panoramic viewpoints"
   },
   "report": {
     "title": "Report Content",

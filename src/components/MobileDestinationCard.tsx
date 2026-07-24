@@ -17,17 +17,31 @@ import { useLocale } from '@/contexts/LocaleContext';
 interface Badge { label: string; color: string }
 
 function getBadge(dest: Destination): Badge {
-  const { category, rating, reviewCount, bestTime, openingHours } = dest;
+  const { category, rating, reviewCount, bestTime, openingHours, ticketPrice, name } = dest;
   const bt = (bestTime || '').toLowerCase();
   const oh = (openingHours || '').toLowerCase();
+  const tp = (ticketPrice || '').toLowerCase();
+  const nm = (name || '').toLowerCase();
 
   // Hidden Gem — kualitas tinggi tapi belum banyak yang tahu
   if (rating >= 4.5 && reviewCount < 2500)
     return { label: 'Hidden Gem', color: 'bg-teal-600' };
 
-  // Sunset Spot — pantai + waktu terbaik sore/sunset
-  if (category === 'beach' && (bt.includes('sore') || bt.includes('sunset') || bt.includes('petang')))
+  // Sunrise Spot — bestTime mengandung sunrise/fajar
+  if (bt.includes('sunrise') || bt.includes('fajar') || bt.includes('dawn'))
+    return { label: 'Sunrise Spot', color: 'bg-amber-400' };
+
+  // Sunset Spot — bestTime mengandung sore/sunset
+  if (bt.includes('sore') || bt.includes('sunset'))
     return { label: 'Sunset Spot', color: 'bg-orange-500' };
+
+  // Camping Spot — bestTime mengandung camping
+  if (bt.includes('camping'))
+    return { label: 'Camping Spot', color: 'bg-lime-700' };
+
+  // Waterfall — name mengandung air terjun/curug
+  if (nm.includes('air terjun') || nm.includes('curug') || nm.includes('waterfall'))
+    return { label: 'Waterfall', color: 'bg-cyan-600' };
 
   // Instagramable — pantai atau hidden-gem dengan rating tinggi
   if ((category === 'beach' || category === 'hidden-gem') && rating >= 4.4)
@@ -37,9 +51,18 @@ function getBadge(dest: Destination): Badge {
   if ((category === 'nature' || category === 'heritage') && (bt.includes('pagi') || bt.includes('morning')))
     return { label: 'Perfect Morning', color: 'bg-amber-500' };
 
-  // Night Vibes — buka malam / waktu terbaik malam
-  if (bt.includes('malam') || bt.includes('night') || oh.includes('malam') || oh.includes('22') || oh.includes('23'))
-    return { label: 'Night Vibes', color: 'bg-indigo-600' };
+  // Night Spot — waktu terbaik malam
+  if (bt.includes('malam') || bt.includes('night') || bt.includes('stargaz'))
+    return { label: 'Night Spot', color: 'bg-indigo-600' };
+
+  // Budget Friendly — tiket gratis/gratis
+  if (tp === '' || tp.includes('gratis') || tp.includes('free'))
+    return { label: 'Budget Friendly', color: 'bg-emerald-600' };
+
+  // Photographer Pick — travel tips mengandung foto/photo
+  const tips = (dest.travelTips || []).join(' ').toLowerCase();
+  if (tips.includes('foto') || tips.includes('photo') || tips.includes('fotografi'))
+    return { label: 'Photographer Pick', color: 'bg-fuchsia-600' };
 
   // Best for Healing — alam dengan rating bagus
   if (category === 'nature' && rating >= 4.3)
@@ -139,12 +162,18 @@ export default memo(function MobileDestinationCard({
     'hidden_gem': 'bg-teal-600/90 border border-teal-500/30 text-white',
     'best_for_healing': 'bg-green-700/90 border border-green-600/30 text-white',
     'sunset_spot': 'bg-orange-500/90 border border-orange-400/30 text-white',
+    'sunrise_spot': 'bg-amber-400/90 border border-amber-300/30 text-white',
     'perfect_morning': 'bg-amber-500/90 border border-amber-400/30 text-white',
     'night_vibes': 'bg-indigo-600/90 border border-indigo-500/30 text-white',
+    'night_spot': 'bg-indigo-600/90 border border-indigo-500/30 text-white',
     'cultural': 'bg-amber-700/90 border border-amber-600/30 text-white',
     'adventure': 'bg-red-600/90 border border-red-500/30 text-white',
     'instagramable': 'bg-pink-600/90 border border-pink-500/30 text-white',
     'unesco': 'bg-blue-700/90 border border-blue-600/30 text-white',
+    'camping_spot': 'bg-lime-700/90 border border-lime-600/30 text-white',
+    'budget_friendly': 'bg-emerald-600/90 border border-emerald-500/30 text-white',
+    'waterfall': 'bg-cyan-600/90 border border-cyan-500/30 text-white',
+    'photographer_pick': 'bg-fuchsia-600/90 border border-fuchsia-500/30 text-white',
   };
 
   const badgeColor = BADGE_STYLES[badgeKey] || localBadge.color;

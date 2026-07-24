@@ -22,6 +22,8 @@ import {
   BeachesIcon,
   FamilyFriendlyIcon,
   WeekendIdeasIcon,
+  CampingIcon,
+  SunsetIcon,
 } from './CategoryIcons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
@@ -79,6 +81,8 @@ const ALL_CATEGORIES = [
   { id: 'beach',      tKey: 'category.beach',        Icon: BeachesIcon },
   { id: 'family',     tKey: 'category.family',       Icon: FamilyFriendlyIcon },
   { id: 'weekend',    tKey: 'category.weekend',      Icon: WeekendIdeasIcon },
+  { id: 'camping',    tKey: 'category.camping',      Icon: CampingIcon },
+  { id: 'sunset',     tKey: 'category.sunset',       Icon: SunsetIcon },
 ] as const;
 
 const PRIMARY_CATS = ALL_CATEGORIES.slice(0, 4);

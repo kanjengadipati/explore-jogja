@@ -122,6 +122,12 @@
     "badge_ikon_dunia": "Ikon Dunia",
     "badge_akan_datang": "Akan Datang",
     "badge_hidden_gem": "Hidden Gem",
+    "badge_sunrise_spot": "Spot Sunrise",
+    "badge_camping_spot": "Spot Camping",
+    "badge_budget_friendly": "Ramah Budget",
+    "badge_waterfall": "Air Terjun",
+    "badge_night_spot": "Spot Malam",
+    "badge_photographer_pick": "Pilihan Fotografer",
     "fallback_title": "Jogja",
     "fallback_title_accent": "Memanggilmu",
     "fallback_subtitle": "Temukan tempat tak terlupakan, pengalaman autentik, dan keramahan Jawa yang hangat.",
@@ -157,7 +163,11 @@
     "family": "Ramah Keluarga",
     "family_desc": "Wahana seru dan pengalaman budaya",
     "weekend": "Ide Akhir Pekan",
-    "weekend_desc": "Pelarian kustom untuk liburan singkat"
+    "weekend_desc": "Pelarian kustom untuk liburan singkat",
+    "camping": "Tempat Camping",
+    "camping_desc": "Pengalaman menginap di bawah bintang-bintang",
+    "sunset": "Spot Sunset",
+    "sunset_desc": "Pemandangan panorama golden hour"
   },
   "report": {
     "title": "Laporkan Konten",

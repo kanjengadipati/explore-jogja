@@ -300,3 +300,50 @@ export function WeekendIdeasIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+/* ─────────────────────────────────────────────
+   Camping Grounds — Tent + stars + pine trees
+───────────────────────────────────────────── */
+export function CampingIcon({ className }: { className?: string }) {
+  return (
+    <svg {...BASE} className={className} aria-hidden>
+      {/* Tent body */}
+      <path d="M24 12 L10 38 L38 38 Z" strokeWidth="2" />
+      {/* Tent opening */}
+      <path d="M24 12 L19 38" strokeWidth="1.5" />
+      <path d="M24 12 L29 38" strokeWidth="1.5" />
+      {/* Ground line */}
+      <line x1="8" y1="38" x2="40" y2="38" />
+      {/* Stars */}
+      <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
+      <circle cx="36" cy="6" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="30" cy="10" r="0.8" fill="currentColor" stroke="none" />
+      {/* Pine trees */}
+      <path d="M6 38 L8 32 L10 38" strokeWidth="1.5" />
+      <path d="M38 38 L40 34 L42 38" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Sunset Spots — Sun dipping below horizon + gradient rays
+───────────────────────────────────────────── */
+export function SunsetIcon({ className }: { className?: string }) {
+  return (
+    <svg {...BASE} className={className} aria-hidden>
+      {/* Sun half-visible above horizon */}
+      <path d="M12 28 A12 12 0 0 1 36 28" strokeWidth="2.5" />
+      {/* Horizon line */}
+      <line x1="6" y1="28" x2="42" y2="28" />
+      {/* Sun rays */}
+      <line x1="24" y1="10" x2="24" y2="14" strokeWidth="2" />
+      <line x1="12" y1="14" x2="14" y2="17" strokeWidth="2" />
+      <line x1="36" y1="14" x2="34" y2="17" strokeWidth="2" />
+      <line x1="8" y1="22" x2="11" y2="23" strokeWidth="2" />
+      <line x1="40" y1="22" x2="37" y2="23" strokeWidth="2" />
+      {/* Water reflection waves */}
+      <path d="M10 34 Q17 32 24 34 Q31 36 38 34" strokeWidth="1.5" />
+      <path d="M14 38 Q20 36 26 38 Q32 40 38 38" strokeWidth="1.5" />
+    </svg>
+  );
+}

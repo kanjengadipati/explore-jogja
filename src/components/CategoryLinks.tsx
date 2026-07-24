@@ -12,6 +12,8 @@ import {
   BeachesIcon,
   FamilyFriendlyIcon,
   WeekendIdeasIcon,
+  CampingIcon,
+  SunsetIcon,
 } from './CategoryIcons';
 
 interface Category {
@@ -38,6 +40,10 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles:        HiddenGemsIcon,
   Leaf:            NatureEscapesIcon,
   Utensils:        CulinaryLegendsIcon,
+  Tent:            CampingIcon,
+  Sunset:          SunsetIcon,
+  camping:         CampingIcon,
+  sunset:          SunsetIcon,
 };
 
 interface CategoryLinksProps {
